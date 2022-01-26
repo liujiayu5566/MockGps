@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="title_style">
+        <item name="android:maxLines">2</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:textColor">@color/master_color</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="info_style">
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:textColor">@color/master_color_80</item>
+        <item name="android:textSize">15sp</item>
+    </style>
+
+    <style name="hint_style">
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:textColor">@color/master_color_50</item>
+        <item name="android:textSize">13sp</item>
+    </style>
+</resources>
