@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.view.View
 import android.widget.Toast
-import com.huolala.mockgps.R
 import com.huolala.mockgps.server.GpsAndFloatingService
 
 import com.baidu.location.BDLocation
@@ -24,6 +23,11 @@ import com.huolala.mockgps.model.MockMessageModel
 import com.huolala.mockgps.utils.Utils
 import java.util.*
 import kotlinx.android.synthetic.main.activity_navi.*
+
+import com.baidu.mapapi.map.OverlayOptions
+
+import com.baidu.mapapi.map.BitmapDescriptorFactory
+import com.huolala.mockgps.R
 
 
 /**
@@ -160,19 +164,11 @@ class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
 
             override fun onGetDrivingRouteResult(drivingRouteResult: DrivingRouteResult?) {
                 //创建DrivingRouteOverlay实例
-
                 drivingRouteResult?.routeLines?.get(0)?.run {
                     val polylineList = arrayListOf<LatLng>()
                     for (step in allStep) {
-                        val b = Bundle()
-                        b.putInt("index", allStep.indexOf(step))
-                        if (step.entrance != null) {
-                            polylineList.add(step.entrance.location)
-                        }
-                        // 最后路段绘制出口点
-                        if (allStep.indexOf(step) == allStep.size - 1 && step.exit != null
-                        ) {
-                            polylineList.add(step.exit.location)
+                        if (step.wayPoints != null && step.wayPoints.isNotEmpty()) {
+                            polylineList.addAll(step.wayPoints)
                         }
                     }
                     mPolyline?.let {

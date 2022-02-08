@@ -83,8 +83,6 @@ public class CalculationLogLatDistance {
      * 3、已知经纬度A,并知道A到B经纬度的距离、方位角(偏北角)。计算B经纬度)
      */
     public static synchronized LatLng getNextLonLat(LatLng coor, double yaw, double dist) {
-        // 大地坐标系资料WGS-84,长半径 6378137
-        double WGS84_L_RADIUS = 6378137;
 
         double alpha1 = A2R(yaw);
         double sinAlpha1 = sin(alpha1);
@@ -129,12 +127,12 @@ public class CalculationLogLatDistance {
                         - (1 - C) * M_F * sinAlpha
                         * (sigma + C * sinSigma * (cos2SigmaM + C * cosSigma * (-1 + 2.0 * cos2SigmaM * cos2SigmaM)));
 
-        //    double revAz = atan2(sinAlpha, -tmp);
+//        double revAz = atan2(sinAlpha, -tmp);
         // 输出经纬度
         return new LatLng(R2A(lat2), coor.longitude + R2A(L));
     }
 
-    public static synchronized LatLng LongLatOffset(LatLng coor, double yaw, double dist) {
+    public static synchronized LatLng longLatOffset(LatLng coor, double yaw, double dist) {
         double lon = coor.longitude;
         double lat = coor.latitude;
 

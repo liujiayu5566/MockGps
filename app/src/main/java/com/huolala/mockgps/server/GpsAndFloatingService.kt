@@ -19,6 +19,9 @@ import com.huolala.mockgps.utils.CalculationLogLatDistance
 import com.huolala.mockgps.utils.LocationUtils
 import com.huolala.mockgps.utils.Utils
 import kotlinx.android.synthetic.main.layout_floating.view.*
+import java.math.BigDecimal
+import java.math.RoundingMode
+import java.text.NumberFormat
 
 /**
  * @author jiayu.liu
@@ -103,9 +106,9 @@ class GpsAndFloatingService : Service() {
             if (location.latitude <= 0 || location.longitude <= 0) {
                 location = polyline[index] as LatLng
                 index++
-                print("非法")
+                println("非法")
             } else {
-                println("计算经纬度")
+                println("计算经纬度 $index ,  $mSpeed , $dis , $yaw")
             }
             return location
         }
@@ -114,18 +117,17 @@ class GpsAndFloatingService : Service() {
         if (index >= polyLineCount - 1) {
             val latLng = polyline[polyLineCount - 1] as LatLng
             index++
-            print("终点")
+            println("终点")
             return latLng
         }
         if (dis > 0) {
-            //小于直接取下一阶段经纬度更新
-            //大于10度直接取下一阶段经纬度更新
-            val latLng = polyline[index] as LatLng
+            println("直接取下一阶段经纬 $index ,  $mSpeed , $dis , $yaw")
             index++
-            return latLng
+            return indexLonLat
         }
         //循环递归计算经纬度
         index++
+        println("递归")
         return getLatLngNext(polyline)
     }
 
@@ -148,18 +150,11 @@ class GpsAndFloatingService : Service() {
                 drivingRouteResult?.routeLines?.get(0)?.run {
                     val polylineList = arrayListOf<LatLng>()
                     for (step in allStep) {
-                        val b = Bundle()
-                        b.putInt("index", allStep.indexOf(step))
-                        if (step.entrance != null) {
-                            polylineList.add(step.entrance.location)
-                        }
-                        // 最后路段绘制出口点
-                        if (allStep.indexOf(step) == allStep.size - 1 && step.exit != null
-                        ) {
-                            polylineList.add(step.exit.location)
+                        if (step.wayPoints != null && step.wayPoints.isNotEmpty()) {
+                            polylineList.addAll(step.wayPoints)
                         }
                     }
-                    //TODO 提前计算有问题 循环次数太多
+                    //TODO 提前计算有问题 循环次数太多 线程执行  待优化
 //                    val polyLine = Utils.latLngToSpeedLatLng(polylineList, mSpeed)
                     index = 0
                     sendHandler(

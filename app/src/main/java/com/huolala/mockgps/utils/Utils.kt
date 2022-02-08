@@ -81,6 +81,7 @@ object Utils {
     }
 
     /**
+     * FIXME 弃用  待优化
      * @param array 原数据
      * @param speed 速度  单位：KM/H
      *
