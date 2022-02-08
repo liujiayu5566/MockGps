@@ -12,12 +12,18 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.appbar.AppBarLayout
 import com.huolala.mockgps.R
+import com.huolala.mockgps.adaper.HistoryAdapter
+import com.huolala.mockgps.adaper.SimpleDividerDecoration
 import com.huolala.mockgps.model.MockMessageModel
 import com.huolala.mockgps.model.PoiInfoModel
 import com.huolala.mockgps.utils.DensityUtils
+import com.huolala.mockgps.utils.MMKVUtils
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_main.recycler
+import kotlinx.android.synthetic.main.activity_pick.*
 import kotlinx.android.synthetic.main.layout_location_card.*
 import kotlinx.android.synthetic.main.layout_location_card.tv_location_latlng
 import kotlinx.android.synthetic.main.layout_navi_card.*
@@ -33,46 +39,17 @@ import kotlin.math.roundToInt
 class MainActivity : AppCompatActivity(), View.OnClickListener {
     private var topMarginOffset: Int = 0
     private var topMargin: Int = 0
+    private lateinit var adapter: HistoryAdapter
 
     private var registerForActivityResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             if (it.resultCode == RESULT_OK) {
                 it.data?.run {
                     val parcelableExtra = this.getParcelableExtra<PoiInfoModel>("poiInfo")
-                    parcelableExtra?.run {
-                        when (fromTag) {
-                            0 -> {
-                                tv_location_name.text = String.format(
-                                    "目标：%s",
-                                    name
-                                )
-                                tv_location_latlng.text = String.format(
-                                    "经纬度：%f , %f",
-                                    latLng?.longitude, latLng?.latitude
-                                )
-                                tv_location_latlng.tag = this
-                            }
-                            1 -> {
-                                tv_navi_name_start.text = String.format(
-                                    "起点：%s",
-                                    name
-                                )
-                                tv_navi_name_start.tag = this
-                            }
-                            2 -> {
-                                tv_navi_name_end.text = String.format(
-                                    "终点：%s",
-                                    name
-                                )
-                                tv_navi_name_end.tag = this
-                            }
-                            else -> {}
-                        }
-                    }
+                    setDataToView(parcelableExtra)
                 }
             }
         }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -84,7 +61,47 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         initView()
     }
 
+    override fun onResume() {
+        super.onResume()
+        //获取历史数据
+        getHistoryData()
+    }
+
+    private fun getHistoryData() {
+        MMKVUtils.getDataList(
+            if (ll_location_card.visibility == View.VISIBLE) MMKVUtils.LOCATION_LIST_KEY
+            else MMKVUtils.NAVI_LIST_KEY
+        ).let {
+            adapter.setData(it)
+        }
+    }
+
     private fun initView() {
+        adapter = HistoryAdapter()
+        recycler.adapter = adapter
+        recycler.itemAnimator = null
+        recycler.layoutManager = LinearLayoutManager(this)
+        recycler.addItemDecoration(SimpleDividerDecoration(this, R.color.transparent, 10f))
+
+        adapter.setOnItemClickListener(object : HistoryAdapter.OnItemClickListener {
+            override fun onItemClick(view: View?, model: MockMessageModel) {
+                when (model.fromTag) {
+                    0 -> {
+                        setDataToView(model.locationModel)
+                    }
+                    1 -> {
+                        setDataToView(model.startNavi)
+                        setDataToView(model.endNavi)
+                    }
+                    else -> {}
+                }
+            }
+
+            override fun onItemLongClick(view: View?, model: MockMessageModel) {
+//                TODO("Not yet implemented")
+            }
+
+        })
 
         iv_change.setOnClickListener(this)
         iv_setting.setOnClickListener(this)
@@ -109,6 +126,40 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         })
     }
 
+
+    private fun setDataToView(model: PoiInfoModel?) {
+        model?.run {
+            when (fromTag) {
+                0 -> {
+                    tv_location_name.text = String.format(
+                        "目标：%s",
+                        name
+                    )
+                    tv_location_latlng.text = String.format(
+                        "经纬度：%f , %f",
+                        latLng?.longitude, latLng?.latitude
+                    )
+                    tv_location_latlng.tag = this
+                }
+                1 -> {
+                    tv_navi_name_start.text = String.format(
+                        "起点：%s",
+                        name
+                    )
+                    tv_navi_name_start.tag = this
+                }
+                2 -> {
+                    tv_navi_name_end.text = String.format(
+                        "终点：%s",
+                        name
+                    )
+                    tv_navi_name_end.tag = this
+                }
+                else -> {}
+            }
+        }
+    }
+
     override fun onClick(v: View?) {
         when (v) {
             ll_location_card -> {
@@ -127,13 +178,17 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 //启动模拟导航
                 checkFloatWindow().let {
                     if (!it) return
+                    val locationModel = tv_location_latlng.tag as PoiInfoModel?
                     val model = MockMessageModel(
-                        locationModel = tv_location_latlng.tag as PoiInfoModel?,
-                        fromTag = 0
+                        locationModel = locationModel,
+                        fromTag = 0,
+                        uid = locationModel?.uid ?: ""
                     )
                     val intent = Intent(this, MockLocationActivity::class.java)
                     intent.putExtra("model", model)
                     startActivity(intent)
+
+                    MMKVUtils.saveLocationData(model)
                 }
             }
             iv_change -> {
@@ -146,6 +201,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     ll_navi_card.visibility = View.GONE
                     collapsingToolbar.title = "模拟定位"
                 }
+                getHistoryData()
             }
             tv_navi_name_start -> {
                 registerForActivityResult.launch(
@@ -170,14 +226,19 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 }
                 checkFloatWindow().let {
                     if (!it) return
+                    val startNavi = tv_navi_name_start.tag as PoiInfoModel?
+                    val endNavi = tv_navi_name_end.tag as PoiInfoModel?
                     val model = MockMessageModel(
-                        startNavi = tv_navi_name_start.tag as PoiInfoModel?,
-                        endNavi = tv_navi_name_end.tag as PoiInfoModel?,
-                        fromTag = 1
+                        startNavi = startNavi,
+                        endNavi = endNavi,
+                        fromTag = 1,
+                        uid = (startNavi?.uid ?: "") + (endNavi?.uid ?: "")
                     )
                     val intent = Intent(this, MockLocationActivity::class.java)
                     intent.putExtra("model", model)
                     startActivity(intent)
+
+                    MMKVUtils.saveNaviData(model)
                 }
             }
             else -> {}

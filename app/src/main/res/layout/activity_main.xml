@@ -63,15 +63,19 @@
     </com.google.android.material.appbar.AppBarLayout>
 
 
-    <androidx.core.widget.NestedScrollView
+    <com.scwang.smart.refresh.layout.SmartRefreshLayout
         android:layout_width="match_parent"
-        android:layout_height="1000dp"
+        android:layout_height="wrap_content"
         android:clipChildren="false"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        android:minHeight="800dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        app:srlEnableLoadMore="false"
+        app:srlEnableRefresh="false">
 
         <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
             <FrameLayout
                 android:id="@+id/ll_card"
@@ -87,13 +91,23 @@
 
             </FrameLayout>
 
+            <androidx.appcompat.widget.AppCompatTextView
+                style="@style/info_style"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="15dp"
+                android:paddingVertical="10dp"
+                android:text="历史数据（最多显示10条）"
+                android:textStyle="bold" />
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:overScrollMode="never" />
 
         </androidx.appcompat.widget.LinearLayoutCompat>
 
-    </androidx.core.widget.NestedScrollView>
+    </com.scwang.smart.refresh.layout.SmartRefreshLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

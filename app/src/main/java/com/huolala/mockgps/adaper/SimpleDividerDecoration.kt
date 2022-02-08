@@ -15,7 +15,12 @@ import com.huolala.mockgps.utils.DensityUtils
 /**
  * @author jiayu.liu
  */
-class SimpleDividerDecoration(context: Context) : ItemDecoration() {
+class SimpleDividerDecoration(
+    context: Context,
+    color: Int = R.color.darker_gray,
+    height: Float = 1f
+) :
+    ItemDecoration() {
     private val dividerHeight: Int
     private val dividerPaint: Paint = Paint()
 
@@ -49,7 +54,7 @@ class SimpleDividerDecoration(context: Context) : ItemDecoration() {
     }
 
     init {
-        dividerPaint.color = context.resources.getColor(R.color.darker_gray)
-        dividerHeight = DensityUtils.dp2px(context, 1f)
+        dividerPaint.color = context.resources.getColor(color)
+        dividerHeight = DensityUtils.dp2px(context, height)
     }
 }

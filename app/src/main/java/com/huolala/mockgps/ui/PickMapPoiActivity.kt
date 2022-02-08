@@ -303,6 +303,7 @@ class PickMapPoiActivity : AppCompatActivity(), View.OnClickListener {
                         "poiInfo",
                         PoiInfoModel(
                             location,
+                            uid,
                             name,
                             getIntent()?.run { getIntExtra("from_tag", 0) } ?: 0
                         )

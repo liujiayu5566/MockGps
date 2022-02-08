@@ -17,14 +17,16 @@ data class MockMessageModel(
     /***
      * 速度 单位 KM/H
      */
-    var speed: Int = 60
+    var speed: Int = 60,
+    var uid: String? = ""
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readParcelable(PoiInfoModel::class.java.classLoader),
         parcel.readParcelable(PoiInfoModel::class.java.classLoader),
         parcel.readParcelable(PoiInfoModel::class.java.classLoader),
         parcel.readInt(),
-        parcel.readInt()
+        parcel.readInt(),
+        parcel.readString()
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -33,6 +35,7 @@ data class MockMessageModel(
         parcel.writeParcelable(endNavi, flags)
         parcel.writeInt(fromTag)
         parcel.writeInt(speed)
+        parcel.writeString(uid)
     }
 
     override fun describeContents(): Int {
