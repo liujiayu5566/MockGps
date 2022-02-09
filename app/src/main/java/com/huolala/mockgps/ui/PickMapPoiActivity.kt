@@ -165,8 +165,6 @@ class PickMapPoiActivity : AppCompatActivity(), View.OnClickListener {
         option.isOpenGps = true // 打开gps
         option.setCoorType("bd09ll") // 设置坐标类型
         option.setScanSpan(1000)
-        option.locationMode = LocationClientOption.LocationMode.Battery_Saving
-        option.setIsNeedAddress(true)
 
         //设置locationClientOption
         mLocationClient.locOption = option
@@ -280,6 +278,7 @@ class PickMapPoiActivity : AppCompatActivity(), View.OnClickListener {
     private fun destroy() {
         mSuggestionSearch.destroy()
         mCoder.destroy()
+        mLocationClient.unRegisterLocationListener(myLocationListener)
         mLocationClient.stop()
         mBaiduMap.isMyLocationEnabled = false
         mapview.onDestroy()

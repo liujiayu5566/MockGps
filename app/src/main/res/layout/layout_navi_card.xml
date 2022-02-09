@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="15dp"
+    android:layout_marginTop="1dp"
     android:layout_marginBottom="3dp"
     android:background="@drawable/shape_round_5_color_white"
     android:orientation="vertical"
@@ -66,6 +67,16 @@
             app:layout_constraintHorizontal_bias="0"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_navi_name_end" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/iv_navi_setting"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="5dp"
+            android:src="@drawable/ic_setting"
+            app:layout_constraintBottom_toBottomOf="@id/btn_start_navi"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@id/btn_start_navi" />
 
 
         <androidx.appcompat.widget.AppCompatImageView

@@ -56,20 +56,20 @@ class GpsAndFloatingService : Service() {
                             (msg.obj as PoiInfoModel?)?.latLng?.let {
                                 view.tv_progress.text = String.format("%d / %d", 0, 0)
                                 startSimulateLocation(it)
-                                handle.sendMessageDelayed(Message.obtain(msg), 1000)
+                                handle.sendMessageDelayed(Message.obtain(msg), 100)
                             }
                         }
                     }
                     START_MOCK_LOCATION_NAVI -> {
                         if (isStart) {
                             (msg.obj as ArrayList<*>?)?.let {
-                                if (it.isEmpty() || index >= it.size) {
+                                if (it.isEmpty() || it.size == 0) {
                                     return
                                 }
                                 if (index == 0) {
                                     mCurrentLocation = it[index] as LatLng
                                     index++
-                                } else {
+                                } else if (index < it.size) {
                                     mCurrentLocation = getLatLngNext(it)
                                 }
                                 view.tv_progress.text = String.format("%d / %d", index, it.size)
@@ -103,7 +103,7 @@ class GpsAndFloatingService : Service() {
                 CalculationLogLatDistance.getNextLonLat(mCurrentLocation, yaw, mSpeed)
             println("${location.latitude}  ||  ${location.longitude}")
             //计算经纬度为非法值则直接取下一阶段经纬度更新
-            if (location.latitude <= 0 || location.longitude <= 0) {
+            if (location.latitude <= 0 || location.longitude <= 0 || location.latitude.isNaN() || location.longitude.isNaN()) {
                 location = polyline[index] as LatLng
                 index++
                 println("非法")

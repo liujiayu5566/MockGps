@@ -42,7 +42,7 @@ class HistoryAdapter : ListAdapter<MockMessageModel, HistoryAdapter.ViewHolder>(
                 holder.itemView.tv_info.text = String.format(
                     "经纬度：%f , %f",
                     model.locationModel?.latLng?.longitude ?: "",
-                    model.locationModel?.latLng?.longitude ?: ""
+                    model.locationModel?.latLng?.latitude ?: ""
                 )
             }
             else -> {

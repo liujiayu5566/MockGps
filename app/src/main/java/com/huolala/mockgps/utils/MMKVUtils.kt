@@ -15,6 +15,7 @@ object MMKVUtils {
     private var defaultMMKV: MMKV = MMKV.defaultMMKV()
     val LOCATION_LIST_KEY: String = "LOCATION_LIST_KEY"
     val NAVI_LIST_KEY: String = "NAVI_LIST_KEY"
+    val NAVI_SPEED_KEY: String = "NAVI_SPEED_KEY"
     private val MAX_SIZE: Int = 10
 
     fun saveLocationData(data: MockMessageModel) {
@@ -70,4 +71,14 @@ object MMKVUtils {
             }
         }
     }
+
+    fun setSpeed(speed: Int) {
+        defaultMMKV.putInt(NAVI_SPEED_KEY, speed)
+    }
+
+    fun getSpeed(): Int {
+        return defaultMMKV.getInt(NAVI_SPEED_KEY, 60)
+    }
+
+
 }

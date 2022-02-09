@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/transparent">
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="3dp"
+        android:background="@drawable/shape_round_5_color_white"
+        android:orientation="vertical"
+        android:paddingHorizontal="15dp"
+        android:paddingVertical="15dp"
+        android:translationZ="3dp">
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tv_speed"
+            style="@style/hint_style"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="当前速度：60KM"
+            android:textSize="10sp" />
+
+        <com.xw.repo.BubbleSeekBar
+            android:id="@+id/seekbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:progressDrawable="@drawable/seek_bar_bg"
+            android:thumb="@drawable/ic_my_location"
+            app:bsb_auto_adjust_section_mark="true"
+            app:bsb_hide_bubble="true"
+            app:bsb_max="120"
+            app:bsb_min="30"
+            app:bsb_progress="60"
+            app:bsb_second_track_color="@color/master_color"
+            app:bsb_section_count="3"
+            app:bsb_show_section_mark="true"
+            app:bsb_thumb_color="@color/master_color" />
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+</FrameLayout>

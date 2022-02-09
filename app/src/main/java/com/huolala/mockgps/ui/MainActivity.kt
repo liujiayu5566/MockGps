@@ -21,6 +21,7 @@ import com.huolala.mockgps.model.MockMessageModel
 import com.huolala.mockgps.model.PoiInfoModel
 import com.huolala.mockgps.utils.DensityUtils
 import com.huolala.mockgps.utils.MMKVUtils
+import com.huolala.mockgps.widget.NaviPopupWindow
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.recycler
 import kotlinx.android.synthetic.main.activity_pick.*
@@ -112,6 +113,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         tv_navi_name_start.setOnClickListener(this)
         tv_navi_name_end.setOnClickListener(this)
         btn_start_navi.setOnClickListener(this)
+        iv_navi_setting.setOnClickListener(this)
 
         appBarLayout.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
             appBarLayout?.run {
@@ -232,6 +234,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                         startNavi = startNavi,
                         endNavi = endNavi,
                         fromTag = 1,
+                        speed = MMKVUtils.getSpeed(),
                         uid = (startNavi?.uid ?: "") + (endNavi?.uid ?: "")
                     )
                     val intent = Intent(this, MockLocationActivity::class.java)
@@ -239,6 +242,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     startActivity(intent)
 
                     MMKVUtils.saveNaviData(model)
+                }
+            }
+            iv_navi_setting -> {
+                //导航设置
+                NaviPopupWindow(this).apply {
+                    show(iv_navi_setting)
                 }
             }
             else -> {}

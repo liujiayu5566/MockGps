@@ -40,6 +40,39 @@ class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
     private var mPolyline: Overlay? = null
     private var fromTag: Int = 0
 
+    //注册LocationListener监听器
+    private val myLocationListener = object : BDAbstractLocationListener() {
+        override fun onReceiveLocation(location: BDLocation?) {
+            //mapView 销毁后不在处理新接收的位置
+            if (location == null) {
+                return
+            }
+            mBaiduMap.locationData?.run {
+                //如果相等 不能更新
+                if (latitude == location.latitude && longitude == location.longitude) {
+                    return
+                }
+            }
+            val locData = MyLocationData.Builder()
+                .accuracy(location.radius) // 此处设置开发者获取到的方向信息，顺时针0-360
+                .direction(location.direction).latitude(location.latitude)
+                .longitude(location.longitude).build()
+            mBaiduMap.setMyLocationData(locData)
+            //更新中心点
+            if (fromTag == 0) {
+                mBaiduMap.animateMapStatus(
+                    MapStatusUpdateFactory.newLatLngZoom(
+                        LatLng(
+                            locData.latitude,
+                            locData.longitude
+                        ), 16f
+                    )
+                )
+            }
+
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_navi)
@@ -113,38 +146,6 @@ class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
         //设置locationClientOption
         mLocationClient.locOption = option
 
-        //注册LocationListener监听器
-        val myLocationListener = object : BDAbstractLocationListener() {
-            override fun onReceiveLocation(location: BDLocation?) {
-                //mapView 销毁后不在处理新接收的位置
-                if (location == null) {
-                    return
-                }
-                mBaiduMap.locationData?.run {
-                    //如果相等 不能更新
-                    if (latitude == location.latitude && longitude == location.longitude) {
-                        return
-                    }
-                }
-                val locData = MyLocationData.Builder()
-                    .accuracy(location.radius) // 此处设置开发者获取到的方向信息，顺时针0-360
-                    .direction(location.direction).latitude(location.latitude)
-                    .longitude(location.longitude).build()
-                mBaiduMap.setMyLocationData(locData)
-                //更新中心点
-                if (fromTag == 0) {
-                    mBaiduMap.animateMapStatus(
-                        MapStatusUpdateFactory.newLatLngZoom(
-                            LatLng(
-                                locData.latitude,
-                                locData.longitude
-                            ), 16f
-                        )
-                    )
-                }
-
-            }
-        }
         mLocationClient.registerLocationListener(myLocationListener)
         //开启地图定位图层
         mLocationClient.start()
@@ -239,6 +240,7 @@ class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun destroy() {
         mSearch.destroy()
+        mLocationClient.unRegisterLocationListener(myLocationListener)
         mLocationClient.stop()
         mBaiduMap.isMyLocationEnabled = false
         mapview.onDestroy()

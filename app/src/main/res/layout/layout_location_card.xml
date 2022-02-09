@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="15dp"
+    android:layout_marginTop="1dp"
     android:layout_marginBottom="3dp"
     android:background="@drawable/shape_round_5_color_white"
     android:orientation="vertical"

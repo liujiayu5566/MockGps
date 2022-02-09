@@ -65,5 +65,6 @@ dependencies {
 
     implementation 'com.tencent:mmkv:1.2.12'
     implementation 'com.google.code.gson:gson:2.8.9'
-    implementation  'com.scwang.smart:refresh-layout-kernel:2.0.3'
+    implementation 'com.scwang.smart:refresh-layout-kernel:2.0.3'
+    implementation 'com.xw.repo:bubbleseekbar:3.20-lite'
 }

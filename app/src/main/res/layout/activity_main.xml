@@ -65,9 +65,8 @@
 
     <com.scwang.smart.refresh.layout.SmartRefreshLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:clipChildren="false"
-        android:minHeight="800dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         app:srlEnableLoadMore="false"
         app:srlEnableRefresh="false">
