@@ -38,6 +38,7 @@ class GpsAndFloatingService : Service() {
     private lateinit var handle: Handler
     private var model: MockMessageModel? = null
     private var index = 0
+    private val providerStr: String = LocationManager.GPS_PROVIDER
 
     /**
      * 米/S
@@ -56,7 +57,7 @@ class GpsAndFloatingService : Service() {
                             (msg.obj as PoiInfoModel?)?.latLng?.let {
                                 view.tv_progress.text = String.format("%d / %d", 0, 0)
                                 startSimulateLocation(it)
-                                handle.sendMessageDelayed(Message.obtain(msg), 100)
+                                handle.sendMessageDelayed(Message.obtain(msg), 1000)
                             }
                         }
                     }
@@ -307,33 +308,26 @@ class GpsAndFloatingService : Service() {
 
     fun startSimulateLocation(latLng: LatLng) {
         val gcLatLng = LocationUtils.bd09_To_gps84(latLng.latitude, latLng.longitude)
-        val loc = Location("")
+        val loc = Location(providerStr)
 
         loc.altitude = 2.0
         loc.accuracy = 3.0f
-        val bundle = Bundle()
-        bundle.putInt("satellites", 7)
-        loc.extras = bundle
-        loc.bearing = 0f
         loc.latitude = gcLatLng.latitude
         loc.longitude = gcLatLng.longitude
         loc.time = System.currentTimeMillis()
         loc.elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos()
 
-        mockGps(LocationManager.GPS_PROVIDER, loc)
-        mockGps(LocationManager.NETWORK_PROVIDER, loc)
+        mockGps(loc)
     }
 
     private fun removeGps() {
         locationManager?.run {
-            removeTestProvider(LocationManager.GPS_PROVIDER)
-            removeTestProvider(LocationManager.NETWORK_PROVIDER)
+            removeTestProvider(providerStr)
         }
     }
 
-    fun mockGps(providerStr: String, location: Location) {
+    fun mockGps(location: Location) {
         locationManager?.run {
-            location.provider = providerStr
             var powerUsageMedium = 1
             var accuracyCoarse = 2
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -344,11 +338,11 @@ class GpsAndFloatingService : Service() {
                 // @throws IllegalArgumentException if a provider with the given name already exists
                 addTestProvider(
                     providerStr,
+                    true,
+                    true,
                     false,
                     false,
-                    false,
-                    false,
-                    false,
+                    true,
                     true,
                     true,
                     powerUsageMedium,
