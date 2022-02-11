@@ -308,7 +308,8 @@ class GpsAndFloatingService : Service() {
         val loc = Location(providerStr)
 
         loc.altitude = 2.0
-        loc.accuracy = 3.0f
+        loc.accuracy = 1.0f
+        loc.bearing = 1.0f
         loc.speed = mSpeed * 2
         loc.latitude = gcLatLng.latitude
         loc.longitude = gcLatLng.longitude
