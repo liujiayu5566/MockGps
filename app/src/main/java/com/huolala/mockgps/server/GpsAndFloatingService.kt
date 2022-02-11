@@ -19,9 +19,6 @@ import com.huolala.mockgps.utils.CalculationLogLatDistance
 import com.huolala.mockgps.utils.LocationUtils
 import com.huolala.mockgps.utils.Utils
 import kotlinx.android.synthetic.main.layout_floating.view.*
-import java.math.BigDecimal
-import java.math.RoundingMode
-import java.text.NumberFormat
 
 /**
  * @author jiayu.liu
@@ -43,7 +40,7 @@ class GpsAndFloatingService : Service() {
     /**
      * 米/S
      */
-    private var mSpeed = 60 / 3.6
+    private var mSpeed: Float = 60 / 7.2f
     private lateinit var mCurrentLocation: LatLng
     private var mSearch: RoutePlanSearch = RoutePlanSearch.newInstance()
 
@@ -75,7 +72,7 @@ class GpsAndFloatingService : Service() {
                                 }
                                 view.tv_progress.text = String.format("%d / %d", index, it.size)
                                 startSimulateLocation(mCurrentLocation)
-                                handle.sendMessageDelayed(Message.obtain(msg), 1100)
+                                handle.sendMessageDelayed(Message.obtain(msg), 500)
                             }
                         }
                     }
@@ -101,7 +98,7 @@ class GpsAndFloatingService : Service() {
         if (dis > mSpeed) {
             //距离大于speed 计算经纬度
             var location =
-                CalculationLogLatDistance.getNextLonLat(mCurrentLocation, yaw, mSpeed)
+                CalculationLogLatDistance.getNextLonLat(mCurrentLocation, yaw, mSpeed.toDouble())
             println("${location.latitude}  ||  ${location.longitude}")
             //计算经纬度为非法值则直接取下一阶段经纬度更新
             if (location.latitude <= 0 || location.longitude <= 0 || location.latitude.isNaN() || location.longitude.isNaN()) {
@@ -268,7 +265,7 @@ class GpsAndFloatingService : Service() {
                     sendHandler(START_MOCK_LOCATION, locationModel)
                 }
                 1 -> {
-                    mSpeed = speed / 3.6
+                    mSpeed = speed / 7.2f
                     mSearch.drivingSearch(
                         DrivingRoutePlanOption()
                             .policy(DrivingRoutePlanOption.DrivingPolicy.ECAR_DIS_FIRST)
@@ -312,7 +309,7 @@ class GpsAndFloatingService : Service() {
 
         loc.altitude = 2.0
         loc.accuracy = 3.0f
-        loc.speed = mSpeed.toFloat()
+        loc.speed = mSpeed * 2
         loc.latitude = gcLatLng.latitude
         loc.longitude = gcLatLng.longitude
         loc.time = System.currentTimeMillis()
