@@ -36,6 +36,7 @@ class GpsAndFloatingService : Service() {
     private var model: MockMessageModel? = null
     private var index = 0
     private val providerStr: String = LocationManager.GPS_PROVIDER
+    private var bearing: Float = 1.0f
 
     /**
      * 米/S
@@ -94,6 +95,10 @@ class GpsAndFloatingService : Service() {
         val dis = CalculationLogLatDistance.getDistance(mCurrentLocation, indexLonLat)
         //计算角度
         val yaw = CalculationLogLatDistance.getYaw(mCurrentLocation, indexLonLat)
+
+        if (!yaw.isNaN()) {
+            bearing = yaw.toFloat()
+        }
 
         if (dis > mSpeed) {
             //距离大于speed 计算经纬度
@@ -309,7 +314,7 @@ class GpsAndFloatingService : Service() {
 
         loc.altitude = 2.0
         loc.accuracy = 1.0f
-        loc.bearing = 1.0f
+        loc.bearing = bearing
         loc.speed = mSpeed * 2
         loc.latitude = gcLatLng.latitude
         loc.longitude = gcLatLng.longitude
