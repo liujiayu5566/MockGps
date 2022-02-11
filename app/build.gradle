@@ -15,6 +15,8 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        ndk { abiFilters "armeabi", "armeabi-v7a", "arm64-v8a" }
     }
 
     signingConfigs {// 自动化打包配置

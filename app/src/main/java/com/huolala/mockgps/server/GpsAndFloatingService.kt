@@ -75,7 +75,7 @@ class GpsAndFloatingService : Service() {
                                 }
                                 view.tv_progress.text = String.format("%d / %d", index, it.size)
                                 startSimulateLocation(mCurrentLocation)
-                                handle.sendMessageDelayed(Message.obtain(msg), 1000)
+                                handle.sendMessageDelayed(Message.obtain(msg), 1100)
                             }
                         }
                     }
@@ -312,6 +312,7 @@ class GpsAndFloatingService : Service() {
 
         loc.altitude = 2.0
         loc.accuracy = 3.0f
+        loc.speed = mSpeed.toFloat()
         loc.latitude = gcLatLng.latitude
         loc.longitude = gcLatLng.longitude
         loc.time = System.currentTimeMillis()
@@ -321,20 +322,24 @@ class GpsAndFloatingService : Service() {
     }
 
     private fun removeGps() {
-        locationManager?.run {
-            removeTestProvider(providerStr)
+        try {
+            locationManager?.run {
+                removeTestProvider(providerStr)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
     fun mockGps(location: Location) {
         locationManager?.run {
-            var powerUsageMedium = 1
-            var accuracyCoarse = 2
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                powerUsageMedium = ProviderProperties.POWER_USAGE_LOW
-                accuracyCoarse = ProviderProperties.ACCURACY_COARSE
-            }
             try {
+                var powerUsageMedium = 1
+                var accuracyCoarse = 2
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    powerUsageMedium = ProviderProperties.POWER_USAGE_LOW
+                    accuracyCoarse = ProviderProperties.ACCURACY_COARSE
+                }
                 // @throws IllegalArgumentException if a provider with the given name already exists
                 addTestProvider(
                     providerStr,
