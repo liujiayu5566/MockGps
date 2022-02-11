@@ -14,13 +14,13 @@ import androidx.appcompat.app.AppCompatActivity
 import com.huolala.mockgps.R
 import com.huolala.mockgps.server.GpsAndFloatingService
 import com.huolala.mockgps.utils.Utils
-import kotlinx.android.synthetic.main.activity_start.*
+import kotlinx.android.synthetic.main.activity_guide.*
 import java.lang.Exception
 
 /**
  * @author jiayu.liu
  */
-class StartActivity : AppCompatActivity() {
+class GuideActivity : AppCompatActivity() {
     private val PERMISSION_REQUEST = 1001
     private val permissions: Array<String> = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
@@ -30,7 +30,7 @@ class StartActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_start)
+        setContentView(R.layout.activity_guide)
 
         btn_go.setOnClickListener {
             //权限

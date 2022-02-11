@@ -164,6 +164,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     override fun onClick(v: View?) {
         when (v) {
+            iv_setting -> {
+                Toast.makeText(this, "功能待定", Toast.LENGTH_SHORT).show()
+            }
             ll_location_card -> {
                 registerForActivityResult.launch(
                     Intent(

@@ -91,13 +91,13 @@
             </FrameLayout>
 
             <androidx.appcompat.widget.AppCompatTextView
-                style="@style/info_style"
+                style="@style/title_style"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingHorizontal="15dp"
                 android:paddingVertical="10dp"
                 android:text="历史数据（最多显示10条）"
-                android:textStyle="bold" />
+                android:textSize="15sp" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler"

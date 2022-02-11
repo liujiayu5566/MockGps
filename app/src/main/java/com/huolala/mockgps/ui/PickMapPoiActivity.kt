@@ -102,6 +102,8 @@ class PickMapPoiActivity : AppCompatActivity(), View.OnClickListener {
         recycler.layoutManager = LinearLayoutManager(this)
         recycler.adapter = poiListAdapter
         recycler.addItemDecoration(SimpleDividerDecoration(this))
+        recycler.itemAnimator = null
+
         poiListAdapter.setOnItemClickListener(object : PoiListAdapter.OnItemClickListener {
             override fun onItemClick(poiInfo: SuggestionResult.SuggestionInfo) {
                 poiInfo.run {

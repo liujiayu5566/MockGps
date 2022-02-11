@@ -17,7 +17,6 @@
         style="@style/hint_style"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
         android:textColor="@color/black_50" />
 
 </androidx.appcompat.widget.LinearLayoutCompat>

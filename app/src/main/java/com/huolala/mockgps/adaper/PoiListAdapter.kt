@@ -3,17 +3,35 @@ package com.huolala.mockgps.adaper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.baidu.mapapi.search.core.PoiInfo
 import com.baidu.mapapi.search.sug.SuggestionResult
 import com.huolala.mockgps.R
+import com.huolala.mockgps.model.MockMessageModel
 import kotlinx.android.synthetic.main.item_poiinfo.view.*
 
 /**
  * @author jiayu.liu
  */
-class PoiListAdapter : RecyclerView.Adapter<PoiListAdapter.ViewHolder>() {
-    private var poiList: ArrayList<SuggestionResult.SuggestionInfo> = arrayListOf()
+class PoiListAdapter :
+    ListAdapter<SuggestionResult.SuggestionInfo, PoiListAdapter.ViewHolder>(object :
+        DiffUtil.ItemCallback<SuggestionResult.SuggestionInfo>() {
+        override fun areItemsTheSame(
+            oldItem: SuggestionResult.SuggestionInfo,
+            newItem: SuggestionResult.SuggestionInfo
+        ): Boolean {
+            return oldItem == newItem
+        }
+
+        override fun areContentsTheSame(
+            oldItem: SuggestionResult.SuggestionInfo,
+            newItem: SuggestionResult.SuggestionInfo
+        ): Boolean {
+            return oldItem.uid == newItem.uid
+        }
+    }) {
     private var mOnItemClickListener: OnItemClickListener? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -23,7 +41,7 @@ class PoiListAdapter : RecyclerView.Adapter<PoiListAdapter.ViewHolder>() {
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val poiInfo = poiList[position]
+        val poiInfo = getItem(position)
         holder.itemView.tv_item_poi_name.text =
             String.format("city: ${poiInfo.city}    name: ${poiInfo.key}")
         holder.itemView.tv_item_poi_address.text = poiInfo.address
@@ -35,17 +53,8 @@ class PoiListAdapter : RecyclerView.Adapter<PoiListAdapter.ViewHolder>() {
     }
 
     fun setData(list: MutableList<SuggestionResult.SuggestionInfo>?) {
-        poiList.clear()
-        if (list != null) {
-            poiList.addAll(list)
-        }
-        notifyDataSetChanged()
+        submitList(list)
     }
-
-    override fun getItemCount(): Int {
-        return poiList.size
-    }
-
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view)
 

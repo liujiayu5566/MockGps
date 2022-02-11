@@ -2,13 +2,13 @@ package com.huolala.mockgps.adaper
 
 import androidx.recyclerview.widget.RecyclerView
 
-import android.R
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Rect
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView.ItemDecoration
+import com.huolala.mockgps.R
 import com.huolala.mockgps.utils.DensityUtils
 
 
@@ -17,7 +17,7 @@ import com.huolala.mockgps.utils.DensityUtils
  */
 class SimpleDividerDecoration(
     context: Context,
-    color: Int = R.color.darker_gray,
+    color: Int = R.color.grey,
     height: Float = 1f
 ) :
     ItemDecoration() {

@@ -122,6 +122,8 @@ class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun initMap() {
+        iv_back.setOnClickListener(this)
+
         mBaiduMap = mapview.map
         mBaiduMap.isMyLocationEnabled = true
 
@@ -247,9 +249,12 @@ class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     override fun onClick(v: View?) {
-//        v?.run {
-//
-//        }
+        when (v) {
+            iv_back -> {
+                finish()
+            }
+            else -> {}
+        }
     }
 
 }
