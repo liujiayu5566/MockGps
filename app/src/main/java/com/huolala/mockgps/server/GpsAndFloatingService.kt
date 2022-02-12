@@ -41,7 +41,7 @@ class GpsAndFloatingService : Service() {
     /**
      * 米/S
      */
-    private var mSpeed: Float = 60 / 7.2f
+    private var mSpeed: Float = 60 / 3.6f
     private lateinit var mCurrentLocation: LatLng
     private var mSearch: RoutePlanSearch = RoutePlanSearch.newInstance()
 
@@ -88,6 +88,9 @@ class GpsAndFloatingService : Service() {
     }
 
     fun getLatLngNext(polyline: ArrayList<*>): LatLng {
+        //根据循环间隔处理  目前按照500ms进行处理  将speed进行除2处理  speed单位:m/s
+        val mSpeed = this.mSpeed / 2
+
         val indexLonLat = polyline[index] as LatLng
         val polyLineCount = polyline.size
 
@@ -270,7 +273,7 @@ class GpsAndFloatingService : Service() {
                     sendHandler(START_MOCK_LOCATION, locationModel)
                 }
                 1 -> {
-                    mSpeed = speed / 7.2f
+                    mSpeed = speed / 3.6f
                     mSearch.drivingSearch(
                         DrivingRoutePlanOption()
                             .policy(DrivingRoutePlanOption.DrivingPolicy.ECAR_DIS_FIRST)
@@ -315,7 +318,7 @@ class GpsAndFloatingService : Service() {
         loc.altitude = 2.0
         loc.accuracy = 1.0f
         loc.bearing = bearing
-        loc.speed = mSpeed * 2
+        loc.speed = mSpeed
         loc.latitude = gcLatLng.latitude
         loc.longitude = gcLatLng.longitude
         loc.time = System.currentTimeMillis()
