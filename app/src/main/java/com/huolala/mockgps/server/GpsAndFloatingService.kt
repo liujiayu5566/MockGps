@@ -361,6 +361,8 @@ class GpsAndFloatingService : Service() {
                 )
                 setTestProviderEnabled(providerStr, true)
                 setTestProviderLocation(providerStr, location)
+            } catch (e: IllegalArgumentException) {
+                setTestProviderLocation(providerStr, location)
             } catch (e: Exception) {
                 e.printStackTrace()
             }

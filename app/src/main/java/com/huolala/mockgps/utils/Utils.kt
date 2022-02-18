@@ -11,6 +11,7 @@ import android.location.LocationManager
 import android.os.Build
 import android.provider.Settings
 import com.baidu.mapapi.model.LatLng
+import java.lang.IllegalArgumentException
 import kotlin.collections.ArrayList
 
 
@@ -72,6 +73,9 @@ object Utils {
                 canMockPosition = true
                 locationManager.setTestProviderEnabled(providerStr, false)
                 locationManager.removeTestProvider(providerStr)
+            } catch (e: IllegalArgumentException) {
+                e.printStackTrace()
+                canMockPosition = true
             } catch (e: Exception) {
                 e.printStackTrace()
                 canMockPosition = false
