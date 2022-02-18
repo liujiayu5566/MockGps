@@ -16,4 +16,4 @@ https://www.pgyer.com/hHJ9
 5. 架构重构，项目是边调研边完成的<br>
 
 <h2>更新</h2>
-2022.2.18 适配部分手机出现IllegalArgumentException异常，手里机型有限- -。
+1. 2022.2.18 适配部分手机出现IllegalArgumentException异常，手里机型有限- -。
