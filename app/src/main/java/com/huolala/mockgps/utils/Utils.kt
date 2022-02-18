@@ -74,7 +74,6 @@ object Utils {
                 locationManager.setTestProviderEnabled(providerStr, false)
                 locationManager.removeTestProvider(providerStr)
             } catch (e: IllegalArgumentException) {
-                e.printStackTrace()
                 canMockPosition = true
             } catch (e: Exception) {
                 e.printStackTrace()
