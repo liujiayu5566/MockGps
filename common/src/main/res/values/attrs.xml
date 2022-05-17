@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="MultiStateView">
+        <attr name="msv_loginView" format="reference" />
+        <attr name="msv_emptyView" format="reference" />
+        <attr name="msv_errorView" format="reference" />
+        <attr name="msv_viewState" format="enum">
+            <enum name="content" value="0" />
+            <enum name="error" value="1" />
+            <enum name="empty" value="2" />
+            <enum name="login" value="3" />
+        </attr>
+        <attr name="msv_animateViewChanges" format="boolean" />
+    </declare-styleable>
+
+    <declare-styleable name="BoldTextView">
+        <attr name="striking">
+            <enum name="fine" value="1" />
+            <enum name="medium" value="2" />
+            <enum name="b3" value="3" />
+            <enum name="b4" value="4" />
+        </attr>
+    </declare-styleable>
+
+</resources>

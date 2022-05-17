@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="net_err">网络异常，请稍后重试</string>
+    <string name="item_list_author">作者：</string>
+    <string name="item_list_time">时间：</string>
+    <string name="item_list_sort">分类：</string>
+</resources>

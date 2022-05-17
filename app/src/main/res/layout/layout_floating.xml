@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -18,18 +18,31 @@
         android:text="0 / 0"
         android:textColor="@color/white"
         android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="@id/startAndPause"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintRight_toLeftOf="@id/startAndPause"
+        app:layout_constraintTop_toTopOf="@id/startAndPause" />
 
     <androidx.constraintlayout.utils.widget.ImageFilterView
         android:id="@+id/startAndPause"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/selector_floating_play"
+        app:layout_constraintLeft_toRightOf="@id/tv_progress"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/tv_current_position"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_progress" />
+        app:layout_constraintTop_toBottomOf="@id/startAndPause" />
 
 
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

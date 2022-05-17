@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--暗黑模式下颜色  主题颜色1A1A2A  此文件测试暗黑模式-->
+<resources>
+    <color name="colorPrimary">#FFFFFF</color>
+    <color name="colorPrimaryDark">#FFFFFF</color>
+    <color name="colorAccent">#FFBC00</color>
+    <color name="colorAccent_50">#80FFBC00</color>
+
+    <!-- drawable命名：shape_round_参数_颜色+前缀_透明度   -->
+    <!-- color命名：颜色+前缀_透明度   -->
+    <!-- 暗黑模式white black颜色相反-->
+    <color name="white">#000000</color>
+    <color name="white_50">#80000000</color>
+    <color name="white_80">#CC000000</color>
+    <color name="black">#FFFFFF</color>
+    <color name="black_10">#1AFFFFFF</color>
+    <color name="black_50">#80FFFFFF</color>
+    <color name="black_80">#CCFFFFFF</color>
+    <color name="black33">#333333</color>
+    <color name="black66">#666666</color>
+    <color name="black99">#999999</color>
+    <color name="transparent">#00000000</color>
+    <color name="green">#00FF00</color>
+    <color name="green_50">#8000FF00</color>
+    <color name="red">#FF0000</color>
+    <color name="red_50">#80FF0000</color>
+</resources>

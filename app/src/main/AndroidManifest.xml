@@ -56,7 +56,8 @@
 
         <activity
             android:name=".ui.GuideActivity"
-            android:exported="true">
+            android:exported="true"
+            android:screenOrientation="fullSensor">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -66,15 +67,24 @@
 
         <activity
             android:name=".ui.MockLocationActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="fullSensor" />
         <activity
             android:name=".ui.PickMapPoiActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="fullSensor" />
         <activity
             android:name=".ui.MainActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="fullSensor" />
+        <activity
+            android:name=".ui.NewPickMapPoiActivity"
+            android:exported="false"
+            android:screenOrientation="fullSensor" />
 
-        <service android:name=".server.GpsAndFloatingService" />
+        <service
+            android:name=".server.GpsAndFloatingService"
+            android:exported="false" />
     </application>
 
 </manifest>

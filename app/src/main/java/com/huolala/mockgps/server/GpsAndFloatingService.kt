@@ -72,6 +72,12 @@ class GpsAndFloatingService : Service() {
                                     mCurrentLocation = getLatLngNext(it)
                                 }
                                 view.tv_progress.text = String.format("%d / %d", index, it.size)
+                                view.tv_current_position.text =
+                                    String.format(
+                                        "%f,%f",
+                                        mCurrentLocation.longitude,
+                                        mCurrentLocation.latitude
+                                    )
                                 startSimulateLocation(mCurrentLocation)
                                 handle.sendMessageDelayed(Message.obtain(msg), 500)
                             }

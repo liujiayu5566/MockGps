@@ -1,0 +1,64 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
+
+android {
+    compileSdkVersion rootProject.ext.android.compileSdkVersion
+
+    dataBinding {
+        enabled true
+    }
+
+    defaultConfig {
+        minSdkVersion rootProject.ext.android.minSdkVersion
+        targetSdkVersion rootProject.ext.android.targetSdkVersion
+        versionCode rootProject.ext.android.versionCode
+        versionName rootProject.ext.android.versionName
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = [AROUTER_MODULE_NAME: project.getName()]
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    api fileTree(dir: "libs", include: ["*.jar"])
+    api rootProject.ext.support.core_ktx
+    api rootProject.ext.support.appcompat
+    api rootProject.ext.support.constraintlayout
+    api rootProject.ext.support.material
+
+    api rootProject.ext.dependencies.retrofit
+    api rootProject.ext.dependencies.converter_gson
+    api rootProject.ext.dependencies.logging
+    api rootProject.ext.dependencies.arouter
+    api rootProject.ext.dependencies.lifecycle_viewmodel
+    api rootProject.ext.dependencies.lifecycle_runtime
+    api rootProject.ext.dependencies.banner
+    api rootProject.ext.dependencies.agentweb
+    api rootProject.ext.dependencies.autosize
+    api rootProject.ext.dependencies.lottie
+    api rootProject.ext.dependencies.refresh_layout
+    api rootProject.ext.dependencies.chips_layout
+    api rootProject.ext.dependencies.utilcodex
+    api rootProject.ext.dependencies.mmkv
+    api rootProject.ext.dependencies.bugly
+    api rootProject.ext.dependencies.bubbleseekbar
+
+    api rootProject.ext.dependencies.glide
+    kapt rootProject.ext.dependencies.glide_compiler
+
+}

@@ -11,3 +11,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "MockGps"
 include ':app'
+include ':common'

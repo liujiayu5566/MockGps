@@ -2,21 +2,25 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id 'kotlin-android-extensions'
+    id 'kotlin-kapt'
 }
 
 android {
-    compileSdk 31
+    compileSdkVersion rootProject.ext.android.compileSdkVersion
+
+    dataBinding {
+        enabled true
+    }
 
     defaultConfig {
-        applicationId "com.huolala.mockgps"
-        minSdk 21
-        targetSdk 31
-        versionCode 1
-        versionName "1.0"
+        minSdkVersion rootProject.ext.android.minSdkVersion
+        targetSdkVersion rootProject.ext.android.targetSdkVersion
+        versionCode rootProject.ext.android.versionCode
+        versionName rootProject.ext.android.versionName
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-        ndk { abiFilters "armeabi", "armeabi-v7a", "arm64-v8a" }
+        ndk { abiFilters "armeabi", "armeabi-v7a", "arm64-v8a", "x86" }
     }
 
     signingConfigs {// 自动化打包配置
@@ -56,19 +60,5 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
-    implementation 'androidx.core:core-ktx:1.7.0'
-    implementation 'androidx.appcompat:appcompat:1.4.1'
-    implementation 'com.google.android.material:material:1.5.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
-    implementation 'androidx.recyclerview:recyclerview:1.2.1'
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
-
-    implementation 'com.tencent:mmkv:1.2.12'
-    implementation 'com.google.code.gson:gson:2.8.9'
-    implementation 'com.scwang.smart:refresh-layout-kernel:2.0.3'
-    implementation 'com.xw.repo:bubbleseekbar:3.20-lite'
-    implementation 'com.airbnb.android:lottie:4.2.2'
-    implementation 'com.github.JessYanCoding:AndroidAutoSize:v1.2.1'
+    implementation project(':common')
 }
