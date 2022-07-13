@@ -312,6 +312,8 @@ class GpsAndFloatingService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        handle.removeCallbacksAndMessages(null)
+        removeGps()
         mSearch.destroy()
         removeView()
     }
@@ -391,4 +393,6 @@ class GpsAndFloatingService : Service() {
         isAddView = false
         windowManager?.removeView(view)
     }
+
+
 }

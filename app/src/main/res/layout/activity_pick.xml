@@ -30,8 +30,17 @@
 
 
             <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/et_search_city"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:text="北京"
+                android:background="@color/grey_50"
+                android:visibility="gone" />
+
+            <androidx.appcompat.widget.AppCompatEditText
                 android:id="@+id/et_search"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="10dp"
                 android:layout_weight="1"

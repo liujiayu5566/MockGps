@@ -18,15 +18,8 @@ import com.baidu.mapapi.model.LatLng
 import com.baidu.mapapi.search.core.PoiInfo
 import com.baidu.mapapi.search.core.SearchResult
 import com.baidu.mapapi.search.geocode.*
-import com.baidu.mapapi.search.poi.PoiSearch
 import com.huolala.mockgps.model.PoiInfoModel
 
-import com.baidu.mapapi.search.poi.PoiDetailResult
-import com.baidu.mapapi.search.poi.PoiIndoorResult
-import com.baidu.mapapi.search.poi.PoiDetailSearchResult
-import com.baidu.mapapi.search.poi.PoiResult
-import com.baidu.mapapi.search.poi.OnGetPoiSearchResultListener
-import com.baidu.mapapi.search.poi.PoiCitySearchOption
 import com.huolala.mockgps.utils.KeyboardUtils
 
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -54,9 +47,8 @@ class PickMapPoiActivity : AppCompatActivity(), View.OnClickListener {
     private var mCity: String = ""
 
     //检索
-    private val listener: OnGetSuggestionResultListener = object : OnGetSuggestionResultListener {
-        override fun onGetSuggestionResult(suggestionResult: SuggestionResult) {
-            //处理sug检索结果
+    private val listener: OnGetSuggestionResultListener =
+        OnGetSuggestionResultListener { suggestionResult -> //处理sug检索结果
             if (et_search.visibility == View.VISIBLE && !TextUtils.isEmpty(et_search.text)) {
                 suggestionResult.allSuggestions?.let {
                     poiListAdapter.setData(it)
@@ -64,7 +56,6 @@ class PickMapPoiActivity : AppCompatActivity(), View.OnClickListener {
                 }
             }
         }
-    }
 
     //注册LocationListener监听器
     private val myLocationListener = object : BDAbstractLocationListener() {
@@ -135,7 +126,7 @@ class PickMapPoiActivity : AppCompatActivity(), View.OnClickListener {
                 if (!TextUtils.isEmpty(s)) {
                     mSuggestionSearch.requestSuggestion(
                         SuggestionSearchOption()
-                            .city("中国") //必填
+                            .city(if (et_search_city.text?.isNotEmpty() == true) et_search_city.text.toString() else "中国")
                             .keyword(s.toString()) //必填
                     )
                 } else {
@@ -326,6 +317,7 @@ class PickMapPoiActivity : AppCompatActivity(), View.OnClickListener {
         }
         ll_search.layoutParams = layoutParams
         et_search.visibility = if (isShow) View.VISIBLE else View.GONE
+        et_search_city.visibility = if (isShow) View.VISIBLE else View.GONE
         if (!isShow) {
             KeyboardUtils.hideSoftInput(this, et_search)
             recycler.visibility = View.GONE
