@@ -2,7 +2,7 @@ ext {
     android = [
             compileSdkVersion: 31,
             buildToolsVersion: '29.0.3',
-            applicationId    : 'com.castio.mvvm_wanandroid',
+            applicationId    : 'com.huolala.mockgps',
             minSdkVersion    : 21,
             targetSdkVersion : 31,
             versionCode      : 1,

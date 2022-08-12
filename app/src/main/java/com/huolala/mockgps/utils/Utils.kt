@@ -1,6 +1,7 @@
 package com.huolala.mockgps.utils
 
 import android.annotation.SuppressLint
+import android.app.Application
 import android.content.Context
 import android.location.LocationProvider
 
@@ -129,4 +130,17 @@ object Utils {
         return latLngList
     }
 
+
+    fun checkFloatWindow(context: Context?): Boolean {
+        if (context == null) {
+            throw NullPointerException("Utils#checkFloatWindow: context is null");
+        }
+        //悬浮窗权限判断
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!Settings.canDrawOverlays(context.applicationContext)) {
+                return false
+            }
+        }
+        return true
+    }
 }

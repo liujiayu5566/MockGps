@@ -3,6 +3,7 @@ package com.huolala.mockgps.server
 import android.annotation.SuppressLint
 import android.app.Service
 import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.PixelFormat
 import android.location.Location
 import android.location.LocationManager
@@ -12,6 +13,7 @@ import android.provider.Settings
 import android.view.*
 import com.baidu.mapapi.model.LatLng
 import com.baidu.mapapi.search.route.*
+import com.huolala.mockgps.MockReceiver
 import com.huolala.mockgps.R
 import com.huolala.mockgps.model.MockMessageModel
 import com.huolala.mockgps.model.PoiInfoModel
@@ -44,6 +46,8 @@ class GpsAndFloatingService : Service() {
     private var mSpeed: Float = 60 / 3.6f
     private lateinit var mCurrentLocation: LatLng
     private var mSearch: RoutePlanSearch = RoutePlanSearch.newInstance()
+
+    private lateinit var mMockReceiver: MockReceiver
 
     override fun onCreate() {
         super.onCreate()
@@ -83,14 +87,23 @@ class GpsAndFloatingService : Service() {
                             }
                         }
                     }
-                    else -> {}
+                    else -> {
+                    }
                 }
 
             }
         }
+        initReceiver()
         initView()
         initSearch()
         initWindowAndParams()
+    }
+
+    private fun initReceiver() {
+        mMockReceiver = MockReceiver()
+        val intentFilter = IntentFilter()
+        intentFilter.addAction("com.huolala.mockgps.navi")
+        registerReceiver(mMockReceiver, intentFilter);
     }
 
     fun getLatLngNext(polyline: ArrayList<*>): LatLng {
@@ -287,7 +300,8 @@ class GpsAndFloatingService : Service() {
                             .to(PlanNode.withLocation(endNavi?.latLng))
                     )
                 }
-                else -> {}
+                else -> {
+                }
             }
         } ?: run {
             isStart = false
@@ -312,6 +326,7 @@ class GpsAndFloatingService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        unregisterReceiver(mMockReceiver)
         handle.removeCallbacksAndMessages(null)
         removeGps()
         mSearch.destroy()

@@ -13,6 +13,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.util.Util
 import com.google.android.material.appbar.AppBarLayout
 import com.huolala.mockgps.R
 import com.huolala.mockgps.adaper.HistoryAdapter
@@ -21,6 +22,7 @@ import com.huolala.mockgps.model.MockMessageModel
 import com.huolala.mockgps.model.PoiInfoModel
 import com.huolala.mockgps.utils.DensityUtils
 import com.huolala.mockgps.utils.MMKVUtils
+import com.huolala.mockgps.utils.Utils
 import com.huolala.mockgps.widget.NaviPopupWindow
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.recycler
@@ -94,7 +96,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                         setDataToView(model.startNavi)
                         setDataToView(model.endNavi)
                     }
-                    else -> {}
+                    else -> {
+                    }
                 }
             }
 
@@ -157,7 +160,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     )
                     tv_navi_name_end.tag = this
                 }
-                else -> {}
+                else -> {
+                }
             }
         }
     }
@@ -181,8 +185,11 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     return
                 }
                 //启动模拟导航
-                checkFloatWindow().let {
-                    if (!it) return
+                Utils.checkFloatWindow(this).let {
+                    if (!it) {
+                        setFloatWindowDialog()
+                        return
+                    }
                     val locationModel = tv_location_latlng.tag as PoiInfoModel?
                     val model = MockMessageModel(
                         locationModel = locationModel,
@@ -229,8 +236,11 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     Toast.makeText(this@MainActivity, "模拟位置不能为null", Toast.LENGTH_SHORT).show()
                     return
                 }
-                checkFloatWindow().let {
-                    if (!it) return
+                Utils.checkFloatWindow(this).let {
+                    if (!it) {
+                        setFloatWindowDialog()
+                        return
+                    }
                     val startNavi = tv_navi_name_start.tag as PoiInfoModel?
                     val endNavi = tv_navi_name_end.tag as PoiInfoModel?
                     val model = MockMessageModel(
@@ -253,26 +263,16 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     show(iv_navi_setting)
                 }
             }
-            else -> {}
-        }
-    }
-
-
-    private fun checkFloatWindow(): Boolean {
-        //悬浮窗权限判断
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (!Settings.canDrawOverlays(applicationContext)) {
-                //启动Activity让用户授权
-                setFloatWindowDialog()
-                return false
+            else -> {
             }
         }
-        return true
     }
 
     //提醒开启悬浮窗的弹框
-    @RequiresApi(Build.VERSION_CODES.M)
     private fun setFloatWindowDialog() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return
+        }
         AlertDialog.Builder(this)
             .setTitle("警告")
             .setMessage("需要开启悬浮窗，否则容易导致App被系统回收")
