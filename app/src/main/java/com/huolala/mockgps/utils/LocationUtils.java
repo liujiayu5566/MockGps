@@ -1,161 +1,167 @@
 package com.huolala.mockgps.utils;
 
-import android.location.Location;
-
-import com.baidu.mapapi.model.LatLng;
 
 /**
  * 坐标转换器
  */
 public class LocationUtils {
-    private static double pi = 3.1415926535897932384626;
-    private static double x_pi = 3.14159265358979324 * 3000.0 / 180.0;
-    private static double a = 6378245.0;
-    private static double ee = 0.00669342162296594323;
+    private final static double X_PI = 3.14159265358979324 * 3000.0 / 180.0;
+    private final static double A = 6378245.0;
+    private final static double EE = 0.00669342162296594323;
+    public final static String bd09 = "bd09";
+    public final static String gps84 = "gps84";
+    public final static String gcj02 = "gcj02";
 
-    public static Location convertWgsTo02(Location source) {
-        if (source == null) {
-            return source;
+    /**
+     * BD09 坐标转 GCJ02 坐标
+     *
+     * @param lng BD09 坐标纬度
+     * @param lat BD09 坐标经度
+     * @return GCJ02 坐标：[经度，纬度]
+     */
+    public static double[] bd09ToGcj02(double lng, double lat) {
+        double x = lng - 0.0065;
+        double y = lat - 0.006;
+        double z = Math.sqrt(x * x + y * y) - 0.00002 * Math.sin(y * X_PI);
+        double theta = Math.atan2(y, x) - 0.000003 * Math.cos(x * X_PI);
+        double gg_lng = z * Math.cos(theta);
+        double gg_lat = z * Math.sin(theta);
+        return new double[]{gg_lng, gg_lat};
+    }
+
+    /**
+     * GCJ02 坐标转 BD09 坐标
+     *
+     * @param lng GCJ02 坐标经度
+     * @param lat GCJ02 坐标纬度
+     * @return BD09 坐标：[经度，纬度]
+     */
+    public static double[] gcj02ToBd09(double lng, double lat) {
+        double z = Math.sqrt(lng * lng + lat * lat) + 0.00002 * Math.sin(lat * X_PI);
+        double theta = Math.atan2(lat, lng) + 0.000003 * Math.cos(lng * X_PI);
+        double bd_lng = z * Math.cos(theta) + 0.0065;
+        double bd_lat = z * Math.sin(theta) + 0.006;
+        return new double[]{bd_lng, bd_lat};
+    }
+
+    /**
+     * GCJ02 坐标转 WGS84 坐标
+     *
+     * @param lng GCJ02 坐标经度
+     * @param lat GCJ02 坐标纬度
+     * @return WGS84 坐标：[经度，纬度]
+     */
+    public static double[] gcj02ToWGS84(double lng, double lat) {
+        if (outOfChina(lng, lat)) {
+            return new double[]{lng, lat};
         }
+        double dlat = transformLat(lng - 105.0, lat - 35.0);
+        double dlng = transformLng(lng - 105.0, lat - 35.0);
+        double radlat = lat / 180.0 * Math.PI;
+        double magic = Math.sin(radlat);
+        magic = 1 - EE * magic * magic;
+        double sqrtmagic = Math.sqrt(magic);
+        dlat = (dlat * 180.0) / ((A * (1 - EE)) / (magic * sqrtmagic) * Math.PI);
+        dlng = (dlng * 180.0) / (A / sqrtmagic * Math.cos(radlat) * Math.PI);
+        double mglat = lat + dlat;
+        double mglng = lng + dlng;
+        return new double[]{lng * 2 - mglng, lat * 2 - mglat};
+    }
 
-        double[] result = gps84_To_Gcj02(source.getLatitude(), source.getLongitude());
-        if (result == null || result.length != 2) {
-            return source;
+    /**
+     * WGS84 坐标转 GCJ02 坐标
+     *
+     * @param lng WGS84 坐标经度
+     * @param lat WGS84 坐标纬度
+     * @return GCJ02 坐标：[经度，纬度]
+     */
+    public static double[] wgs84ToGcj02(double lng, double lat) {
+        if (outOfChina(lng, lat)) {
+            return new double[]{lng, lat};
         }
-        source.setLatitude(result[0]);
-        source.setLongitude(result[1]);
-        return source;
+        double dlat = transformLat(lng - 105.0, lat - 35.0);
+        double dlng = transformLng(lng - 105.0, lat - 35.0);
+        double radlat = lat / 180.0 * Math.PI;
+        double magic = Math.sin(radlat);
+        magic = 1 - EE * magic * magic;
+        double sqrtmagic = Math.sqrt(magic);
+        dlat = (dlat * 180.0) / ((A * (1 - EE)) / (magic * sqrtmagic) * Math.PI);
+        dlng = (dlng * 180.0) / (A / sqrtmagic * Math.cos(radlat) * Math.PI);
+        double mglat = lat + dlat;
+        double mglng = lng + dlng;
+        return new double[]{mglng, mglat};
     }
 
     /**
-     * WGS84 to 火星坐标系 (GCJ-02)
-     * World Geodetic System ==> Mars Geodetic System
+     * BD09 坐标转 WGS84 坐标
+     *
+     * @param lng BD09 坐标经度
+     * @param lat BD09 坐标纬度
+     * @return WGS84 坐标：[经度，纬度]
      */
-    private static double[] gps84_To_Gcj02(double lat, double lon) {
-        if (outOfChina(lat, lon)) {
-            return new double[]{lat, lon};
-        }
-        double dLat = transformLat(lon - 105.0, lat - 35.0);
-        double dLon = transformLon(lon - 105.0, lat - 35.0);
-        double radLat = lat / 180.0 * pi;
-        double magic = Math.sin(radLat);
-        magic = 1 - ee * magic * magic;
-        double sqrtMagic = Math.sqrt(magic);
-        dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * pi);
-        dLon = (dLon * 180.0) / (a / sqrtMagic * Math.cos(radLat) * pi);
-        double mgLat = lat + dLat;
-        double mgLon = lon + dLon;
-        return new double[]{mgLat, mgLon};
+    public static double[] bd09ToWGS84(double lng, double lat) {
+        double[] gcj = bd09ToGcj02(lng, lat);
+        return gcj02ToWGS84(gcj[0], gcj[1]);
+    }
+
+
+    /**
+     * WGS84 坐标转 BD09 坐标
+     *
+     * @param lng WGS84 坐标经度
+     * @param lat WGS84 坐标纬度
+     * @return BD09 坐标：[经度，纬度]
+     */
+    public static double[] wgs84ToBd09(double lng, double lat) {
+        double[] gcj = wgs84ToGcj02(lng, lat);
+        return gcj02ToBd09(gcj[0], gcj[1]);
     }
 
     /**
-     * 火星坐标系 (GCJ-02) to 84
+     * Mercator 坐标转 WGS84 坐标
+     *
+     * @param lng Mercator 坐标经度
+     * @param lat Mercator 坐标纬度
+     * @return WGS84 坐标：[经度，纬度]
      */
-    private static double[] gcj02_To_Gps84(double lat, double lon) {
-        double[] gps = transform(lat, lon);
-        double lontitude = lon * 2 - gps[1];
-        double latitude = lat * 2 - gps[0];
-        return new double[]{latitude, lontitude};
+    public static double[] mercatorToWGS84(double lng, double lat) {
+        double x = lng / 20037508.34d * 180.;
+        double y = lat / 20037508.34d * 180.;
+        y = 180 / Math.PI * (2 * Math.atan(Math.exp(y * Math.PI / 180.0)) - Math.PI / 2);
+        return new double[]{x, y};
     }
 
     /**
-     * 火星坐标系 (GCJ-02) 与百度坐标系 (BD-09) 的转换算法
-     * 将 GCJ-02 坐标转换成 BD-09 坐标
+     * WGS84 坐标转 Mercator 坐标
+     *
+     * @param lng WGS84 坐标经度
+     * @param lat WGS84 坐标纬度
+     * @return Mercator 坐标：[经度，纬度]
      */
-    private static double[] gcj02_To_Bd09(double lat, double lon) {
-        double x = lon, y = lat;
-        double z = Math.sqrt(x * x + y * y) + 0.00002 * Math.sin(y * x_pi);
-        double theta = Math.atan2(y, x) + 0.000003 * Math.cos(x * x_pi);
-        double tempLon = z * Math.cos(theta) + 0.0065;
-        double tempLat = z * Math.sin(theta) + 0.006;
-        double[] gps = {tempLat, tempLon};
-        return gps;
+    public static double[] wgs84ToMercator(double lng, double lat) {
+        double x = lng * 20037508.34D / 180.0;
+        double y = Math.log(Math.tan((90.0 + lat) * Math.PI / 360.0)) / (Math.PI / 180.);
+        y = y * 20037508.34D / 180.0;
+        return new double[]{x, y};
     }
 
-    /**
-     * 火星坐标系 (GCJ-02) 与百度坐标系 (BD-09) 的转换算法
-     * 将 BD-09 坐标转换成GCJ-02 坐标
-     */
-    public static double[] bd09_To_Gcj02(double lat, double lon) {
-        double x = lon - 0.0065, y = lat - 0.006;
-        double z = Math.sqrt(x * x + y * y) - 0.00002 * Math.sin(y * x_pi);
-        double theta = Math.atan2(y, x) - 0.000003 * Math.cos(x * x_pi);
-        double tempLon = z * Math.cos(theta);
-        double tempLat = z * Math.sin(theta);
-        double[] gps = {tempLat, tempLon};
-        return gps;
-    }
-
-    /**
-     * 将gps84转为bd09
-     */
-    public static LatLng gps84_To_bd09(double lat, double lon) {
-        double[] gcj02 = gps84_To_Gcj02(lat, lon);
-        double[] bd09 = gcj02_To_Bd09(gcj02[0], gcj02[1]);
-        return new LatLng(bd09[0], bd09[1]);
-    }
-
-    public static LatLng bd09_To_gps84(double lat, double lon) {
-        double[] gcj02 = bd09_To_Gcj02(lat, lon);
-        double[] gps84 = gcj02_To_Gps84(gcj02[0], gcj02[1]);
-        //保留小数点后六位
-        gps84[0] = retain6(gps84[0]);
-        gps84[1] = retain6(gps84[1]);
-        return new LatLng(gps84[0], gps84[1]);
-    }
-
-    private static double transformLat(double x, double y) {
-        double ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
-        ret += (20.0 * Math.sin(6.0 * x * pi) + 20.0 * Math.sin(2.0 * x * pi)) * 2.0 / 3.0;
-        ret += (20.0 * Math.sin(y * pi) + 40.0 * Math.sin(y / 3.0 * pi)) * 2.0 / 3.0;
-        ret += (160.0 * Math.sin(y / 12.0 * pi) + 320 * Math.sin(y * pi / 30.0)) * 2.0 / 3.0;
+    private static double transformLat(double lng, double lat) {
+        double ret = -100.0 + 2.0 * lng + 3.0 * lat + 0.2 * lat * lat + 0.1 * lng * lat + 0.2 * Math.sqrt(Math.abs(lng));
+        ret += (20.0 * Math.sin(6.0 * lng * Math.PI) + 20.0 * Math.sin(2.0 * lng * Math.PI)) * 2.0 / 3.0;
+        ret += (20.0 * Math.sin(lat * Math.PI) + 40.0 * Math.sin(lat / 3.0 * Math.PI)) * 2.0 / 3.0;
+        ret += (160.0 * Math.sin(lat / 12.0 * Math.PI) + 320 * Math.sin(lat * Math.PI / 30.0)) * 2.0 / 3.0;
         return ret;
     }
 
-    private static double transformLon(double x, double y) {
-        double ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
-        ret += (20.0 * Math.sin(6.0 * x * pi) + 20.0 * Math.sin(2.0 * x * pi)) * 2.0 / 3.0;
-        ret += (20.0 * Math.sin(x * pi) + 40.0 * Math.sin(x / 3.0 * pi)) * 2.0 / 3.0;
-        ret += (150.0 * Math.sin(x / 12.0 * pi) + 300.0 * Math.sin(x / 30.0 * pi)) * 2.0 / 3.0;
+    private static double transformLng(double lng, double lat) {
+        double ret = 300.0 + lng + 2.0 * lat + 0.1 * lng * lng + 0.1 * lng * lat + 0.1 * Math.sqrt(Math.abs(lng));
+        ret += (20.0 * Math.sin(6.0 * lng * Math.PI) + 20.0 * Math.sin(2.0 * lng * Math.PI)) * 2.0 / 3.0;
+        ret += (20.0 * Math.sin(lng * Math.PI) + 40.0 * Math.sin(lng / 3.0 * Math.PI)) * 2.0 / 3.0;
+        ret += (150.0 * Math.sin(lng / 12.0 * Math.PI) + 300.0 * Math.sin(lng / 30.0 * Math.PI)) * 2.0 / 3.0;
         return ret;
     }
 
-    private static double[] transform(double lat, double lon) {
-        if (outOfChina(lat, lon)) {
-            return new double[]{lat, lon};
-        }
-        double dLat = transformLat(lon - 105.0, lat - 35.0);
-        double dLon = transformLon(lon - 105.0, lat - 35.0);
-        double radLat = lat / 180.0 * pi;
-        double magic = Math.sin(radLat);
-        magic = 1 - ee * magic * magic;
-        double sqrtMagic = Math.sqrt(magic);
-        dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * pi);
-        dLon = (dLon * 180.0) / (a / sqrtMagic * Math.cos(radLat) * pi);
-        double mgLat = lat + dLat;
-        double mgLon = lon + dLon;
-        return new double[]{mgLat, mgLon};
-    }
-
-    public static boolean outOfChina(LatLng latLng) {
-        if (latLng == null) {
-            return true;
-        }
-        return outOfChina(latLng.latitude, latLng.longitude);
-    }
-
-    public static boolean outOfChina(double lat, double lon) {
-        if (lon < 72.004 || lon > 137.8347) {
-            return true;
-        }
-        return lat < 0.8293 || lat > 55.8271;
-    }
-
-    /**
-     * 保留小数点后六位
-     */
-    private static double retain6(double num) {
-        String result = String.format("%.6f", num);
-        return Double.valueOf(result);
+    private static boolean outOfChina(double lng, double lat) {
+        return lng < 72.004 || lng > 137.8347 || lat < 0.8293 || lat > 55.8271;
     }
 }

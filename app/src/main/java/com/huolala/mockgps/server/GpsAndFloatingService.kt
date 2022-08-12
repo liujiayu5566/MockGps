@@ -320,15 +320,15 @@ class GpsAndFloatingService : Service() {
 
 
     fun startSimulateLocation(latLng: LatLng) {
-        val gcLatLng = LocationUtils.bd09_To_gps84(latLng.latitude, latLng.longitude)
+        val gps84LatLng = LocationUtils.bd09ToWGS84(latLng.longitude, latLng.latitude)
         val loc = Location(providerStr)
 
         loc.altitude = 2.0
         loc.accuracy = 1.0f
         loc.bearing = bearing
         loc.speed = mSpeed
-        loc.latitude = gcLatLng.latitude
-        loc.longitude = gcLatLng.longitude
+        loc.longitude = gps84LatLng[0]
+        loc.latitude = gps84LatLng[1]
         loc.time = System.currentTimeMillis()
         loc.elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos()
 
