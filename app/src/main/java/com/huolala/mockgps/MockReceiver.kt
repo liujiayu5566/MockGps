@@ -77,15 +77,15 @@ class MockReceiver : BroadcastReceiver() {
                 }
                 end!!.split(",").apply {
                     when (type) {
-                        LocationUtils.gcj02 -> {
-                            val wgs84ToBd09 =
-                                LocationUtils.gcj02ToBd09(get(0).toDouble(), get(1).toDouble())
-                            endLatLng = LatLng(wgs84ToBd09[1], wgs84ToBd09[0])
+                        LocationUtils.bd09 -> {
+                            val wgs84ToGcj02 =
+                                LocationUtils.bd09ToGcj02(get(0).toDouble(), get(1).toDouble())
+                            endLatLng = LatLng(wgs84ToGcj02[1], wgs84ToGcj02[0])
                         }
                         LocationUtils.gps84 -> {
-                            val wgs84ToBd09 =
-                                LocationUtils.wgs84ToBd09(get(0).toDouble(), get(1).toDouble())
-                            endLatLng = LatLng(wgs84ToBd09[1], wgs84ToBd09[0])
+                            val wgs84ToGcj02 =
+                                LocationUtils.wgs84ToGcj02(get(0).toDouble(), get(1).toDouble())
+                            endLatLng = LatLng(wgs84ToGcj02[1], wgs84ToGcj02[0])
                         }
                         else -> {
                             endLatLng = LatLng(get(1).toDouble(), get(0).toDouble())

@@ -1,15 +1,21 @@
 package com.huolala.mockgps.ui
 
+import android.app.Dialog
 import android.content.Intent
 import android.text.TextUtils
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import androidx.databinding.DataBindingUtil
 import com.blankj.utilcode.util.ClickUtils
+import com.blankj.utilcode.util.ConvertUtils
 import com.blankj.utilcode.util.KeyboardUtils
 import com.blankj.utilcode.util.ToastUtils
 import com.castiel.common.base.BaseActivity
 import com.castiel.common.base.BaseViewModel
 import com.huolala.mockgps.R
 import com.huolala.mockgps.databinding.ActivityFileBinding
+import com.huolala.mockgps.databinding.DialogFileMockHintBinding
 import com.huolala.mockgps.model.MockMessageModel
 import com.huolala.mockgps.model.NaviType
 import com.huolala.mockgps.widget.NaviPathDialog
@@ -37,6 +43,7 @@ class FileMockActivity : BaseActivity<ActivityFileBinding, BaseViewModel>(), Vie
 
 
         ClickUtils.applySingleDebouncing(dataBinding.ivNaviSetting, this)
+        ClickUtils.applySingleDebouncing(dataBinding.ivWarning, this)
         ClickUtils.applySingleDebouncing(dataBinding.btnFile, this)
         ClickUtils.applySingleDebouncing(dataBinding.btnStartNavi, this)
     }
@@ -51,6 +58,27 @@ class FileMockActivity : BaseActivity<ActivityFileBinding, BaseViewModel>(), Vie
 
     override fun onClick(v: View?) {
         when (v) {
+            dataBinding.ivWarning -> {
+                Dialog(this).apply {
+                    DataBindingUtil.bind<DialogFileMockHintBinding>(
+                        LayoutInflater.from(this@FileMockActivity)
+                            .inflate(R.layout.dialog_file_mock_hint, null, false)
+                    )?.let {
+                        setContentView(it.root)
+                        window?.run {
+                            val lp = attributes;
+                            lp.width = ViewGroup.LayoutParams.MATCH_PARENT
+                            lp.height = ViewGroup.LayoutParams.WRAP_CONTENT
+                            lp.y = -ConvertUtils.px2dp(50f)
+                            attributes = lp
+                        }
+                        ClickUtils.applySingleDebouncing(it.btnConfirm) {
+                            dismiss()
+                        }
+                        show()
+                    }
+                }
+            }
             dataBinding.ivNaviSetting -> {
                 NaviPopupWindow(this).apply {
                     show(dataBinding.ivNaviSetting)

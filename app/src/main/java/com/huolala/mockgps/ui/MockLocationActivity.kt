@@ -219,6 +219,7 @@ class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun drawToMap(polylineList: ArrayList<LatLng>?) {
         mPolyline?.let {
+            mBaiduMap.clear()
             null
         }
         if (polylineList == null || polylineList.size == 0) {
