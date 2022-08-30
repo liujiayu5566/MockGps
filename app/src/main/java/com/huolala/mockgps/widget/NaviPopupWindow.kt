@@ -9,8 +9,8 @@ import android.view.View
 
 import android.view.ViewGroup
 import androidx.appcompat.widget.AppCompatTextView
+import com.blankj.utilcode.util.ConvertUtils
 import com.huolala.mockgps.R
-import com.huolala.mockgps.utils.DensityUtils
 import com.huolala.mockgps.utils.MMKVUtils
 import com.xw.repo.BubbleSeekBar
 
@@ -23,7 +23,7 @@ class NaviPopupWindow(context: Context) : PopupWindow(context) {
     private var seekBar: BubbleSeekBar? = null
 
     init {
-        width = DensityUtils.dp2px(context, 200f)
+        width = ConvertUtils.dp2px(200f)
         height = ViewGroup.LayoutParams.WRAP_CONTENT
         isFocusable = true
         //点击 back 键的时候，窗口会自动消失

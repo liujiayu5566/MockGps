@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/master_color"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:title="模拟导航数据导入"
+            app:titleTextColor="@color/white" />
+
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tv_file"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="20dp"
+            android:text="路径:"
+            android:textColor="@color/black_50"
+            android:textSize="13sp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/toolbar" />
+
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/ed_file"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="5dp"
+            android:inputType="none"
+            android:textSize="13sp"
+            app:layout_constraintBottom_toBottomOf="@id/tv_file"
+            app:layout_constraintLeft_toRightOf="@id/tv_file"
+            app:layout_constraintRight_toLeftOf="@id/btn_file"
+            app:layout_constraintTop_toTopOf="@id/tv_file" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_file"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:background="@color/master_color"
+            android:drawablePadding="0dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="5dp"
+            android:text="选择"
+            android:textColor="@color/white"
+            android:textSize="13sp"
+            app:layout_constraintBottom_toBottomOf="@id/tv_file"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tv_file" />
+
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/iv_navi_setting"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="10dp"
+            android:padding="5dp"
+            android:src="@drawable/ic_navi_setting"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_file" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_start_navi"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="10dp"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/shape_round_30_color_master"
+            android:text="启动导航"
+            android:textColor="@color/white"
+            android:textSize="15sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

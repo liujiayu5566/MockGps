@@ -9,22 +9,22 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.blankj.utilcode.util.ConvertUtils
 import com.google.android.material.appbar.AppBarLayout
 import com.huolala.mockgps.R
 import com.huolala.mockgps.adaper.HistoryAdapter
 import com.huolala.mockgps.adaper.SimpleDividerDecoration
 import com.huolala.mockgps.model.MockMessageModel
+import com.huolala.mockgps.model.NaviType
 import com.huolala.mockgps.model.PoiInfoModel
-import com.huolala.mockgps.utils.DensityUtils
 import com.huolala.mockgps.utils.MMKVUtils
+import com.huolala.mockgps.utils.Utils
 import com.huolala.mockgps.widget.NaviPopupWindow
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.recycler
-import kotlinx.android.synthetic.main.activity_pick.*
 import kotlinx.android.synthetic.main.layout_location_card.*
 import kotlinx.android.synthetic.main.layout_location_card.tv_location_latlng
 import kotlinx.android.synthetic.main.layout_navi_card.*
@@ -56,8 +56,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        topMarginOffset = -DensityUtils.dp2px(this@MainActivity, 50f)
-        topMargin = DensityUtils.dp2px(this@MainActivity, 15f)
+        topMarginOffset = -ConvertUtils.dp2px(50f)
+        topMargin = ConvertUtils.dp2px(15f)
 
         initView()
     }
@@ -86,7 +86,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
         adapter.setOnItemClickListener(object : HistoryAdapter.OnItemClickListener {
             override fun onItemClick(view: View?, model: MockMessageModel) {
-                when (model.fromTag) {
+                when (model.naviType) {
                     0 -> {
                         setDataToView(model.locationModel)
                     }
@@ -94,7 +94,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                         setDataToView(model.startNavi)
                         setDataToView(model.endNavi)
                     }
-                    else -> {}
+                    else -> {
+                    }
                 }
             }
 
@@ -105,7 +106,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         })
 
         iv_change.setOnClickListener(this)
-        iv_setting.setOnClickListener(this)
+        iv_expand.setOnClickListener(this)
         //location
         ll_location_card.setOnClickListener(this)
         btn_start_location.setOnClickListener(this)
@@ -131,7 +132,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun setDataToView(model: PoiInfoModel?) {
         model?.run {
-            when (fromTag) {
+            when (poiInfoType) {
                 0 -> {
                     tv_location_name.text = String.format(
                         "目标：%s",
@@ -157,15 +158,16 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     )
                     tv_navi_name_end.tag = this
                 }
-                else -> {}
+                else -> {
+                }
             }
         }
     }
 
     override fun onClick(v: View?) {
         when (v) {
-            iv_setting -> {
-                Toast.makeText(this, "功能待定", Toast.LENGTH_SHORT).show()
+            iv_expand -> {
+                startActivity(Intent(this, ExpandActivity::class.java))
             }
             ll_location_card -> {
                 registerForActivityResult.launch(
@@ -181,12 +183,15 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     return
                 }
                 //启动模拟导航
-                checkFloatWindow().let {
-                    if (!it) return
+                Utils.checkFloatWindow(this).let {
+                    if (!it) {
+                        setFloatWindowDialog()
+                        return
+                    }
                     val locationModel = tv_location_latlng.tag as PoiInfoModel?
                     val model = MockMessageModel(
                         locationModel = locationModel,
-                        fromTag = 0,
+                        naviType = NaviType.LOCATION,
                         uid = locationModel?.uid ?: ""
                     )
                     val intent = Intent(this, MockLocationActivity::class.java)
@@ -229,14 +234,17 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     Toast.makeText(this@MainActivity, "模拟位置不能为null", Toast.LENGTH_SHORT).show()
                     return
                 }
-                checkFloatWindow().let {
-                    if (!it) return
+                Utils.checkFloatWindow(this).let {
+                    if (!it) {
+                        setFloatWindowDialog()
+                        return
+                    }
                     val startNavi = tv_navi_name_start.tag as PoiInfoModel?
                     val endNavi = tv_navi_name_end.tag as PoiInfoModel?
                     val model = MockMessageModel(
                         startNavi = startNavi,
                         endNavi = endNavi,
-                        fromTag = 1,
+                        naviType = NaviType.NAVI,
                         speed = MMKVUtils.getSpeed(),
                         uid = (startNavi?.uid ?: "") + (endNavi?.uid ?: "")
                     )
@@ -253,26 +261,16 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     show(iv_navi_setting)
                 }
             }
-            else -> {}
-        }
-    }
-
-
-    private fun checkFloatWindow(): Boolean {
-        //悬浮窗权限判断
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (!Settings.canDrawOverlays(applicationContext)) {
-                //启动Activity让用户授权
-                setFloatWindowDialog()
-                return false
+            else -> {
             }
         }
-        return true
     }
 
     //提醒开启悬浮窗的弹框
-    @RequiresApi(Build.VERSION_CODES.M)
     private fun setFloatWindowDialog() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return
+        }
         AlertDialog.Builder(this)
             .setTitle("警告")
             .setMessage("需要开启悬浮窗，否则容易导致App被系统回收")

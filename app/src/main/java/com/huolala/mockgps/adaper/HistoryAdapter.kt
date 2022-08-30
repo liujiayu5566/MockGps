@@ -8,8 +8,8 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.huolala.mockgps.R
 import com.huolala.mockgps.model.MockMessageModel
+import com.huolala.mockgps.model.NaviType
 import kotlinx.android.synthetic.main.item_history.view.*
-import android.widget.AdapterView.OnItemLongClickListener
 import java.util.concurrent.CopyOnWriteArrayList
 
 
@@ -36,13 +36,13 @@ class HistoryAdapter : ListAdapter<MockMessageModel, HistoryAdapter.ViewHolder>(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val model = getItem(position)
-        when (model.fromTag) {
-            0 -> {
+        when (model.naviType) {
+            NaviType.LOCATION -> {
                 holder.itemView.tv_poi_name.text = model.locationModel?.name ?: ""
                 holder.itemView.tv_info.text = String.format(
                     "经纬度：%f , %f",
-                    model.locationModel?.latLng?.longitude ?: "",
-                    model.locationModel?.latLng?.latitude ?: ""
+                    model.locationModel?.latLng?.longitude ?: 0,
+                    model.locationModel?.latLng?.latitude ?: 0
                 )
             }
             else -> {

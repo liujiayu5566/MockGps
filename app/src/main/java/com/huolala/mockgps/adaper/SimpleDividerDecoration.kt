@@ -8,8 +8,8 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView.ItemDecoration
+import com.blankj.utilcode.util.ConvertUtils
 import com.huolala.mockgps.R
-import com.huolala.mockgps.utils.DensityUtils
 
 
 /**
@@ -55,6 +55,6 @@ class SimpleDividerDecoration(
 
     init {
         dividerPaint.color = context.resources.getColor(color)
-        dividerHeight = DensityUtils.dp2px(context, height)
+        dividerHeight = ConvertUtils.dp2px(height)
     }
 }

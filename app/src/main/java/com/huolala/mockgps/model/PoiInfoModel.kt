@@ -15,7 +15,7 @@ data class PoiInfoModel(
     /**
      * 0.模拟定位  1.模拟导航起点  2.模拟导航终点
      */
-    var fromTag: Int = 0
+    var poiInfoType: Int = 0
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readParcelable(LatLng::class.java.classLoader),
@@ -26,7 +26,7 @@ data class PoiInfoModel(
         parcel.writeParcelable(latLng, flags)
         parcel.writeString(uid)
         parcel.writeString(name)
-        parcel.writeInt(fromTag)
+        parcel.writeInt(poiInfoType)
     }
 
     override fun describeContents(): Int {

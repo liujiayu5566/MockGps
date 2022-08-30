@@ -20,13 +20,12 @@ import com.baidu.mapapi.search.core.SearchResult
 import com.baidu.mapapi.search.geocode.*
 import com.huolala.mockgps.model.PoiInfoModel
 
-import com.huolala.mockgps.utils.KeyboardUtils
-
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.baidu.mapapi.search.sug.OnGetSuggestionResultListener
 import com.baidu.mapapi.search.sug.SuggestionResult
 import com.baidu.mapapi.search.sug.SuggestionSearch
 import com.baidu.mapapi.search.sug.SuggestionSearchOption
+import com.blankj.utilcode.util.KeyboardUtils
 import com.huolala.mockgps.R
 import com.huolala.mockgps.adaper.PoiListAdapter
 import com.huolala.mockgps.adaper.SimpleDividerDecoration
@@ -156,7 +155,6 @@ class PickMapPoiActivity : AppCompatActivity(), View.OnClickListener {
         //通过LocationClientOption设置LocationClient相关参数
         val option = LocationClientOption()
         option.isOpenGps = true // 打开gps
-        option.setCoorType("bd09ll") // 设置坐标类型
         option.setScanSpan(1000)
 
         //设置locationClientOption
@@ -305,7 +303,8 @@ class PickMapPoiActivity : AppCompatActivity(), View.OnClickListener {
                     finish()
                 }
             }
-            else -> {}
+            else -> {
+            }
         }
     }
 
@@ -319,7 +318,7 @@ class PickMapPoiActivity : AppCompatActivity(), View.OnClickListener {
         et_search.visibility = if (isShow) View.VISIBLE else View.GONE
         et_search_city.visibility = if (isShow) View.VISIBLE else View.GONE
         if (!isShow) {
-            KeyboardUtils.hideSoftInput(this, et_search)
+            KeyboardUtils.hideSoftInput(et_search)
             recycler.visibility = View.GONE
         }
     }

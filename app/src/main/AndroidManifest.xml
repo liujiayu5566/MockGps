@@ -78,7 +78,11 @@
             android:exported="false"
             android:screenOrientation="fullSensor" />
         <activity
-            android:name=".ui.NewPickMapPoiActivity"
+            android:name=".ui.ExpandActivity"
+            android:exported="false"
+            android:screenOrientation="fullSensor" />
+        <activity
+            android:name=".ui.FileMockActivity"
             android:exported="false"
             android:screenOrientation="fullSensor" />
 

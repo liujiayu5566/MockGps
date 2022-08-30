@@ -21,13 +21,15 @@ import com.baidu.mapapi.model.LatLngBounds
 import com.baidu.mapapi.search.route.*
 import com.huolala.mockgps.model.MockMessageModel
 import com.huolala.mockgps.utils.Utils
-import java.util.*
 import kotlinx.android.synthetic.main.activity_navi.*
 
 import com.baidu.mapapi.map.OverlayOptions
 
 import com.baidu.mapapi.map.BitmapDescriptorFactory
+import com.blankj.utilcode.util.FileIOUtils
+import com.blankj.utilcode.util.ToastUtils
 import com.huolala.mockgps.R
+import com.huolala.mockgps.model.NaviType
 
 
 /**
@@ -38,7 +40,7 @@ class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var mBaiduMap: BaiduMap
     private var mSearch: RoutePlanSearch = RoutePlanSearch.newInstance()
     private var mPolyline: Overlay? = null
-    private var fromTag: Int = 0
+    private var naviType: Int = 0
 
     //注册LocationListener监听器
     private val myLocationListener = object : BDAbstractLocationListener() {
@@ -59,7 +61,7 @@ class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
                 .longitude(location.longitude).build()
             mBaiduMap.setMyLocationData(locData)
             //更新中心点
-            if (fromTag == 0) {
+            if (naviType == 0) {
                 mBaiduMap.animateMapStatus(
                     MapStatusUpdateFactory.newLatLngZoom(
                         LatLng(
@@ -85,16 +87,16 @@ class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
         initMap()
 
         model.run {
-            this@MockLocationActivity.fromTag = fromTag
-            when (fromTag) {
-                0 -> {
+            this@MockLocationActivity.naviType = naviType
+            when (naviType) {
+                NaviType.LOCATION -> {
                     locationModel?.run {
                         startMockServer(model)
                     } ?: {
                         pickPoiError()
                     }
                 }
-                1 -> {
+                NaviType.NAVI -> {
                     if (startNavi == null || endNavi == null) {
                         pickPoiError()
                         return
@@ -107,7 +109,35 @@ class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
                     )
                     startMockServer(model)
                 }
-                else -> {}
+                NaviType.NAVI_FILE -> {
+                    try {
+                        val polylineList = arrayListOf<LatLng>()
+                        val readFile2String = FileIOUtils.readFile2String(path)
+                        readFile2String?.run {
+                            split(";").run {
+                                if (isNotEmpty()) {
+                                    map {
+                                        it.split(",").run {
+                                            if (size == 2) {
+                                                polylineList.add(
+                                                    LatLng(
+                                                        get(1).toDouble(),
+                                                        get(0).toDouble()
+                                                    )
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        drawToMap(polylineList)
+                    } catch (e: Exception) {
+                    }
+                    startMockServer(model)
+                }
+                else -> {
+                }
             }
         }
     }
@@ -142,7 +172,6 @@ class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
         //通过LocationClientOption设置LocationClient相关参数
         val option = LocationClientOption()
         option.isOpenGps = true // 打开gps
-        option.setCoorType("bd09ll") // 设置坐标类型
         option.setScanSpan(1000)
 
         //设置locationClientOption
@@ -174,19 +203,7 @@ class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
                             polylineList.addAll(step.wayPoints)
                         }
                     }
-                    mPolyline?.let {
-                        null
-                    }
-                    val mOverlayOptions: OverlayOptions = PolylineOptions()
-                        .width(10)
-                        .color(0xAAFF0000.toInt())
-                        .points(polylineList)
-                    mPolyline = mBaiduMap.addOverlay(mOverlayOptions)
-                    mBaiduMap.animateMapStatus(
-                        MapStatusUpdateFactory.newLatLngBounds(
-                            LatLngBounds.Builder().include(polylineList).build(), 50, 50, 50, 50
-                        )
-                    )
+                    drawToMap(polylineList)
                 }
             }
 
@@ -198,6 +215,25 @@ class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
                 TODO("Not yet implemented")
             }
         })
+    }
+
+    private fun drawToMap(polylineList: ArrayList<LatLng>?) {
+        mPolyline?.let {
+            null
+        }
+        if (polylineList == null || polylineList.size == 0) {
+            return
+        }
+        val mOverlayOptions: OverlayOptions = PolylineOptions()
+            .width(10)
+            .color(0xAAFF0000.toInt())
+            .points(polylineList)
+        mPolyline = mBaiduMap.addOverlay(mOverlayOptions)
+        mBaiduMap.animateMapStatus(
+            MapStatusUpdateFactory.newLatLngBounds(
+                LatLngBounds.Builder().include(polylineList).build(), 50, 50, 50, 50
+            )
+        )
     }
 
     private fun startMockServer(parcelable: Parcelable?) {
@@ -253,7 +289,8 @@ class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
             iv_back -> {
                 finish()
             }
-            else -> {}
+            else -> {
+            }
         }
     }
 

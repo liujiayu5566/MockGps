@@ -3,6 +3,7 @@ package com.huolala.mockgps.server
 import android.annotation.SuppressLint
 import android.app.Service
 import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.PixelFormat
 import android.location.Location
 import android.location.LocationManager
@@ -12,8 +13,13 @@ import android.provider.Settings
 import android.view.*
 import com.baidu.mapapi.model.LatLng
 import com.baidu.mapapi.search.route.*
+import com.blankj.utilcode.util.FileIOUtils
+import com.blankj.utilcode.util.LogUtils
+import com.blankj.utilcode.util.ToastUtils
+import com.huolala.mockgps.MockReceiver
 import com.huolala.mockgps.R
 import com.huolala.mockgps.model.MockMessageModel
+import com.huolala.mockgps.model.NaviType
 import com.huolala.mockgps.model.PoiInfoModel
 import com.huolala.mockgps.utils.CalculationLogLatDistance
 import com.huolala.mockgps.utils.LocationUtils
@@ -44,6 +50,8 @@ class GpsAndFloatingService : Service() {
     private var mSpeed: Float = 60 / 3.6f
     private lateinit var mCurrentLocation: LatLng
     private var mSearch: RoutePlanSearch = RoutePlanSearch.newInstance()
+
+    private lateinit var mMockReceiver: MockReceiver
 
     override fun onCreate() {
         super.onCreate()
@@ -83,14 +91,23 @@ class GpsAndFloatingService : Service() {
                             }
                         }
                     }
-                    else -> {}
+                    else -> {
+                    }
                 }
 
             }
         }
+        initReceiver()
         initView()
         initSearch()
         initWindowAndParams()
+    }
+
+    private fun initReceiver() {
+        mMockReceiver = MockReceiver()
+        val intentFilter = IntentFilter()
+        intentFilter.addAction("com.huolala.mockgps.navi")
+        registerReceiver(mMockReceiver, intentFilter);
     }
 
     fun getLatLngNext(polyline: ArrayList<*>): LatLng {
@@ -274,11 +291,11 @@ class GpsAndFloatingService : Service() {
 
     private fun mockLocation() {
         model?.run {
-            when (fromTag) {
-                0 -> {
+            when (naviType) {
+                NaviType.LOCATION -> {
                     sendHandler(START_MOCK_LOCATION, locationModel)
                 }
-                1 -> {
+                NaviType.NAVI -> {
                     mSpeed = speed / 3.6f
                     mSearch.drivingSearch(
                         DrivingRoutePlanOption()
@@ -287,7 +304,43 @@ class GpsAndFloatingService : Service() {
                             .to(PlanNode.withLocation(endNavi?.latLng))
                     )
                 }
-                else -> {}
+                NaviType.NAVI_FILE -> {
+                    try {
+                        val polylineList = arrayListOf<LatLng>()
+                        val readFile2String = FileIOUtils.readFile2String(path)
+                        readFile2String?.run {
+                            split(";").run {
+                                if (isNotEmpty()) {
+                                    map {
+                                        it.split(",").run {
+                                            if (size == 2) {
+                                                polylineList.add(
+                                                    LatLng(
+                                                        get(1).toDouble(),
+                                                        get(0).toDouble()
+                                                    )
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            index = 0
+                            sendHandler(
+                                START_MOCK_LOCATION_NAVI,
+                                polylineList
+                            )
+                        } ?: kotlin.run { ToastUtils.showShort("文件无法读取") }
+
+                    } catch (e: Exception) {
+                        ToastUtils.showShort(
+                            "文件解析失败，是否点串格式正确 \n" +
+                                    " ${e.printStackTrace()}"
+                        )
+                    }
+                }
+                else -> {
+                }
             }
         } ?: run {
             isStart = false
@@ -312,6 +365,7 @@ class GpsAndFloatingService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        unregisterReceiver(mMockReceiver)
         handle.removeCallbacksAndMessages(null)
         removeGps()
         mSearch.destroy()
@@ -320,7 +374,7 @@ class GpsAndFloatingService : Service() {
 
 
     fun startSimulateLocation(latLng: LatLng) {
-        val gps84LatLng = LocationUtils.bd09ToWGS84(latLng.longitude, latLng.latitude)
+        val gps84LatLng = LocationUtils.gcj02ToWGS84(latLng.longitude, latLng.latitude)
         val loc = Location(providerStr)
 
         loc.altitude = 2.0
