@@ -16,8 +16,10 @@ import com.castiel.common.base.BaseViewModel
 import com.huolala.mockgps.R
 import com.huolala.mockgps.databinding.ActivityFileBinding
 import com.huolala.mockgps.databinding.DialogFileMockHintBinding
+import com.huolala.mockgps.databinding.DialogHintBinding
 import com.huolala.mockgps.model.MockMessageModel
 import com.huolala.mockgps.model.NaviType
+import com.huolala.mockgps.widget.HintDialog
 import com.huolala.mockgps.widget.NaviPathDialog
 import com.huolala.mockgps.widget.NaviPopupWindow
 
@@ -59,25 +61,11 @@ class FileMockActivity : BaseActivity<ActivityFileBinding, BaseViewModel>(), Vie
     override fun onClick(v: View?) {
         when (v) {
             dataBinding.ivWarning -> {
-                Dialog(this).apply {
-                    DataBindingUtil.bind<DialogFileMockHintBinding>(
-                        LayoutInflater.from(this@FileMockActivity)
-                            .inflate(R.layout.dialog_file_mock_hint, null, false)
-                    )?.let {
-                        setContentView(it.root)
-                        window?.run {
-                            val lp = attributes;
-                            lp.width = ViewGroup.LayoutParams.MATCH_PARENT
-                            lp.height = ViewGroup.LayoutParams.WRAP_CONTENT
-                            lp.y = -ConvertUtils.px2dp(50f)
-                            attributes = lp
-                        }
-                        ClickUtils.applySingleDebouncing(it.btnConfirm) {
-                            dismiss()
-                        }
-                        show()
-                    }
-                }
+                HintDialog(
+                    this@FileMockActivity,
+                    "数据格式要求",
+                    getString(R.string.file_navi_hint)
+                ).show()
             }
             dataBinding.ivNaviSetting -> {
                 NaviPopupWindow(this).apply {
