@@ -12,6 +12,7 @@ import com.blankj.utilcode.util.ToastUtils
 import com.huolala.mockgps.model.MockMessageModel
 import com.huolala.mockgps.model.NaviType
 import com.huolala.mockgps.model.PoiInfoModel
+import com.huolala.mockgps.model.PoiInfoType
 import com.huolala.mockgps.server.GpsAndFloatingService
 import com.huolala.mockgps.utils.LocationUtils
 import com.huolala.mockgps.utils.MMKVUtils
@@ -101,13 +102,13 @@ class MockReceiver : BroadcastReceiver() {
 
             val model = MockMessageModel(
                 startNavi = PoiInfoModel().apply {
-                    poiInfoType = 1
+                    poiInfoType = PoiInfoType.NAVI_START
                     uid = ""
                     name = ""
                     latLng = startLatLng
                 },
                 endNavi = PoiInfoModel().apply {
-                    poiInfoType = 2
+                    poiInfoType = PoiInfoType.NAVI_END
                     uid = ""
                     name = ""
                     latLng = endLatLng

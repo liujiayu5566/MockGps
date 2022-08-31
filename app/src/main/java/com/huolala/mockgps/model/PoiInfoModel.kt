@@ -2,8 +2,19 @@ package com.huolala.mockgps.model
 
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.annotation.IntDef
 import com.baidu.mapapi.model.LatLng
 
+
+@IntDef(PoiInfoType.LOCATION, PoiInfoType.NAVI_START, PoiInfoType.NAVI_END)
+@kotlin.annotation.Retention(AnnotationRetention.SOURCE)
+annotation class PoiInfoType {
+    companion object {
+        const val LOCATION = 0
+        const val NAVI_START = 1
+        const val NAVI_END = 2
+    }
+}
 
 /**
  * @author jiayu.liu
@@ -15,7 +26,8 @@ data class PoiInfoModel(
     /**
      * 0.模拟定位  1.模拟导航起点  2.模拟导航终点
      */
-    var poiInfoType: Int = 0
+    @PoiInfoType
+    var poiInfoType: Int = PoiInfoType.LOCATION
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readParcelable(LatLng::class.java.classLoader),

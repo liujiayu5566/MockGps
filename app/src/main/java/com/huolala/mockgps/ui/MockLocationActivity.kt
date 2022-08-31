@@ -40,7 +40,7 @@ class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var mBaiduMap: BaiduMap
     private var mSearch: RoutePlanSearch = RoutePlanSearch.newInstance()
     private var mPolyline: Overlay? = null
-    private var naviType: Int = 0
+    private var mNaviType: Int = NaviType.LOCATION
     private val mHandle: Handler = MockLocationHandler(this)
 
     //注册LocationListener监听器
@@ -62,7 +62,7 @@ class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
                 .longitude(location.longitude).build()
             mBaiduMap.setMyLocationData(locData)
             //更新中心点
-            if (naviType == 0) {
+            if (mNaviType == NaviType.LOCATION) {
                 mBaiduMap.animateMapStatus(
                     MapStatusUpdateFactory.newLatLngZoom(
                         LatLng(
@@ -88,7 +88,7 @@ class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
         initMap()
 
         model.run {
-            this@MockLocationActivity.naviType = naviType
+            this@MockLocationActivity.mNaviType = naviType
             when (naviType) {
                 NaviType.LOCATION -> {
                     locationModel?.run {

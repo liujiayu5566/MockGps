@@ -20,6 +20,7 @@ import com.huolala.mockgps.adaper.SimpleDividerDecoration
 import com.huolala.mockgps.model.MockMessageModel
 import com.huolala.mockgps.model.NaviType
 import com.huolala.mockgps.model.PoiInfoModel
+import com.huolala.mockgps.model.PoiInfoType
 import com.huolala.mockgps.utils.MMKVUtils
 import com.huolala.mockgps.utils.Utils
 import com.huolala.mockgps.widget.NaviPopupWindow
@@ -133,7 +134,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     private fun setDataToView(model: PoiInfoModel?) {
         model?.run {
             when (poiInfoType) {
-                0 -> {
+                PoiInfoType.LOCATION -> {
                     tv_location_name.text = String.format(
                         "目标：%s",
                         name
@@ -144,14 +145,14 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     )
                     tv_location_latlng.tag = this
                 }
-                1 -> {
+                PoiInfoType.NAVI_START -> {
                     tv_navi_name_start.text = String.format(
                         "起点：%s",
                         name
                     )
                     tv_navi_name_start.tag = this
                 }
-                2 -> {
+                PoiInfoType.NAVI_END -> {
                     tv_navi_name_end.text = String.format(
                         "终点：%s",
                         name
