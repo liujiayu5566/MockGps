@@ -1,9 +1,8 @@
 package com.huolala.mockgps.ui
 
 import android.content.Intent
+import android.os.*
 import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
-import android.os.Parcelable
 import android.view.View
 import android.widget.Toast
 import com.huolala.mockgps.server.GpsAndFloatingService
@@ -27,20 +26,22 @@ import com.baidu.mapapi.map.OverlayOptions
 
 import com.baidu.mapapi.map.BitmapDescriptorFactory
 import com.blankj.utilcode.util.FileIOUtils
-import com.blankj.utilcode.util.ToastUtils
 import com.huolala.mockgps.R
 import com.huolala.mockgps.model.NaviType
+import java.lang.ref.WeakReference
 
 
 /**
  * @author jiayu.liu
  */
 class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
+    private var DRAW_MAP = 0;
     private lateinit var mLocationClient: LocationClient
     private lateinit var mBaiduMap: BaiduMap
     private var mSearch: RoutePlanSearch = RoutePlanSearch.newInstance()
     private var mPolyline: Overlay? = null
     private var naviType: Int = 0
+    private val mHandle: Handler = MockLocationHandler(this)
 
     //注册LocationListener监听器
     private val myLocationListener = object : BDAbstractLocationListener() {
@@ -131,7 +132,10 @@ class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
                                 }
                             }
                         }
-                        drawToMap(polylineList)
+                        mHandle.sendMessageDelayed(Message.obtain().apply {
+                            what = DRAW_MAP
+                            obj = polylineList
+                        }, 500)
                     } catch (e: Exception) {
                     }
                     startMockServer(model)
@@ -293,6 +297,33 @@ class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
             else -> {
             }
         }
+    }
+
+    class MockLocationHandler(activity: MockLocationActivity) :
+        Handler(Looper.getMainLooper()) {
+        private var weakReference: WeakReference<MockLocationActivity>? = null
+
+        init {
+            weakReference = WeakReference(activity)
+        }
+
+        override fun handleMessage(msg: Message) {
+            super.handleMessage(msg)
+            weakReference?.get()?.run {
+                when (msg.what) {
+                    DRAW_MAP -> {
+                        (msg.obj as ArrayList<LatLng>?)?.let {
+                            drawToMap(it)
+                        }
+
+                    }
+                    else -> {
+                    }
+                }
+
+            }
+        }
+
     }
 
 }
