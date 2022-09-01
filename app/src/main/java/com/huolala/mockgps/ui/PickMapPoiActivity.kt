@@ -2,6 +2,9 @@ package com.huolala.mockgps.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.os.Message
 import android.text.Editable
 import android.text.TextUtils
 import android.text.TextWatcher
@@ -15,7 +18,6 @@ import com.baidu.location.LocationClient
 import com.baidu.location.LocationClientOption
 import com.baidu.mapapi.map.*
 import com.baidu.mapapi.model.LatLng
-import com.baidu.mapapi.search.core.PoiInfo
 import com.baidu.mapapi.search.core.SearchResult
 import com.baidu.mapapi.search.geocode.*
 import com.huolala.mockgps.model.PoiInfoModel
@@ -26,24 +28,32 @@ import com.baidu.mapapi.search.sug.SuggestionResult
 import com.baidu.mapapi.search.sug.SuggestionSearch
 import com.baidu.mapapi.search.sug.SuggestionSearchOption
 import com.blankj.utilcode.util.KeyboardUtils
+import com.blankj.utilcode.util.ToastUtils
 import com.huolala.mockgps.R
 import com.huolala.mockgps.adaper.PoiListAdapter
 import com.huolala.mockgps.adaper.SimpleDividerDecoration
+import com.huolala.mockgps.model.PoiInfoType
 import kotlinx.android.synthetic.main.activity_pick.*
+import java.lang.ref.WeakReference
 
 
 /**
  * @author jiayu.liu
  */
 class PickMapPoiActivity : AppCompatActivity(), View.OnClickListener {
+    private val REVERSE_GEO_CODE = 0
+    private val DEFAULT_DELAYED: Long = 300
     private lateinit var mLocationClient: LocationClient
     private lateinit var mBaiduMap: BaiduMap
     private lateinit var mCoder: GeoCoder
     private var poiListAdapter: PoiListAdapter = PoiListAdapter()
-    private var poiInfo: PoiInfo? = null
-    private var marker: Overlay? = null
+    private var mPoiInfoModel: PoiInfoModel? = null
     private var mSuggestionSearch: SuggestionSearch = SuggestionSearch.newInstance()
     private var mCity: String = ""
+    private var mHandler: PickMapPoiHandler? = null
+
+    @PoiInfoType
+    private var poiInfoType: Int = PoiInfoType.DEFAULT
 
     //检索
     private val listener: OnGetSuggestionResultListener =
@@ -76,7 +86,25 @@ class PickMapPoiActivity : AppCompatActivity(), View.OnClickListener {
                 .longitude(location.longitude).build()
             mBaiduMap.setMyLocationData(locData)
             //更新中心点
-            changeCenterLatLng(locData.latitude, locData.longitude)
+            if (mPoiInfoModel == null) {
+                mHandler?.removeMessages(REVERSE_GEO_CODE)
+                mHandler?.sendMessageDelayed(Message.obtain().apply {
+                    what = REVERSE_GEO_CODE
+                    obj = LatLng(location.latitude, location.longitude)
+                }, DEFAULT_DELAYED)
+                changeCenterLatLng(locData.latitude, locData.longitude)
+            }
+        }
+    }
+
+    private fun reverseGeoCode(latLng: LatLng?) {
+        latLng?.let {
+            mCoder.reverseGeoCode(
+                ReverseGeoCodeOption()
+                    .location(it)
+                    .newVersion(1)
+                    .radius(500)
+            )
         }
     }
 
@@ -89,6 +117,9 @@ class PickMapPoiActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun initView() {
+        mHandler = PickMapPoiHandler(this)
+        poiInfoType =
+            intent?.run { getIntExtra("from_tag", PoiInfoType.DEFAULT) } ?: PoiInfoType.DEFAULT
         recycler.layoutManager = LinearLayoutManager(this)
         recycler.adapter = poiListAdapter
         recycler.addItemDecoration(SimpleDividerDecoration(this))
@@ -100,13 +131,16 @@ class PickMapPoiActivity : AppCompatActivity(), View.OnClickListener {
                     if (pt == null) {
                         return@run
                     }
-                    this@PickMapPoiActivity.poiInfo = PoiInfo().apply {
-                        name = key
-                        location = pt
-                    }
+                    this@PickMapPoiActivity.mPoiInfoModel = PoiInfoModel(
+                        pt,
+                        poiInfo.uid,
+                        key,
+                        poiInfoType
+                    )
                     tv_poi_name.text = key
                     tv_lonlat.text = pt?.toString()
-                    drawMarker(pt)
+                    editViewShow(false)
+                    changeCenterLatLng(pt.latitude, pt.longitude)
                 }
             }
         })
@@ -145,28 +179,9 @@ class PickMapPoiActivity : AppCompatActivity(), View.OnClickListener {
         mBaiduMap.setMyLocationConfiguration(
             MyLocationConfiguration(
                 MyLocationConfiguration.LocationMode.NORMAL,
-                true,
-                BitmapDescriptorFactory.fromResource(R.drawable.ic_my_location),
+                true, null
             )
         )
-
-        mLocationClient = LocationClient(this)
-
-        //通过LocationClientOption设置LocationClient相关参数
-        val option = LocationClientOption()
-        option.isOpenGps = true // 打开gps
-        option.setScanSpan(1000)
-
-        //设置locationClientOption
-        mLocationClient.locOption = option
-        mSuggestionSearch.setOnGetSuggestionResultListener(listener)
-
-
-        mLocationClient.registerLocationListener(myLocationListener)
-        //开启地图定位图层
-        mLocationClient.start()
-
-
 
         mCoder = GeoCoder.newInstance()
         mCoder.setOnGetGeoCodeResultListener(object : OnGetGeoCoderResultListener {
@@ -185,7 +200,13 @@ class PickMapPoiActivity : AppCompatActivity(), View.OnClickListener {
                     //详细地址
                     reverseGeoCodeResult.poiList?.run {
                         if (!isEmpty()) {
-                            poiInfo = get(0)
+                            val poiInfo = get(0)
+                            mPoiInfoModel = PoiInfoModel(
+                                location,
+                                poiInfo?.uid,
+                                poiInfo?.name,
+                                poiInfoType
+                            )
                             tv_poi_name.text = poiInfo?.name
                             tv_lonlat.text = poiInfo?.location?.toString()
                         }
@@ -194,63 +215,66 @@ class PickMapPoiActivity : AppCompatActivity(), View.OnClickListener {
             }
         })
 
+        intent.getParcelableExtra<PoiInfoModel>("model")?.run model@{
+            mPoiInfoModel = this
+            latLng?.run {
+                mPoiInfoModel = this@model
+                tv_poi_name.text = this@model.name
+                tv_lonlat.text = this@model.latLng.toString()
+                editViewShow(false)
+                changeCenterLatLng(latitude, longitude)
+            }
+        }
+        mLocationClient = LocationClient(this)
 
-        mBaiduMap.setOnMapClickListener(object : BaiduMap.OnMapClickListener {
+        //通过LocationClientOption设置LocationClient相关参数
+        val option = LocationClientOption()
+        option.isOpenGps = true // 打开gps
+        option.setScanSpan(1000)
 
-            override fun onMapClick(latLng: LatLng?) {
-                latLng?.run {
-                    mCoder.reverseGeoCode(
-                        ReverseGeoCodeOption()
-                            .location(latLng)
-                            .newVersion(1)
-                            .radius(500)
-                    )
-                    drawMarker(this)
-                }
+        //设置locationClientOption
+        mLocationClient.locOption = option
+        mSuggestionSearch.setOnGetSuggestionResultListener(listener)
+
+
+        mLocationClient.registerLocationListener(myLocationListener)
+        //开启地图定位图层
+        mLocationClient.start()
+
+        mBaiduMap.setOnMapStatusChangeListener(object : BaiduMap.OnMapStatusChangeListener {
+            override fun onMapStatusChangeStart(mapStatus: MapStatus?) {
             }
 
-            override fun onMapPoiClick(mapPoi: MapPoi?) {
-                mapPoi?.run {
-                    mCoder.reverseGeoCode(
-                        ReverseGeoCodeOption()
-                            .location(position)
-                            .newVersion(1)
-                            .radius(500)
-                    )
-                    drawMarker(position)
-                }
+            override fun onMapStatusChangeStart(mapStatus: MapStatus?, p1: Int) {
+            }
+
+            override fun onMapStatusChange(mapStatus: MapStatus?) {
+            }
+
+            override fun onMapStatusChangeFinish(mapStatus: MapStatus?) {
+                val latLng = mapStatus?.target;
+                mBaiduMap.clear();
+                mHandler?.removeMessages(REVERSE_GEO_CODE)
+                mHandler?.sendMessageDelayed(Message.obtain().apply {
+                    what = REVERSE_GEO_CODE
+                    obj = latLng
+                }, DEFAULT_DELAYED)
             }
 
         })
     }
 
-    private fun drawMarker(position: LatLng) {
-        marker?.let {
-            it.remove()
-            null
-        }
-        //构建Marker图标
-        MarkerOptions()
-            .position(position)
-            .icon(
-                BitmapDescriptorFactory
-                    .fromResource(R.drawable.ic_location)
-            ).apply {
-                marker = mBaiduMap.addOverlay(this)
-                changeCenterLatLng(position.latitude, position.longitude)
-            }
-        editViewShow(false)
-    }
-
     private fun changeCenterLatLng(latitude: Double, longitude: Double) {
-        mBaiduMap.animateMapStatus(
-            MapStatusUpdateFactory.newLatLngZoom(
-                LatLng(
-                    latitude,
-                    longitude
-                ), 16f
+        if (latitude > 0.0 && longitude > 0.0) {
+            mBaiduMap.animateMapStatus(
+                MapStatusUpdateFactory.newLatLngZoom(
+                    LatLng(
+                        latitude,
+                        longitude
+                    ), 16f
+                )
             )
-        )
+        }
     }
 
     override fun onResume() {
@@ -259,11 +283,11 @@ class PickMapPoiActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     override fun onPause() {
+        super.onPause()
+        mapview.onPause()
         if (isFinishing) {
             destroy()
         }
-        super.onPause()
-        mapview.onPause()
     }
 
     private fun destroy() {
@@ -286,17 +310,16 @@ class PickMapPoiActivity : AppCompatActivity(), View.OnClickListener {
                 editViewShow(true)
             }
             R.id.confirm_location -> {
-                poiInfo?.run {
+                mPoiInfoModel?.let {
+                    if (it.latLng?.longitude ?: 0.0 <= 0.0 || it.latLng?.latitude ?: 0.0 <= 0.0) {
+                        ToastUtils.showShort("数据异常，请重新选择！")
+                        return@let
+                    }
                     val intent = Intent()
                     val bundle = Bundle()
                     bundle.putParcelable(
                         "poiInfo",
-                        PoiInfoModel(
-                            location,
-                            uid,
-                            name,
-                            getIntent()?.run { getIntExtra("from_tag", 0) } ?: 0
-                        )
+                        it
                     )
                     intent.putExtras(bundle)
                     setResult(RESULT_OK, intent)
@@ -323,4 +346,25 @@ class PickMapPoiActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
+
+    class PickMapPoiHandler(activity: PickMapPoiActivity) : Handler(Looper.getMainLooper()) {
+        private var mWeakReference: WeakReference<PickMapPoiActivity>? = null
+
+        init {
+            mWeakReference = WeakReference(activity)
+        }
+
+        override fun handleMessage(msg: Message) {
+            super.handleMessage(msg)
+            mWeakReference?.get()?.let {
+                when (msg.what) {
+                    it.REVERSE_GEO_CODE -> {
+                        it.reverseGeoCode(msg.obj as LatLng)
+                    }
+                    else -> {
+                    }
+                }
+            }
+        }
+    }
 }

@@ -6,10 +6,11 @@ import androidx.annotation.IntDef
 import com.baidu.mapapi.model.LatLng
 
 
-@IntDef(PoiInfoType.LOCATION, PoiInfoType.NAVI_START, PoiInfoType.NAVI_END)
+@IntDef(PoiInfoType.DEFAULT, PoiInfoType.LOCATION, PoiInfoType.NAVI_START, PoiInfoType.NAVI_END)
 @kotlin.annotation.Retention(AnnotationRetention.SOURCE)
 annotation class PoiInfoType {
     companion object {
+        const val DEFAULT = -1
         const val LOCATION = 0
         const val NAVI_START = 1
         const val NAVI_END = 2
@@ -24,7 +25,7 @@ data class PoiInfoModel(
     var uid: String? = null,
     var name: String? = "",
     /**
-     * 0.模拟定位  1.模拟导航起点  2.模拟导航终点
+     * -1.默认选址模式  0.模拟定位  1.模拟导航起点  2.模拟导航终点
      */
     @PoiInfoType
     var poiInfoType: Int = PoiInfoType.LOCATION

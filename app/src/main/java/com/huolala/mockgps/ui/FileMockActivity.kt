@@ -48,6 +48,7 @@ class FileMockActivity : BaseActivity<ActivityFileBinding, BaseViewModel>(), Vie
         ClickUtils.applySingleDebouncing(dataBinding.ivWarning, this)
         ClickUtils.applySingleDebouncing(dataBinding.btnFile, this)
         ClickUtils.applySingleDebouncing(dataBinding.btnStartNavi, this)
+        ClickUtils.applySingleDebouncing(dataBinding.btnCreatePath, this)
     }
 
     override fun initData() {
@@ -66,6 +67,10 @@ class FileMockActivity : BaseActivity<ActivityFileBinding, BaseViewModel>(), Vie
                     "数据格式要求",
                     getString(R.string.file_navi_hint)
                 ).show()
+            }
+            dataBinding.btnCreatePath -> {
+                //生成路径文件
+                startActivity(Intent(this, CalculateRouteActivity::class.java))
             }
             dataBinding.ivNaviSetting -> {
                 NaviPopupWindow(this).apply {

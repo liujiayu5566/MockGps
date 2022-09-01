@@ -51,7 +51,13 @@ class HistoryAdapter : ListAdapter<MockMessageModel, HistoryAdapter.ViewHolder>(
                     model.startNavi?.name ?: "",
                     model.endNavi?.name ?: ""
                 )
-                holder.itemView.tv_info.text = ""
+                holder.itemView.tv_info.text = String.format(
+                    "经纬度：%f , %f -> %f , %f",
+                    model.startNavi?.latLng?.longitude ?: 0f,
+                    model.startNavi?.latLng?.latitude ?: 0f,
+                    model.endNavi?.latLng?.longitude ?: 0f,
+                    model.endNavi?.latLng?.latitude ?: 0f
+                )
             }
         }
         mOnItemClickListener?.run {

@@ -88,10 +88,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         adapter.setOnItemClickListener(object : HistoryAdapter.OnItemClickListener {
             override fun onItemClick(view: View?, model: MockMessageModel) {
                 when (model.naviType) {
-                    0 -> {
+                    NaviType.LOCATION -> {
                         setDataToView(model.locationModel)
                     }
-                    1 -> {
+                    NaviType.NAVI -> {
                         setDataToView(model.startNavi)
                         setDataToView(model.endNavi)
                     }
@@ -175,7 +175,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     Intent(
                         this@MainActivity,
                         PickMapPoiActivity::class.java
-                    ).apply { putExtra("from_tag", 0) }
+                    ).apply {
+                        putExtra("from_tag", PoiInfoType.LOCATION)
+                        if (tv_location_latlng.tag != null) {
+                            putExtra("model", tv_location_latlng.tag as PoiInfoModel?)
+                        }
+                    }
                 )
             }
             btn_start_location -> {
@@ -219,7 +224,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     Intent(
                         this@MainActivity,
                         PickMapPoiActivity::class.java
-                    ).apply { putExtra("from_tag", 1) }
+                    ).apply {
+                        putExtra("from_tag", PoiInfoType.NAVI_START)
+                        if (tv_navi_name_start.tag != null) {
+                            putExtra("model", tv_navi_name_start.tag as PoiInfoModel?)
+                        }
+                    }
                 )
             }
             tv_navi_name_end -> {
@@ -227,7 +237,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     Intent(
                         this@MainActivity,
                         PickMapPoiActivity::class.java
-                    ).apply { putExtra("from_tag", 2) }
+                    ).apply {
+                        putExtra("from_tag", PoiInfoType.NAVI_END)
+                        if (tv_navi_name_end.tag != null) {
+                            putExtra("model", tv_navi_name_end.tag as PoiInfoModel?)
+                        }
+                    }
                 )
             }
             btn_start_navi -> {

@@ -10,6 +10,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <androidx.appcompat.widget.AppCompatImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="20dp"
+        android:visibility="visible"
+        android:src="@drawable/ic_location" />
+
     <androidx.appcompat.widget.LinearLayoutCompat
         android:id="@+id/ll_search"
         android:layout_width="wrap_content"
@@ -34,8 +42,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="10dp"
-                android:text="北京"
                 android:background="@color/grey_50"
+                android:text="北京"
                 android:visibility="gone" />
 
             <androidx.appcompat.widget.AppCompatEditText
@@ -89,7 +97,7 @@
                 android:id="@+id/ll_location"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/shape_round_5_color_master_50"
+                android:background="@drawable/shape_round_5_color_master_50_stroke"
                 android:orientation="vertical"
                 android:padding="10dp"
                 app:layout_constraintBottom_toTopOf="@id/confirm_location"

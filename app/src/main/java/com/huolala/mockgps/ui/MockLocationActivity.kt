@@ -24,7 +24,6 @@ import kotlinx.android.synthetic.main.activity_navi.*
 
 import com.baidu.mapapi.map.OverlayOptions
 
-import com.baidu.mapapi.map.BitmapDescriptorFactory
 import com.blankj.utilcode.util.FileIOUtils
 import com.huolala.mockgps.R
 import com.huolala.mockgps.model.NaviType
@@ -39,7 +38,6 @@ class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var mLocationClient: LocationClient
     private lateinit var mBaiduMap: BaiduMap
     private var mSearch: RoutePlanSearch = RoutePlanSearch.newInstance()
-    private var mPolyline: Overlay? = null
     private var mNaviType: Int = NaviType.LOCATION
     private val mHandle: Handler = MockLocationHandler(this)
 
@@ -164,8 +162,7 @@ class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
         mBaiduMap.setMyLocationConfiguration(
             MyLocationConfiguration(
                 MyLocationConfiguration.LocationMode.NORMAL,
-                true,
-                BitmapDescriptorFactory.fromResource(R.drawable.ic_my_location),
+                true, null
             )
         )
 
@@ -207,7 +204,7 @@ class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
                             polylineList.addAll(step.wayPoints)
                         }
                     }
-                    drawToMap(polylineList)
+                    drawLineToMap(polylineList)
                 }
             }
 
@@ -221,19 +218,20 @@ class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
         })
     }
 
-    private fun drawToMap(polylineList: ArrayList<LatLng>?) {
-        mPolyline?.let {
-            mBaiduMap.clear()
-            null
-        }
+    private fun drawLineToMap(polylineList: ArrayList<LatLng>?) {
+        mBaiduMap.clear()
         if (polylineList == null || polylineList.size == 0) {
             return
         }
+
         val mOverlayOptions: OverlayOptions = PolylineOptions()
-            .width(10)
+            .width(15)
             .color(0xAAFF0000.toInt())
+            .keepScale(true)
+            .lineCapType(PolylineOptions.LineCapType.LineCapRound)
             .points(polylineList)
-        mPolyline = mBaiduMap.addOverlay(mOverlayOptions)
+
+        mBaiduMap.addOverlay(mOverlayOptions)
         mBaiduMap.animateMapStatus(
             MapStatusUpdateFactory.newLatLngBounds(
                 LatLngBounds.Builder().include(polylineList).build(), 50, 50, 50, 50
@@ -270,11 +268,11 @@ class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     override fun onPause() {
+        super.onPause()
+        mapview.onPause()
         if (isFinishing) {
             destroy()
         }
-        super.onPause()
-        mapview.onPause()
     }
 
     override fun onDestroy() {
@@ -313,7 +311,7 @@ class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
                 when (msg.what) {
                     DRAW_MAP -> {
                         (msg.obj as ArrayList<LatLng>?)?.let {
-                            drawToMap(it)
+                            drawLineToMap(it)
                         }
 
                     }

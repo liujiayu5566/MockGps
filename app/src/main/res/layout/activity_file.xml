@@ -62,11 +62,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="10dp"
-            android:background="@color/master_color"
+            android:background="@drawable/shape_round_30_color_master"
             android:drawablePadding="0dp"
             android:minWidth="0dp"
             android:minHeight="0dp"
-            android:paddingHorizontal="10dp"
+            android:paddingHorizontal="20dp"
             android:paddingVertical="5dp"
             android:text="选择"
             android:textColor="@color/white"
@@ -74,6 +74,23 @@
             app:layout_constraintBottom_toBottomOf="@id/tv_file"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="@id/tv_file" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_create_path"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/shape_round_30_color_master"
+            android:gravity="center"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="5dp"
+            android:text="生成路线文件"
+            android:textColor="@color/white"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_file" />
 
 
         <androidx.appcompat.widget.AppCompatImageView
@@ -85,7 +102,7 @@
             android:padding="5dp"
             android:src="@drawable/ic_navi_setting"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_file" />
+            app:layout_constraintTop_toBottomOf="@id/btn_create_path" />
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btn_start_navi"

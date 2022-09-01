@@ -85,6 +85,10 @@
             android:name=".ui.FileMockActivity"
             android:exported="false"
             android:screenOrientation="fullSensor" />
+        <activity
+            android:name=".ui.CalculateRouteActivity"
+            android:exported="false"
+            android:screenOrientation="fullSensor" />
 
         <service
             android:name=".server.GpsAndFloatingService"
