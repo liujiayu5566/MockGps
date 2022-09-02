@@ -1,6 +1,7 @@
 package com.huolala.mockgps.ui
 
 import android.Manifest
+import android.animation.ValueAnimator
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.PackageManager
@@ -11,6 +12,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.huolala.mockgps.R
 import com.huolala.mockgps.server.GpsAndFloatingService
 import com.huolala.mockgps.utils.Utils
@@ -72,7 +74,7 @@ class GuideActivity : AppCompatActivity() {
     private fun initPermission(): Boolean {
         val needPermissions = arrayListOf<String>()
         permissions.map {
-            if (checkCallingOrSelfPermission(it) != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED) {
                 needPermissions.add(it)
             }
         }
@@ -94,10 +96,12 @@ class GuideActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        grantResults.map {
-            if (it != PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "需要权限", Toast.LENGTH_SHORT).show()
-                return
+        if (requestCode == PERMISSION_REQUEST) {
+            grantResults.map {
+                if (it != PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(this, "需要权限", Toast.LENGTH_SHORT).show()
+                    return
+                }
             }
         }
     }

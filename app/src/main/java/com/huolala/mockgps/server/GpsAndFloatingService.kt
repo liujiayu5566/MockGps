@@ -13,9 +13,7 @@ import android.provider.Settings
 import android.view.*
 import com.baidu.mapapi.model.LatLng
 import com.baidu.mapapi.search.route.*
-import com.blankj.utilcode.util.FileIOUtils
-import com.blankj.utilcode.util.LogUtils
-import com.blankj.utilcode.util.ToastUtils
+import com.blankj.utilcode.util.*
 import com.huolala.mockgps.MockReceiver
 import com.huolala.mockgps.R
 import com.huolala.mockgps.model.MockMessageModel
@@ -25,6 +23,7 @@ import com.huolala.mockgps.utils.CalculationLogLatDistance
 import com.huolala.mockgps.utils.LocationUtils
 import com.huolala.mockgps.utils.Utils
 import kotlinx.android.synthetic.main.layout_floating.view.*
+import kotlin.math.min
 
 /**
  * @author jiayu.liu
@@ -218,8 +217,8 @@ class GpsAndFloatingService : Service() {
         layoutParams?.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
         //透明度
         layoutParams?.format = PixelFormat.RGBA_8888
-        layoutParams?.x = 500
-        layoutParams?.y = 300
+        layoutParams?.x = ScreenUtils.getScreenWidth() / 2
+        layoutParams?.y = 0
         layoutParams?.width = WindowManager.LayoutParams.WRAP_CONTENT
         layoutParams?.height = WindowManager.LayoutParams.WRAP_CONTENT
     }
@@ -239,6 +238,14 @@ class GpsAndFloatingService : Service() {
                 mockLocation()
             }
         }
+        view.setOnClickListener(object : ClickUtils.OnMultiClickListener(2, 300) {
+            override fun onTriggerClick(v: View?) {
+                AppUtils.launchApp(packageName)
+            }
+
+            override fun onBeforeTriggerClick(v: View?, count: Int) {
+            }
+        })
 
         view.setOnTouchListener(object : View.OnTouchListener {
             private var x: Int = 0
@@ -257,8 +264,21 @@ class GpsAndFloatingService : Service() {
                         val movedY = nowY - y
                         x = nowX.toInt()
                         y = nowY.toInt()
-                        layoutParams?.x = layoutParams?.x?.plus(movedX.toInt())
-                        layoutParams?.y = layoutParams?.y?.plus(movedY.toInt())
+                        layoutParams?.x = if (layoutParams?.x?.plus(movedX.toInt())!! > 0)
+                            min(
+                                layoutParams?.x?.plus(movedX.toInt())!!,
+                                (ScreenUtils.getScreenWidth() - view.width) / 2
+                            )
+                        else
+                            (layoutParams?.x?.plus(movedX.toInt())!!).coerceAtLeast(-(ScreenUtils.getScreenWidth() - view.width) / 2)
+
+                        layoutParams?.y = if (layoutParams?.y?.plus(movedY.toInt())!! > 0)
+                            min(
+                                layoutParams?.y?.plus(movedY.toInt())!!,
+                                (ScreenUtils.getScreenHeight() - view.height) / 2
+                            )
+                        else
+                            (layoutParams?.y?.plus(movedY.toInt())!!).coerceAtLeast(-(ScreenUtils.getScreenHeight() - view.height) / 2)
 
                         // 更新悬浮窗控件布局
                         windowManager?.updateViewLayout(view, layoutParams);

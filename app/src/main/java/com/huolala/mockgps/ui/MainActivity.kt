@@ -21,6 +21,7 @@ import com.huolala.mockgps.model.MockMessageModel
 import com.huolala.mockgps.model.NaviType
 import com.huolala.mockgps.model.PoiInfoModel
 import com.huolala.mockgps.model.PoiInfoType
+import com.huolala.mockgps.utils.DialogUtils
 import com.huolala.mockgps.utils.MMKVUtils
 import com.huolala.mockgps.utils.Utils
 import com.huolala.mockgps.widget.NaviPopupWindow
@@ -191,7 +192,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 //启动模拟导航
                 Utils.checkFloatWindow(this).let {
                     if (!it) {
-                        setFloatWindowDialog()
+                        DialogUtils.setFloatWindowDialog(this@MainActivity)
                         return
                     }
                     val locationModel = tv_location_latlng.tag as PoiInfoModel?
@@ -252,7 +253,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 }
                 Utils.checkFloatWindow(this).let {
                     if (!it) {
-                        setFloatWindowDialog()
+                        DialogUtils.setFloatWindowDialog(this@MainActivity)
                         return
                     }
                     val startNavi = tv_navi_name_start.tag as PoiInfoModel?
@@ -280,32 +281,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             else -> {
             }
         }
-    }
-
-    //提醒开启悬浮窗的弹框
-    private fun setFloatWindowDialog() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            return
-        }
-        AlertDialog.Builder(this)
-            .setTitle("警告")
-            .setMessage("需要开启悬浮窗，否则容易导致App被系统回收")
-            .setPositiveButton(
-                "开启"
-            ) { _, _ ->
-                try {
-                    val intent = Intent(
-                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                        Uri.parse("package:$packageName")
-                    )
-                    startActivity(intent)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }.setNegativeButton(
-                "取消"
-            ) { _, _ -> }
-            .show()
     }
 
 }

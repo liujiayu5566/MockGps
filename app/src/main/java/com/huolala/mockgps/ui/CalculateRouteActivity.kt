@@ -168,7 +168,7 @@ class CalculateRouteActivity : BaseActivity<ActivityCalculateRouteBinding, BaseV
                         drawLineToMap(polylineList, isMaster)
                         isMaster = false
                     }
-                    dataBinding.fileName = System.currentTimeMillis().toString()
+                    dataBinding.fileName = "${dataBinding.tvStart.text}-${dataBinding.tvEnd.text}"
                 }
             }
 
@@ -252,7 +252,7 @@ class CalculateRouteActivity : BaseActivity<ActivityCalculateRouteBinding, BaseV
                         isMaster = false
                     }
                 }
-                dataBinding.fileName = System.currentTimeMillis().toString()
+                dataBinding.fileName = "${dataBinding.tvStart.text}-${dataBinding.tvEnd.text}"
             }
             dataBinding.btnSaveFile -> {
                 if (mPaths.isEmpty()) {

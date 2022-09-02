@@ -19,6 +19,8 @@ import com.huolala.mockgps.databinding.DialogFileMockHintBinding
 import com.huolala.mockgps.databinding.DialogHintBinding
 import com.huolala.mockgps.model.MockMessageModel
 import com.huolala.mockgps.model.NaviType
+import com.huolala.mockgps.utils.DialogUtils
+import com.huolala.mockgps.utils.Utils
 import com.huolala.mockgps.widget.HintDialog
 import com.huolala.mockgps.widget.NaviPathDialog
 import com.huolala.mockgps.widget.NaviPopupWindow
@@ -96,13 +98,19 @@ class FileMockActivity : BaseActivity<ActivityFileBinding, BaseViewModel>(), Vie
                     ToastUtils.showShort("路径不能为null")
                     return
                 }
-                val model = MockMessageModel(
-                    naviType = NaviType.NAVI_FILE,
-                    path = text.toString()
-                )
-                val intent = Intent(this, MockLocationActivity::class.java)
-                intent.putExtra("model", model)
-                startActivity(intent)
+                Utils.checkFloatWindow(this).let {
+                    if (!it) {
+                        DialogUtils.setFloatWindowDialog(this@FileMockActivity)
+                        return
+                    }
+                    val model = MockMessageModel(
+                        naviType = NaviType.NAVI_FILE,
+                        path = text.toString()
+                    )
+                    val intent = Intent(this, MockLocationActivity::class.java)
+                    intent.putExtra("model", model)
+                    startActivity(intent)
+                }
             }
             else -> {
             }
