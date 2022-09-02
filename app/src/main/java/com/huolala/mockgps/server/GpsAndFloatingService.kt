@@ -326,6 +326,7 @@ class GpsAndFloatingService : Service() {
                 }
                 NaviType.NAVI_FILE -> {
                     try {
+                        mSpeed = speed / 3.6f
                         val polylineList = arrayListOf<LatLng>()
                         val readFile2String = FileIOUtils.readFile2String(path)
                         readFile2String?.run {

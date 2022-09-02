@@ -20,6 +20,7 @@ import com.huolala.mockgps.databinding.DialogHintBinding
 import com.huolala.mockgps.model.MockMessageModel
 import com.huolala.mockgps.model.NaviType
 import com.huolala.mockgps.utils.DialogUtils
+import com.huolala.mockgps.utils.MMKVUtils
 import com.huolala.mockgps.utils.Utils
 import com.huolala.mockgps.widget.HintDialog
 import com.huolala.mockgps.widget.NaviPathDialog
@@ -105,7 +106,8 @@ class FileMockActivity : BaseActivity<ActivityFileBinding, BaseViewModel>(), Vie
                     }
                     val model = MockMessageModel(
                         naviType = NaviType.NAVI_FILE,
-                        path = text.toString()
+                        path = text.toString(),
+                        speed = MMKVUtils.getSpeed(),
                     )
                     val intent = Intent(this, MockLocationActivity::class.java)
                     intent.putExtra("model", model)
