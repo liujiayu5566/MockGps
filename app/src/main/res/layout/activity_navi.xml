@@ -25,6 +25,6 @@
         android:background="@drawable/shape_round_5_color_white"
         android:padding="10dp"
         android:src="@drawable/ic_back"
-        android:translationZ="3dp" />
+        android:elevation="3dp" />
 
 </FrameLayout>

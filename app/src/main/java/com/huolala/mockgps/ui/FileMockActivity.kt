@@ -35,10 +35,6 @@ class FileMockActivity : BaseActivity<ActivityFileBinding, BaseViewModel>(), Vie
         return BaseViewModel::class.java
     }
 
-    override fun initViewModelId(): Int? {
-        return null
-    }
-
     override fun getLayout(): Int {
         return R.layout.activity_file
     }

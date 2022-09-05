@@ -147,6 +147,7 @@ class PickMapPoiActivity : AppCompatActivity(), View.OnClickListener {
 
         iv_search.setOnClickListener(this)
         confirm_location.setOnClickListener(this)
+        iv_cur_location.setOnClickListener(this)
 
         et_search.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -324,6 +325,16 @@ class PickMapPoiActivity : AppCompatActivity(), View.OnClickListener {
                     intent.putExtras(bundle)
                     setResult(RESULT_OK, intent)
                     finish()
+                }
+            }
+            R.id.iv_cur_location -> {
+                mBaiduMap.locationData?.run {
+                    mHandler?.removeMessages(REVERSE_GEO_CODE)
+                    mHandler?.sendMessageDelayed(Message.obtain().apply {
+                        what = REVERSE_GEO_CODE
+                        obj = LatLng(latitude, longitude)
+                    }, DEFAULT_DELAYED)
+                    changeCenterLatLng(latitude, longitude)
                 }
             }
             else -> {

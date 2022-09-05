@@ -5,10 +5,10 @@
     android:layout_marginHorizontal="15dp"
     android:layout_marginVertical="1dp"
     android:background="@drawable/shape_round_5_color_white"
+    android:elevation="3dp"
     android:orientation="vertical"
     android:paddingHorizontal="15dp"
-    android:paddingVertical="10dp"
-    android:translationZ="3dp">
+    android:paddingVertical="10dp">
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/tv_poi_name"

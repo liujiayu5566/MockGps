@@ -40,10 +40,6 @@ class ExpandActivity : BaseActivity<ActivityExpandBinding, BaseViewModel>() {
         return BaseViewModel::class.java
     }
 
-    override fun initViewModelId(): Int? {
-        return null
-    }
-
     override fun getLayout(): Int {
         return R.layout.activity_expand
     }

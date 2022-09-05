@@ -27,7 +27,6 @@ abstract class BaseActivity<V : ViewDataBinding, VM : BaseViewModel> : AppCompat
     protected val viewModel: VM by lazy { ViewModelProvider(this)[this.initViewModel()] }
 
     protected abstract fun initViewModel(): Class<VM>
-    protected abstract fun initViewModelId(): Int?
     protected abstract fun getLayout(): Int
     protected abstract fun initView()
     protected abstract fun initData()
@@ -41,8 +40,6 @@ abstract class BaseActivity<V : ViewDataBinding, VM : BaseViewModel> : AppCompat
         dataBinding = DataBindingUtil.setContentView(this, getLayout())
         dataBinding.lifecycleOwner = this
         ARouter.getInstance().inject(this)
-        val initViewModelId = initViewModelId()
-        initViewModelId?.let { dataBinding.setVariable(initViewModelId, viewModel) }
         loading = LoadingDialog(this)
         addObserver()
         initView()

@@ -11,6 +11,8 @@ import android.location.LocationManager
 import android.os.Build
 import android.provider.Settings
 import com.baidu.mapapi.model.LatLng
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import java.lang.IllegalArgumentException
 import kotlin.collections.ArrayList
 
@@ -84,49 +86,49 @@ object Utils {
     }
 
     /**
-     * FIXME 弃用  待优化
      * @param array 原数据
-     * @param speed 速度  单位：KM/H
+     * @param speed 速度  单位：M/S
      *
      */
-    fun latLngToSpeedLatLng(array: ArrayList<LatLng>?, speed: Int): ArrayList<LatLng> {
+    fun latLngToSpeedLatLng(array: ArrayList<LatLng>?, speed: Double): ArrayList<LatLng> {
         val latLngList = arrayListOf<LatLng>()
-        if (array == null || array.isEmpty() || array.size <= 1) {
-            return latLngList
-        }
-        //单位：M/S
-        val currentSpeed: Double = speed / 3.6
-        val size = array.size
-        //当前经纬度
-        var currentLatLng = array[0]
-        latLngList.add(currentLatLng)
-        //起点
-        for (index in 1 until size) {
-            //节点经纬度
-            val latLng = array[index]
-            var dis = CalculationLogLatDistance.getDistance(currentLatLng, latLng)
-            var yaw = CalculationLogLatDistance.getYaw(currentLatLng, latLng)
-            if (dis < currentSpeed) {
-                currentLatLng = latLng
-                latLngList.add(latLng)
-                continue
+        runBlocking(Dispatchers.IO) {
+            if (array == null || array.isEmpty() || array.size <= 1) {
+                return@runBlocking latLngList
             }
-            while (dis > currentSpeed) {
-                val nextLonLat =
-                    CalculationLogLatDistance.getNextLonLat(currentLatLng, yaw, currentSpeed)
-
-                dis = CalculationLogLatDistance.getDistance(currentLatLng, latLng)
-                yaw = CalculationLogLatDistance.getYaw(currentLatLng, latLng)
-                if (dis < currentSpeed) {
+            //单位：M/S
+            val size = array.size
+            //当前经纬度
+            var currentLatLng = array[0]
+            latLngList.add(currentLatLng)
+            //起点
+            for (index in 1 until size) {
+                //节点经纬度
+                val latLng = array[index]
+                var dis = CalculationLogLatDistance.getDistance(currentLatLng, latLng)
+                var yaw = CalculationLogLatDistance.getYaw(currentLatLng, latLng)
+                if (dis < speed) {
                     currentLatLng = latLng
-                    latLngList.add(currentLatLng)
-                } else {
-                    currentLatLng = nextLonLat
-                    latLngList.add(currentLatLng)
+                    latLngList.add(latLng)
+                    continue
+                }
+                while (dis > speed) {
+                    val nextLonLat =
+                        CalculationLogLatDistance.getNextLonLat(currentLatLng, yaw, speed)
+                    dis = CalculationLogLatDistance.getDistance(currentLatLng, latLng)
+                    yaw = CalculationLogLatDistance.getYaw(currentLatLng, latLng)
+                    if (dis < speed) {
+                        currentLatLng = latLng
+                        latLngList.add(currentLatLng)
+                    } else {
+                        currentLatLng = nextLonLat
+                        latLngList.add(currentLatLng)
+                    }
                 }
             }
+        }.also {
+            return latLngList
         }
-        return latLngList
     }
 
     fun checkFloatWindow(context: Context?): Boolean {

@@ -10,7 +10,7 @@
     android:background="@drawable/shape_round_5_color_white"
     android:orientation="vertical"
     android:padding="10dp"
-    android:translationZ="3dp"
+    android:elevation="3dp"
     android:visibility="visible">
 
     <androidx.constraintlayout.widget.ConstraintLayout

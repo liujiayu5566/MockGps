@@ -51,6 +51,8 @@ class GpsAndFloatingService : Service() {
     private var mSearch: RoutePlanSearch = RoutePlanSearch.newInstance()
 
     private lateinit var mMockReceiver: MockReceiver
+    private val mScreenWidth = ScreenUtils.getScreenWidth()
+    private val mScreenHeight = ScreenUtils.getScreenHeight()
 
     override fun onCreate() {
         super.onCreate()
@@ -182,7 +184,7 @@ class GpsAndFloatingService : Service() {
                             polylineList.addAll(step.wayPoints)
                         }
                     }
-                    //TODO 提前计算有问题 循环次数太多 线程执行  待优化
+                    //提前计算路线 目前没有使用
 //                    val polyLine = Utils.latLngToSpeedLatLng(polylineList, mSpeed)
                     index = 0
                     sendHandler(
@@ -213,11 +215,12 @@ class GpsAndFloatingService : Service() {
         } else {
             layoutParams?.type = WindowManager.LayoutParams.TYPE_PHONE
         }
+        layoutParams?.gravity = Gravity.CENTER
         //焦点问题
         layoutParams?.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
         //透明度
         layoutParams?.format = PixelFormat.RGBA_8888
-        layoutParams?.x = ScreenUtils.getScreenWidth() / 2
+        layoutParams?.x = mScreenWidth / 2
         layoutParams?.y = 0
         layoutParams?.width = WindowManager.LayoutParams.WRAP_CONTENT
         layoutParams?.height = WindowManager.LayoutParams.WRAP_CONTENT
@@ -267,18 +270,18 @@ class GpsAndFloatingService : Service() {
                         layoutParams?.x = if (layoutParams?.x?.plus(movedX.toInt())!! > 0)
                             min(
                                 layoutParams?.x?.plus(movedX.toInt())!!,
-                                (ScreenUtils.getScreenWidth() - view.width) / 2
+                                (mScreenWidth - view.width) / 2
                             )
                         else
-                            (layoutParams?.x?.plus(movedX.toInt())!!).coerceAtLeast(-(ScreenUtils.getScreenWidth() - view.width) / 2)
+                            (layoutParams?.x?.plus(movedX.toInt())!!).coerceAtLeast(-(mScreenWidth - view.width) / 2)
 
                         layoutParams?.y = if (layoutParams?.y?.plus(movedY.toInt())!! > 0)
                             min(
                                 layoutParams?.y?.plus(movedY.toInt())!!,
-                                (ScreenUtils.getScreenHeight() - view.height) / 2
+                                (mScreenHeight - view.height) / 2
                             )
                         else
-                            (layoutParams?.y?.plus(movedY.toInt())!!).coerceAtLeast(-(ScreenUtils.getScreenHeight() - view.height) / 2)
+                            (layoutParams?.y?.plus(movedY.toInt())!!).coerceAtLeast(-(mScreenHeight - view.height) / 2)
 
                         // 更新悬浮窗控件布局
                         windowManager?.updateViewLayout(view, layoutParams);
@@ -390,7 +393,7 @@ class GpsAndFloatingService : Service() {
         handle.removeCallbacksAndMessages(null)
         removeGps()
         mSearch.destroy()
-        removeView()
+//        removeView()
     }
 
 
