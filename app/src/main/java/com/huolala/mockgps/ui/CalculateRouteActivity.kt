@@ -264,7 +264,6 @@ class CalculateRouteActivity : BaseActivity<ActivityCalculateRouteBinding, BaseV
                     builder.append(it.longitude).append(",").append(it.latitude).append(";")
                 }
                 if (!TextUtils.isEmpty(builder)) {
-                    viewModel.loading.value = true
                     val file = File(getExternalFilesDir("nav_path"), "${dataBinding.fileName}.txt")
                     if (FileUtils.isFileExists(file)) {
                         ToastUtils.showShort("文件已经存在！请重命名文件名称")
@@ -274,7 +273,6 @@ class CalculateRouteActivity : BaseActivity<ActivityCalculateRouteBinding, BaseV
                         file,
                         builder.toString()
                     ).let {
-                        viewModel.loading.value = false
                         ToastUtils.showShort(if (it) "保存成功" else "保存失败")
                     }
                 }
