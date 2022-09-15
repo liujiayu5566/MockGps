@@ -393,7 +393,7 @@ class GpsAndFloatingService : Service() {
         handle.removeCallbacksAndMessages(null)
         removeGps()
         mSearch.destroy()
-//        removeView()
+        removeView()
     }
 
 
