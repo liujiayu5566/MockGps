@@ -177,6 +177,11 @@ class PickMapPoiActivity : AppCompatActivity(), View.OnClickListener {
         mBaiduMap = mapview.map
         mBaiduMap.isMyLocationEnabled = true
 
+        mBaiduMap.uiSettings?.run {
+            isRotateGesturesEnabled = false
+            isOverlookingGesturesEnabled = false
+        }
+
         mBaiduMap.setMyLocationConfiguration(
             MyLocationConfiguration(
                 MyLocationConfiguration.LocationMode.NORMAL,
