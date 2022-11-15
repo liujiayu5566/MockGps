@@ -27,11 +27,15 @@ import com.baidu.mapapi.search.sug.OnGetSuggestionResultListener
 import com.baidu.mapapi.search.sug.SuggestionResult
 import com.baidu.mapapi.search.sug.SuggestionSearch
 import com.baidu.mapapi.search.sug.SuggestionSearchOption
+import com.blankj.utilcode.util.ClickUtils
 import com.blankj.utilcode.util.KeyboardUtils
 import com.blankj.utilcode.util.ToastUtils
+import com.castiel.common.base.BaseActivity
+import com.castiel.common.base.BaseViewModel
 import com.huolala.mockgps.R
 import com.huolala.mockgps.adaper.PoiListAdapter
 import com.huolala.mockgps.adaper.SimpleDividerDecoration
+import com.huolala.mockgps.databinding.ActivityPickBinding
 import com.huolala.mockgps.model.PoiInfoType
 import kotlinx.android.synthetic.main.activity_pick.*
 import java.lang.ref.WeakReference
@@ -40,7 +44,8 @@ import java.lang.ref.WeakReference
 /**
  * @author jiayu.liu
  */
-class PickMapPoiActivity : AppCompatActivity(), View.OnClickListener {
+class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
+    View.OnClickListener {
     private val REVERSE_GEO_CODE = 0
     private val DEFAULT_DELAYED: Long = 300
     private lateinit var mLocationClient: LocationClient
@@ -108,15 +113,15 @@ class PickMapPoiActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_pick)
-        initView()
-        initMap()
+    override fun initViewModel(): Class<BaseViewModel> {
+        return BaseViewModel::class.java
     }
 
-    private fun initView() {
+    override fun getLayout(): Int {
+        return R.layout.activity_pick
+    }
+
+    override fun initView() {
         mHandler = PickMapPoiHandler(this)
         poiInfoType =
             intent?.run { getIntExtra("from_tag", PoiInfoType.DEFAULT) } ?: PoiInfoType.DEFAULT
@@ -145,9 +150,9 @@ class PickMapPoiActivity : AppCompatActivity(), View.OnClickListener {
             }
         })
 
-        iv_search.setOnClickListener(this)
-        confirm_location.setOnClickListener(this)
-        iv_cur_location.setOnClickListener(this)
+        ClickUtils.applySingleDebouncing(iv_search, this)
+        ClickUtils.applySingleDebouncing(confirm_location, this)
+        ClickUtils.applySingleDebouncing(iv_cur_location, this)
 
         et_search.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -171,6 +176,13 @@ class PickMapPoiActivity : AppCompatActivity(), View.OnClickListener {
             }
 
         })
+        initMap()
+    }
+
+    override fun initData() {
+    }
+
+    override fun initObserver() {
     }
 
     private fun initMap() {
@@ -303,10 +315,6 @@ class PickMapPoiActivity : AppCompatActivity(), View.OnClickListener {
         mLocationClient.stop()
         mBaiduMap.isMyLocationEnabled = false
         mapview.onDestroy()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
     }
 
     override fun onClick(v: View?) {

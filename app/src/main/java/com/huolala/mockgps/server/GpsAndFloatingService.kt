@@ -456,20 +456,28 @@ class GpsAndFloatingService : Service() {
     }
 
     private fun addView() {
-        if (isAddView) {
-            return
-        }
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M
-            || Settings.canDrawOverlays(applicationContext)
-        ) {
-            isAddView = true
-            windowManager?.addView(view, layoutParams)
+        try {
+            if (isAddView) {
+                return
+            }
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M
+                || Settings.canDrawOverlays(applicationContext)
+            ) {
+                isAddView = true
+                windowManager?.addView(view, layoutParams)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
     private fun removeView() {
-        isAddView = false
-        windowManager?.removeView(view)
+        try {
+            isAddView = false
+            windowManager?.removeView(view)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
 

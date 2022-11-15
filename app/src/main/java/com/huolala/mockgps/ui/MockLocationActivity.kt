@@ -23,9 +23,13 @@ import com.huolala.mockgps.utils.Utils
 import kotlinx.android.synthetic.main.activity_navi.*
 
 import com.baidu.mapapi.map.OverlayOptions
+import com.blankj.utilcode.util.ClickUtils
 
 import com.blankj.utilcode.util.FileIOUtils
+import com.castiel.common.base.BaseActivity
+import com.castiel.common.base.BaseViewModel
 import com.huolala.mockgps.R
+import com.huolala.mockgps.databinding.ActivityNaviBinding
 import com.huolala.mockgps.model.NaviType
 import java.lang.ref.WeakReference
 
@@ -33,7 +37,8 @@ import java.lang.ref.WeakReference
 /**
  * @author jiayu.liu
  */
-class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
+class MockLocationActivity : BaseActivity<ActivityNaviBinding, BaseViewModel>(),
+    View.OnClickListener {
     private var DRAW_MAP = 0;
     private lateinit var mLocationClient: LocationClient
     private lateinit var mBaiduMap: BaiduMap
@@ -74,17 +79,81 @@ class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_navi)
+
+    override fun initViewModel(): Class<BaseViewModel> {
+        return BaseViewModel::class.java
+    }
+
+    override fun getLayout(): Int {
+        return R.layout.activity_navi
+    }
+
+    override fun initView() {
+        ClickUtils.applySingleDebouncing(iv_back, this)
+
+        mBaiduMap = mapview.map
+        mBaiduMap.isMyLocationEnabled = true
+
+        mBaiduMap.setMyLocationConfiguration(
+            MyLocationConfiguration(
+                MyLocationConfiguration.LocationMode.NORMAL,
+                true, null
+            )
+        )
+
+        mBaiduMap.setMapStatus(MapStatusUpdateFactory.zoomBy(16f))
+
+        mLocationClient = LocationClient(this)
+
+        //通过LocationClientOption设置LocationClient相关参数
+        val option = LocationClientOption()
+        option.isOpenGps = true // 打开gps
+        option.setScanSpan(1000)
+
+        //设置locationClientOption
+        mLocationClient.locOption = option
+
+        mLocationClient.registerLocationListener(myLocationListener)
+        //开启地图定位图层
+        mLocationClient.start()
+
+        mSearch.setOnGetRoutePlanResultListener(object : OnGetRoutePlanResultListener {
+            override fun onGetWalkingRouteResult(p0: WalkingRouteResult?) {
+            }
+
+            override fun onGetTransitRouteResult(p0: TransitRouteResult?) {
+            }
+
+            override fun onGetMassTransitRouteResult(p0: MassTransitRouteResult?) {
+            }
+
+            override fun onGetDrivingRouteResult(drivingRouteResult: DrivingRouteResult?) {
+                //创建DrivingRouteOverlay实例
+                drivingRouteResult?.routeLines?.get(0)?.run {
+                    val polylineList = arrayListOf<LatLng>()
+                    for (step in allStep) {
+                        if (step.wayPoints != null && step.wayPoints.isNotEmpty()) {
+                            polylineList.addAll(step.wayPoints)
+                        }
+                    }
+                    drawLineToMap(polylineList)
+                }
+            }
+
+            override fun onGetIndoorRouteResult(p0: IndoorRouteResult?) {
+            }
+
+            override fun onGetBikingRouteResult(p0: BikingRouteResult?) {
+            }
+        })
+    }
+
+    override fun initData() {
         val model = intent.getParcelableExtra<MockMessageModel>("model")
         if (model == null) {
             pickPoiError()
             return
         }
-        initView()
-        initMap()
-
         model.run {
             this@MockLocationActivity.mNaviType = naviType
             when (naviType) {
@@ -144,79 +213,15 @@ class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
+    override fun initObserver() {
+
+    }
+
     private fun pickPoiError() {
         Toast.makeText(this, "选址数据异常，请重新选择地址再重试", Toast.LENGTH_SHORT).show()
         finish()
     }
 
-    private fun initView() {
-
-    }
-
-    private fun initMap() {
-        iv_back.setOnClickListener(this)
-
-        mBaiduMap = mapview.map
-        mBaiduMap.isMyLocationEnabled = true
-
-        mBaiduMap.setMyLocationConfiguration(
-            MyLocationConfiguration(
-                MyLocationConfiguration.LocationMode.NORMAL,
-                true, null
-            )
-        )
-
-        mBaiduMap.setMapStatus(MapStatusUpdateFactory.zoomBy(16f))
-
-        mLocationClient = LocationClient(this)
-
-        //通过LocationClientOption设置LocationClient相关参数
-        val option = LocationClientOption()
-        option.isOpenGps = true // 打开gps
-        option.setScanSpan(1000)
-
-        //设置locationClientOption
-        mLocationClient.locOption = option
-
-        mLocationClient.registerLocationListener(myLocationListener)
-        //开启地图定位图层
-        mLocationClient.start()
-
-        mSearch.setOnGetRoutePlanResultListener(object : OnGetRoutePlanResultListener {
-            override fun onGetWalkingRouteResult(p0: WalkingRouteResult?) {
-                TODO("Not yet implemented")
-            }
-
-            override fun onGetTransitRouteResult(p0: TransitRouteResult?) {
-                TODO("Not yet implemented")
-            }
-
-            override fun onGetMassTransitRouteResult(p0: MassTransitRouteResult?) {
-                TODO("Not yet implemented")
-            }
-
-            override fun onGetDrivingRouteResult(drivingRouteResult: DrivingRouteResult?) {
-                //创建DrivingRouteOverlay实例
-                drivingRouteResult?.routeLines?.get(0)?.run {
-                    val polylineList = arrayListOf<LatLng>()
-                    for (step in allStep) {
-                        if (step.wayPoints != null && step.wayPoints.isNotEmpty()) {
-                            polylineList.addAll(step.wayPoints)
-                        }
-                    }
-                    drawLineToMap(polylineList)
-                }
-            }
-
-            override fun onGetIndoorRouteResult(p0: IndoorRouteResult?) {
-                TODO("Not yet implemented")
-            }
-
-            override fun onGetBikingRouteResult(p0: BikingRouteResult?) {
-                TODO("Not yet implemented")
-            }
-        })
-    }
 
     private fun drawLineToMap(polylineList: ArrayList<LatLng>?) {
         mBaiduMap.clear()
@@ -273,10 +278,6 @@ class MockLocationActivity : AppCompatActivity(), View.OnClickListener {
         if (isFinishing) {
             destroy()
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
     }
 
     private fun destroy() {

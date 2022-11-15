@@ -12,11 +12,15 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.blankj.utilcode.util.ClickUtils
 import com.blankj.utilcode.util.ConvertUtils
+import com.castiel.common.base.BaseActivity
+import com.castiel.common.base.BaseViewModel
 import com.google.android.material.appbar.AppBarLayout
 import com.huolala.mockgps.R
 import com.huolala.mockgps.adaper.HistoryAdapter
 import com.huolala.mockgps.adaper.SimpleDividerDecoration
+import com.huolala.mockgps.databinding.ActivityMainBinding
 import com.huolala.mockgps.model.MockMessageModel
 import com.huolala.mockgps.model.NaviType
 import com.huolala.mockgps.model.PoiInfoModel
@@ -39,7 +43,7 @@ import kotlin.math.roundToInt
 /**
  * @author jiayu.liu
  */
-class MainActivity : AppCompatActivity(), View.OnClickListener {
+class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>(), View.OnClickListener {
     private var topMarginOffset: Int = 0
     private var topMargin: Int = 0
     private lateinit var adapter: HistoryAdapter
@@ -54,32 +58,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             }
         }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
+    override fun initView() {
         topMarginOffset = -ConvertUtils.dp2px(50f)
         topMargin = ConvertUtils.dp2px(15f)
 
-        initView()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        //获取历史数据
-        getHistoryData()
-    }
-
-    private fun getHistoryData() {
-        MMKVUtils.getDataList(
-            if (ll_location_card.visibility == View.VISIBLE) MMKVUtils.LOCATION_LIST_KEY
-            else MMKVUtils.NAVI_LIST_KEY
-        ).let {
-            adapter.setData(it)
-        }
-    }
-
-    private fun initView() {
         adapter = HistoryAdapter()
         recycler.adapter = adapter
         recycler.itemAnimator = null
@@ -107,17 +89,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
         })
 
-        iv_change.setOnClickListener(this)
-        iv_expand.setOnClickListener(this)
-        //location
-        ll_location_card.setOnClickListener(this)
-        btn_start_location.setOnClickListener(this)
-        //navi
-        tv_navi_name_start.setOnClickListener(this)
-        tv_navi_name_end.setOnClickListener(this)
-        btn_start_navi.setOnClickListener(this)
-        iv_navi_setting.setOnClickListener(this)
-
         appBarLayout.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
             appBarLayout?.run {
                 val scale = abs(verticalOffset * 1.0f / appBarLayout.totalScrollRange)
@@ -129,8 +100,48 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 ll_card.layoutParams = params
             }
         })
+
+        ClickUtils.applySingleDebouncing(iv_change, this)
+        ClickUtils.applySingleDebouncing(iv_expand, this)
+        //location
+        ClickUtils.applySingleDebouncing(ll_location_card, this)
+        ClickUtils.applySingleDebouncing(btn_start_location, this)
+        //navi
+        ClickUtils.applySingleDebouncing(tv_navi_name_start, this)
+        ClickUtils.applySingleDebouncing(tv_navi_name_end, this)
+        ClickUtils.applySingleDebouncing(btn_start_navi, this)
+        ClickUtils.applySingleDebouncing(iv_navi_setting, this)
     }
 
+
+    override fun initViewModel(): Class<BaseViewModel> {
+        return BaseViewModel::class.java
+    }
+
+    override fun getLayout(): Int {
+        return R.layout.activity_main
+    }
+
+    override fun initData() {
+    }
+
+    override fun initObserver() {
+    }
+
+    override fun onResume() {
+        super.onResume()
+        //获取历史数据
+        getHistoryData()
+    }
+
+    private fun getHistoryData() {
+        MMKVUtils.getDataList(
+            if (ll_location_card.visibility == View.VISIBLE) MMKVUtils.LOCATION_LIST_KEY
+            else MMKVUtils.NAVI_LIST_KEY
+        ).let {
+            adapter.setData(it)
+        }
+    }
 
     private fun setDataToView(model: PoiInfoModel?) {
         model?.run {
@@ -282,5 +293,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             }
         }
     }
+
 
 }
