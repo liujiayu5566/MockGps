@@ -20,17 +20,19 @@ import com.huolala.mockgps.databinding.DialogHintBinding
 import com.huolala.mockgps.model.MockMessageModel
 import com.huolala.mockgps.model.NaviType
 import com.huolala.mockgps.utils.DialogUtils
+import com.huolala.mockgps.utils.LocationUtils
 import com.huolala.mockgps.utils.MMKVUtils
 import com.huolala.mockgps.utils.Utils
 import com.huolala.mockgps.widget.HintDialog
 import com.huolala.mockgps.widget.NaviPathDialog
 import com.huolala.mockgps.widget.NaviPopupWindow
+import com.huolala.mockgps.widget.PointTypeDialog
 
 /**
  * @author jiayu.liu
  */
 class FileMockActivity : BaseActivity<ActivityFileBinding, BaseViewModel>(), View.OnClickListener {
-
+    private var mPointType = LocationUtils.gcj02
     override fun initViewModel(): Class<BaseViewModel> {
         return BaseViewModel::class.java
     }
@@ -48,6 +50,9 @@ class FileMockActivity : BaseActivity<ActivityFileBinding, BaseViewModel>(), Vie
         ClickUtils.applySingleDebouncing(dataBinding.btnFile, this)
         ClickUtils.applySingleDebouncing(dataBinding.btnStartNavi, this)
         ClickUtils.applySingleDebouncing(dataBinding.btnCreatePath, this)
+        ClickUtils.applySingleDebouncing(dataBinding.btnPointType, this)
+
+        dataBinding.pointType = "经纬度类型：$mPointType"
     }
 
     override fun initData() {
@@ -104,11 +109,22 @@ class FileMockActivity : BaseActivity<ActivityFileBinding, BaseViewModel>(), Vie
                         naviType = NaviType.NAVI_FILE,
                         path = text.toString(),
                         speed = MMKVUtils.getSpeed(),
+                        pointType = mPointType,
                     )
                     val intent = Intent(this, MockLocationActivity::class.java)
                     intent.putExtra("model", model)
                     startActivity(intent)
                 }
+            }
+            dataBinding.btnPointType -> {
+                PointTypeDialog(this).apply {
+                    listener = object : PointTypeDialog.PointTypeDialogListener {
+                        override fun onDismiss(type: String) {
+                            mPointType = type
+                            dataBinding.pointType = "经纬度类型：$mPointType"
+                        }
+                    }
+                }.show(mPointType)
             }
             else -> {
             }

@@ -133,7 +133,7 @@ class GpsAndFloatingService : Service() {
                 CalculationLogLatDistance.getNextLonLat(mCurrentLocation, yaw, mSpeed.toDouble())
             println("${location.latitude}  ||  ${location.longitude}")
             //计算经纬度为非法值则直接取下一阶段经纬度更新
-            if (location.latitude <= 0 || location.longitude <= 0 || location.latitude.isNaN() || location.longitude.isNaN()) {
+            if (location.latitude.isNaN() || location.longitude.isNaN()) {
                 location = polyline[index] as LatLng
                 index++
                 println("非法")
@@ -398,15 +398,26 @@ class GpsAndFloatingService : Service() {
 
 
     fun startSimulateLocation(latLng: LatLng) {
-        val gps84LatLng = LocationUtils.gcj02ToWGS84(latLng.longitude, latLng.latitude)
+        val pointType = model?.pointType ?: LocationUtils.gcj02
+        var gps84 = doubleArrayOf(latLng.longitude, latLng.latitude)
+        when (pointType) {
+            LocationUtils.gcj02 -> {
+                gps84 = LocationUtils.gcj02ToWGS84(latLng.longitude, latLng.latitude)
+            }
+            LocationUtils.bd09 -> {
+                gps84 = LocationUtils.bd09ToWGS84(latLng.longitude, latLng.latitude)
+            }
+            else -> {}
+        }
+
         val loc = Location(providerStr)
 
         loc.altitude = 2.0
         loc.accuracy = 1.0f
         loc.bearing = bearing
         loc.speed = mSpeed
-        loc.longitude = gps84LatLng[0]
-        loc.latitude = gps84LatLng[1]
+        loc.longitude = gps84[0]
+        loc.latitude = gps84[1]
         loc.time = System.currentTimeMillis()
         loc.elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos()
 

@@ -3,6 +3,7 @@ package com.huolala.mockgps.model
 import android.os.Parcel
 import android.os.Parcelable
 import androidx.annotation.IntDef
+import com.huolala.mockgps.utils.LocationUtils
 
 
 @IntDef(NaviType.LOCATION, NaviType.NAVI, NaviType.NAVI_FILE)
@@ -35,7 +36,8 @@ data class MockMessageModel(
      * 文件数据路径
      */
     var path: String? = "",
-    var uid: String? = ""
+    var uid: String? = "",
+    var pointType: String? = LocationUtils.gcj02
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readParcelable(PoiInfoModel::class.java.classLoader),
@@ -43,6 +45,7 @@ data class MockMessageModel(
         parcel.readParcelable(PoiInfoModel::class.java.classLoader),
         parcel.readInt(),
         parcel.readInt(),
+        parcel.readString(),
         parcel.readString(),
         parcel.readString()
     ) {
@@ -56,6 +59,7 @@ data class MockMessageModel(
         parcel.writeInt(speed)
         parcel.writeString(path)
         parcel.writeString(uid)
+        parcel.writeString(pointType)
     }
 
     override fun describeContents(): Int {

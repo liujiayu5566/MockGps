@@ -4,6 +4,9 @@
 
     <data>
 
+        <variable
+            name="pointType"
+            type="String" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -74,6 +77,23 @@
             app:layout_constraintBottom_toBottomOf="@id/tv_file"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="@id/tv_file" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_point_type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/shape_round_30_color_master"
+            android:gravity="center"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="5dp"
+            android:text="@{pointType}"
+            android:textColor="@color/white"
+            app:layout_constraintBottom_toBottomOf="@id/btn_create_path"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="@id/btn_create_path" />
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btn_create_path"
