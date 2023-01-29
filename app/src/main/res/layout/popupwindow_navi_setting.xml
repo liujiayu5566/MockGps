@@ -10,10 +10,10 @@
         android:layout_height="wrap_content"
         android:layout_margin="3dp"
         android:background="@drawable/shape_round_5_color_white"
+        android:elevation="3dp"
         android:orientation="vertical"
         android:paddingHorizontal="15dp"
-        android:paddingVertical="15dp"
-        android:elevation="3dp">
+        android:paddingVertical="15dp">
 
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/tv_speed"
@@ -39,6 +39,17 @@
             app:bsb_section_count="3"
             app:bsb_show_section_mark="true"
             app:bsb_thumb_color="@color/master_color" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_input_speed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:background="@drawable/shape_round_30_color_master"
+            android:minHeight="20dp"
+            android:text="自定义输入"
+            android:textColor="@color/white"
+            android:textSize="10sp" />
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 

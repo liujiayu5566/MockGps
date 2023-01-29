@@ -3,6 +3,7 @@
     <string name="change_mock">切换</string>
     <string name="setting">设置</string>
     <string name="go_main">进入mockGps</string>
+    <string name="confirm">确认</string>
     <string name="receiver_hint">
        Intent intentBroadcast = new Intent();\n
        intentBroadcast.setAction(\"com.huolala.mockgps.navi\");\n

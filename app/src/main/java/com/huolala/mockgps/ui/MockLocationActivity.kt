@@ -2,7 +2,6 @@ package com.huolala.mockgps.ui
 
 import android.content.Intent
 import android.os.*
-import androidx.appcompat.app.AppCompatActivity
 import android.view.View
 import android.widget.Toast
 import com.huolala.mockgps.server.GpsAndFloatingService

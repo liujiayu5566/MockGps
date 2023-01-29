@@ -35,7 +35,6 @@ class HintDialog(context: Context, title: String = "", msg: String = "") : Dialo
             ClickUtils.applySingleDebouncing(it.btnConfirm) {
                 dismiss()
             }
-            show()
         }
     }
 }

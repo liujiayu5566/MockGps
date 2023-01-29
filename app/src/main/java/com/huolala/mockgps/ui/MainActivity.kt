@@ -1,16 +1,10 @@
 package com.huolala.mockgps.ui
 
 import android.content.Intent
-import android.net.Uri
-import android.os.Build
-import android.os.Bundle
-import android.provider.Settings
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.blankj.utilcode.util.ClickUtils
 import com.blankj.utilcode.util.ConvertUtils
@@ -36,7 +30,6 @@ import kotlinx.android.synthetic.main.layout_location_card.tv_location_latlng
 import kotlinx.android.synthetic.main.layout_navi_card.*
 import kotlinx.android.synthetic.main.layout_navi_card.tv_navi_name_end
 import kotlinx.android.synthetic.main.layout_navi_card.tv_navi_name_start
-import java.lang.Exception
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
