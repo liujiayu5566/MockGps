@@ -31,7 +31,6 @@ class GuideActivity : BaseActivity<ActivityGuideBinding, BaseViewModel>(), View.
     private val permissions: Array<String> = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.ACCESS_COARSE_LOCATION,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE,
     )
 
 
