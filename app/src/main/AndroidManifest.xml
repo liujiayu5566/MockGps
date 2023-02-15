@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.huolala.mockgps">
 
-
+    <uses-library android:name="android.test.runner" />
     <!--允许程序访问WiFi网络信息-->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <!--允许程序读写手机状态和身份-->

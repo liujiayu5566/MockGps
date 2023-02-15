@@ -5,6 +5,7 @@ import android.app.Service
 import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.PixelFormat
+import android.location.Criteria
 import android.location.Location
 import android.location.LocationManager
 import android.location.provider.ProviderProperties
@@ -437,11 +438,11 @@ class GpsAndFloatingService : Service() {
     fun mockGps(location: Location) {
         locationManager?.run {
             try {
-                var powerUsageMedium = 1
-                var accuracyCoarse = 2
+                var powerUsageMedium = Criteria.POWER_LOW
+                var accuracyCoarse = Criteria.ACCURACY_FINE
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                     powerUsageMedium = ProviderProperties.POWER_USAGE_LOW
-                    accuracyCoarse = ProviderProperties.ACCURACY_COARSE
+                    accuracyCoarse = ProviderProperties.ACCURACY_FINE
                 }
                 // @throws IllegalArgumentException if a provider with the given name already exists
                 addTestProvider(
