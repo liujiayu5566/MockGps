@@ -51,6 +51,9 @@ class GuideActivity : BaseActivity<ActivityGuideBinding, BaseViewModel>(), View.
     }
 
     override fun initData() {
+        viewModel.toast.observe(this) {
+
+        }
     }
 
     override fun initObserver() {

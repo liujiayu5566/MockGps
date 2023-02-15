@@ -10,13 +10,13 @@ open class BaseApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        SmartRefreshLayout.setDefaultRefreshHeaderCreator { context, layout ->
+        SmartRefreshLayout.setDefaultRefreshHeaderCreator { context, _ ->
             MsbRefreshHeader(
                 context
             )
         }
         //设置全局的Footer构建器
-        SmartRefreshLayout.setDefaultRefreshFooterCreator { context, layout ->
+        SmartRefreshLayout.setDefaultRefreshFooterCreator { context, _ ->
             MsbRefreshFooter(
                 context
             )

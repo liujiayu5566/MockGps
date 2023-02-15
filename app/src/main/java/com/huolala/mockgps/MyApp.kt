@@ -4,16 +4,16 @@ import android.app.Application
 import com.baidu.mapapi.CoordType
 import com.baidu.mapapi.SDKInitializer
 import com.castiel.common.AppManager
+import com.castiel.common.BaseApp
 
 /**
  * @author jiayu.liu
  */
-class MyApp : Application() {
+class MyApp : BaseApp() {
 
     override fun onCreate() {
         super.onCreate()
 
-        AppManager.instance.init(this)
         SDKInitializer.initialize(this)
         SDKInitializer.setCoordType(CoordType.GCJ02);
     }
