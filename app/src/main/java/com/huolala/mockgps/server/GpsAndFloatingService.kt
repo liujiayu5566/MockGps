@@ -55,6 +55,11 @@ class GpsAndFloatingService : Service() {
     private val mScreenWidth = ScreenUtils.getScreenWidth()
     private val mScreenHeight = ScreenUtils.getScreenHeight()
 
+    /**
+     * 模拟导航点更新间隔  单位：ms  小于等于1000ms
+     */
+    private val mNaviUpdateValue = 1000L;
+
     override fun onCreate() {
         super.onCreate()
         handle = object : Handler(Looper.getMainLooper()) {
@@ -89,7 +94,7 @@ class GpsAndFloatingService : Service() {
                                         mCurrentLocation.latitude
                                     )
                                 startSimulateLocation(mCurrentLocation)
-                                handle.sendMessageDelayed(Message.obtain(msg), 500)
+                                handle.sendMessageDelayed(Message.obtain(msg), mNaviUpdateValue)
                             }
                         }
                     }
@@ -114,7 +119,7 @@ class GpsAndFloatingService : Service() {
 
     fun getLatLngNext(polyline: ArrayList<*>): LatLng {
         //根据循环间隔处理  目前按照500ms进行处理  将speed进行除2处理  speed单位:m/s
-        val mSpeed = this.mSpeed / 2
+        val mSpeed = this.mSpeed / (1000.0 / mNaviUpdateValue)
 
         val indexLonLat = polyline[index] as LatLng
         val polyLineCount = polyline.size
