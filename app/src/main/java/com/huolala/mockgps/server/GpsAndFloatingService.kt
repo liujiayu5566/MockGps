@@ -444,10 +444,10 @@ class GpsAndFloatingService : Service() {
         locationManager?.run {
             try {
                 var powerUsageMedium = Criteria.POWER_LOW
-                var accuracyCoarse = Criteria.ACCURACY_FINE
+                var accuracyCoarse = Criteria.ACCURACY_COARSE
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                     powerUsageMedium = ProviderProperties.POWER_USAGE_LOW
-                    accuracyCoarse = ProviderProperties.ACCURACY_FINE
+                    accuracyCoarse = ProviderProperties.ACCURACY_COARSE
                 }
                 // @throws IllegalArgumentException if a provider with the given name already exists
                 addTestProvider(
