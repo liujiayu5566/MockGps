@@ -58,7 +58,7 @@ class GpsAndFloatingService : Service() {
     /**
      * 模拟导航点更新间隔  单位：ms  小于等于1000ms
      */
-    private val mNaviUpdateValue = 1000L;
+    private val mNaviUpdateValue = 500L;
 
     override fun onCreate() {
         super.onCreate()
@@ -69,8 +69,8 @@ class GpsAndFloatingService : Service() {
                         if (isStart) {
                             (msg.obj as PoiInfoModel?)?.latLng?.let {
                                 view.tv_progress.text = String.format("%d / %d", 0, 0)
-                                startSimulateLocation(it)
-                                handle.sendMessageDelayed(Message.obtain(msg), 1000)
+                                startSimulateLocation(it, true)
+                                handle.sendMessageDelayed(Message.obtain(msg), mNaviUpdateValue)
                             }
                         }
                     }
@@ -93,7 +93,7 @@ class GpsAndFloatingService : Service() {
                                         mCurrentLocation.longitude,
                                         mCurrentLocation.latitude
                                     )
-                                startSimulateLocation(mCurrentLocation)
+                                startSimulateLocation(mCurrentLocation, false)
                                 handle.sendMessageDelayed(Message.obtain(msg), mNaviUpdateValue)
                             }
                         }
@@ -403,7 +403,7 @@ class GpsAndFloatingService : Service() {
     }
 
 
-    fun startSimulateLocation(latLng: LatLng) {
+    fun startSimulateLocation(latLng: LatLng, isSingle: Boolean) {
         val pointType = model?.pointType ?: LocationUtils.gcj02
         var gps84 = doubleArrayOf(latLng.longitude, latLng.latitude)
         when (pointType) {
@@ -421,7 +421,7 @@ class GpsAndFloatingService : Service() {
         loc.altitude = 2.0
         loc.accuracy = 1.0f
         loc.bearing = bearing
-        loc.speed = mSpeed
+        loc.speed = if (isSingle) 0F else mSpeed
         loc.longitude = gps84[0]
         loc.latitude = gps84[1]
         loc.time = System.currentTimeMillis()
