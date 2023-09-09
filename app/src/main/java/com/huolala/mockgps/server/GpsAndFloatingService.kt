@@ -139,7 +139,7 @@ class GpsAndFloatingService : Service() {
                 CalculationLogLatDistance.getNextLonLat(mCurrentLocation, yaw, mSpeed.toDouble())
             println("${location.latitude}  ||  ${location.longitude}")
             //计算经纬度为非法值则直接取下一阶段经纬度更新
-            if (location.latitude <= 0 || location.longitude <= 0 || location.latitude.isNaN() || location.longitude.isNaN()) {
+            if (location.latitude <= 0.0 || location.longitude <= 0.0 || location.latitude.isNaN() || location.longitude.isNaN()) {
                 location = polyline[index] as LatLng
                 index++
                 println("非法")
