@@ -58,7 +58,7 @@ class GpsAndFloatingService : Service() {
     /**
      * 模拟导航点更新间隔  单位：ms  小于等于1000ms
      */
-    private val mNaviUpdateValue = 500L;
+    private val mNaviUpdateValue = 1000L;
 
     override fun onCreate() {
         super.onCreate()
@@ -440,20 +440,20 @@ class GpsAndFloatingService : Service() {
         }
     }
 
-    fun mockGps(location: Location) {
+    private fun mockGps(location: Location) {
         locationManager?.run {
             try {
                 var powerUsageMedium = Criteria.POWER_LOW
-                var accuracyCoarse = Criteria.ACCURACY_COARSE
+                var accuracyCoarse = Criteria.ACCURACY_FINE
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                     powerUsageMedium = ProviderProperties.POWER_USAGE_LOW
-                    accuracyCoarse = ProviderProperties.ACCURACY_COARSE
+                    accuracyCoarse = ProviderProperties.ACCURACY_FINE
                 }
                 // @throws IllegalArgumentException if a provider with the given name already exists
                 addTestProvider(
                     providerStr,
-                    true,
-                    true,
+                    false,
+                    false,
                     false,
                     false,
                     true,
