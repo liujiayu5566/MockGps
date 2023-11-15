@@ -4,32 +4,25 @@ import android.content.Intent
 import android.os.*
 import android.view.View
 import android.widget.Toast
-import com.huolala.mockgps.server.GpsAndFloatingService
-
-import com.baidu.location.BDLocation
-
 import com.baidu.location.BDAbstractLocationListener
-
-import com.baidu.location.LocationClientOption
-
+import com.baidu.location.BDLocation
 import com.baidu.location.LocationClient
+import com.baidu.location.LocationClientOption
 import com.baidu.mapapi.map.*
 import com.baidu.mapapi.model.LatLng
 import com.baidu.mapapi.model.LatLngBounds
-import com.baidu.mapapi.search.route.*
-import com.huolala.mockgps.model.MockMessageModel
-import com.huolala.mockgps.utils.Utils
-import kotlinx.android.synthetic.main.activity_navi.*
-
-import com.baidu.mapapi.map.OverlayOptions
 import com.blankj.utilcode.util.ClickUtils
-
 import com.blankj.utilcode.util.FileIOUtils
 import com.castiel.common.base.BaseActivity
 import com.castiel.common.base.BaseViewModel
 import com.huolala.mockgps.R
 import com.huolala.mockgps.databinding.ActivityNaviBinding
+import com.huolala.mockgps.manager.SearchManager
+import com.huolala.mockgps.model.MockMessageModel
 import com.huolala.mockgps.model.NaviType
+import com.huolala.mockgps.server.GpsAndFloatingService
+import com.huolala.mockgps.utils.Utils
+import kotlinx.android.synthetic.main.activity_navi.*
 import java.lang.ref.WeakReference
 
 
@@ -41,7 +34,6 @@ class MockLocationActivity : BaseActivity<ActivityNaviBinding, BaseViewModel>(),
     private var DRAW_MAP = 0;
     private lateinit var mLocationClient: LocationClient
     private lateinit var mBaiduMap: BaiduMap
-    private var mSearch: RoutePlanSearch = RoutePlanSearch.newInstance()
     private var mNaviType: Int = NaviType.LOCATION
     private val mHandle: Handler = MockLocationHandler(this)
 
@@ -99,8 +91,9 @@ class MockLocationActivity : BaseActivity<ActivityNaviBinding, BaseViewModel>(),
                 true, null
             )
         )
-
-        mBaiduMap.setMapStatus(MapStatusUpdateFactory.zoomBy(16f))
+        mBaiduMap.setOnMapLoadedCallback {
+            startMock()
+        }
 
         mLocationClient = LocationClient(this)
 
@@ -115,39 +108,11 @@ class MockLocationActivity : BaseActivity<ActivityNaviBinding, BaseViewModel>(),
         mLocationClient.registerLocationListener(myLocationListener)
         //开启地图定位图层
         mLocationClient.start()
-
-        mSearch.setOnGetRoutePlanResultListener(object : OnGetRoutePlanResultListener {
-            override fun onGetWalkingRouteResult(p0: WalkingRouteResult?) {
-            }
-
-            override fun onGetTransitRouteResult(p0: TransitRouteResult?) {
-            }
-
-            override fun onGetMassTransitRouteResult(p0: MassTransitRouteResult?) {
-            }
-
-            override fun onGetDrivingRouteResult(drivingRouteResult: DrivingRouteResult?) {
-                //创建DrivingRouteOverlay实例
-                drivingRouteResult?.routeLines?.get(0)?.run {
-                    val polylineList = arrayListOf<LatLng>()
-                    for (step in allStep) {
-                        if (step.wayPoints != null && step.wayPoints.isNotEmpty()) {
-                            polylineList.addAll(step.wayPoints)
-                        }
-                    }
-                    drawLineToMap(polylineList)
-                }
-            }
-
-            override fun onGetIndoorRouteResult(p0: IndoorRouteResult?) {
-            }
-
-            override fun onGetBikingRouteResult(p0: BikingRouteResult?) {
-            }
-        })
     }
 
-    override fun initData() {
+    override fun initData() {}
+
+    private fun startMock() {
         val model = intent.getParcelableExtra<MockMessageModel>("model")
         if (model == null) {
             pickPoiError()
@@ -163,19 +128,18 @@ class MockLocationActivity : BaseActivity<ActivityNaviBinding, BaseViewModel>(),
                         pickPoiError()
                     }
                 }
+
                 NaviType.NAVI -> {
                     if (startNavi == null || endNavi == null) {
                         pickPoiError()
                         return
                     }
-                    mSearch.drivingSearch(
-                        DrivingRoutePlanOption()
-                            .policy(DrivingRoutePlanOption.DrivingPolicy.ECAR_DIS_FIRST)
-                            .from(PlanNode.withLocation(startNavi?.latLng))
-                            .to(PlanNode.withLocation(endNavi?.latLng))
-                    )
-                    startMockServer(model)
+                    SearchManager.INSTANCE.polylineList?.let {
+                        drawLineToMap(it)
+                        startMockServer(model)
+                    }
                 }
+
                 NaviType.NAVI_FILE -> {
                     try {
                         val polylineList = arrayListOf<LatLng>()
@@ -203,9 +167,11 @@ class MockLocationActivity : BaseActivity<ActivityNaviBinding, BaseViewModel>(),
                             obj = polylineList
                         }, 500)
                     } catch (e: Exception) {
+                        e.printStackTrace()
                     }
                     startMockServer(model)
                 }
+
                 else -> {
                 }
             }
@@ -222,9 +188,9 @@ class MockLocationActivity : BaseActivity<ActivityNaviBinding, BaseViewModel>(),
     }
 
 
-    private fun drawLineToMap(polylineList: ArrayList<LatLng>?) {
+    private fun drawLineToMap(polylineList: List<LatLng>) {
         mBaiduMap.clear()
-        if (polylineList == null || polylineList.size == 0) {
+        if (polylineList.isEmpty()) {
             return
         }
 
@@ -280,7 +246,6 @@ class MockLocationActivity : BaseActivity<ActivityNaviBinding, BaseViewModel>(),
     }
 
     private fun destroy() {
-        mSearch.destroy()
         mLocationClient.unRegisterLocationListener(myLocationListener)
         mLocationClient.stop()
         mBaiduMap.isMyLocationEnabled = false
@@ -292,6 +257,7 @@ class MockLocationActivity : BaseActivity<ActivityNaviBinding, BaseViewModel>(),
             iv_back -> {
                 finish()
             }
+
             else -> {
             }
         }
@@ -311,10 +277,12 @@ class MockLocationActivity : BaseActivity<ActivityNaviBinding, BaseViewModel>(),
                 when (msg.what) {
                     DRAW_MAP -> {
                         (msg.obj as ArrayList<LatLng>?)?.let {
+
                             drawLineToMap(it)
                         }
 
                     }
+
                     else -> {
                     }
                 }

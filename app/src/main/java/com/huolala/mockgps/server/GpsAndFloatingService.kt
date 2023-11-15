@@ -1,10 +1,7 @@
 package com.huolala.mockgps.server
 
-import android.annotation.SuppressLint
 import android.app.Service
 import android.content.Intent
-import android.content.IntentFilter
-import android.graphics.PixelFormat
 import android.location.Criteria
 import android.location.Location
 import android.location.LocationManager
@@ -15,8 +12,8 @@ import android.view.*
 import com.baidu.mapapi.model.LatLng
 import com.baidu.mapapi.search.route.*
 import com.blankj.utilcode.util.*
-import com.huolala.mockgps.MockReceiver
-import com.huolala.mockgps.R
+import com.huolala.mockgps.manager.FloatingViewManger
+import com.huolala.mockgps.manager.SearchManager
 import com.huolala.mockgps.model.MockMessageModel
 import com.huolala.mockgps.model.NaviType
 import com.huolala.mockgps.model.PoiInfoModel
@@ -24,7 +21,6 @@ import com.huolala.mockgps.utils.CalculationLogLatDistance
 import com.huolala.mockgps.utils.LocationUtils
 import com.huolala.mockgps.utils.Utils
 import kotlinx.android.synthetic.main.layout_floating.view.*
-import kotlin.math.min
 
 /**
  * @author jiayu.liu
@@ -32,16 +28,13 @@ import kotlin.math.min
 class GpsAndFloatingService : Service() {
     private val START_MOCK_LOCATION = 1001
     private val START_MOCK_LOCATION_NAVI = 1002
-    private lateinit var view: View
-    private var isAddView: Boolean = false
     private var locationManager: LocationManager? = null
-    private var windowManager: WindowManager? = null
-    private var layoutParams: WindowManager.LayoutParams? = null
     private var isStart = false
     private lateinit var handle: Handler
     private var model: MockMessageModel? = null
     private var index = 0
     private val providerStr: String = LocationManager.GPS_PROVIDER
+    private val networkStr: String = LocationManager.NETWORK_PROVIDER
     private var bearing: Float = 1.0f
 
     /**
@@ -49,16 +42,11 @@ class GpsAndFloatingService : Service() {
      */
     private var mSpeed: Float = 60 / 3.6f
     private lateinit var mCurrentLocation: LatLng
-    private var mSearch: RoutePlanSearch = RoutePlanSearch.newInstance()
-
-    private lateinit var mMockReceiver: MockReceiver
-    private val mScreenWidth = ScreenUtils.getScreenWidth()
-    private val mScreenHeight = ScreenUtils.getScreenHeight()
 
     /**
      * 模拟导航点更新间隔  单位：ms  小于等于1000ms
      */
-    private val mNaviUpdateValue = 1000L;
+    private val mNaviUpdateValue = 1000L
 
     override fun onCreate() {
         super.onCreate()
@@ -68,16 +56,17 @@ class GpsAndFloatingService : Service() {
                     START_MOCK_LOCATION -> {
                         if (isStart) {
                             (msg.obj as PoiInfoModel?)?.latLng?.let {
-                                view.tv_progress.text = String.format("%d / %d", 0, 0)
+//                                view.tv_progress.text = String.format("%d / %d", 0, 0)
                                 startSimulateLocation(it, true)
                                 handle.sendMessageDelayed(Message.obtain(msg), mNaviUpdateValue)
                             }
                         }
                     }
+
                     START_MOCK_LOCATION_NAVI -> {
                         if (isStart) {
                             (msg.obj as ArrayList<*>?)?.let {
-                                if (it.isEmpty() || it.size == 0) {
+                                if (it.isEmpty()) {
                                     return
                                 }
                                 if (index == 0) {
@@ -86,35 +75,48 @@ class GpsAndFloatingService : Service() {
                                 } else if (index < it.size) {
                                     mCurrentLocation = getLatLngNext(it)
                                 }
-                                view.tv_progress.text = String.format("%d / %d", index, it.size)
-                                view.tv_current_position.text =
-                                    String.format(
-                                        "%f,%f",
-                                        mCurrentLocation.longitude,
-                                        mCurrentLocation.latitude
-                                    )
+//                                view.tv_progress.text = String.format("%d / %d", index, it.size)
                                 startSimulateLocation(mCurrentLocation, false)
                                 handle.sendMessageDelayed(Message.obtain(msg), mNaviUpdateValue)
                             }
                         }
                     }
+
                     else -> {
                     }
                 }
 
             }
         }
-        initReceiver()
-        initView()
-        initSearch()
-        initWindowAndParams()
+        initLocationManager()
+        initFloatingView()
     }
 
-    private fun initReceiver() {
-        mMockReceiver = MockReceiver()
-        val intentFilter = IntentFilter()
-        intentFilter.addAction("com.huolala.mockgps.navi")
-        registerReceiver(mMockReceiver, intentFilter);
+    private fun initLocationManager() {
+        locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
+    }
+
+    private fun initFloatingView() {
+        //浮动窗
+        FloatingViewManger.INSTANCE.run {
+            addFloatViewToWindow()
+            listener = object:FloatingViewManger.FloatingViewListener{
+                override fun pause() {
+                    removeGps()
+                    handle.removeCallbacksAndMessages(null)
+                }
+
+                override fun reStart() {
+                    SearchManager.INSTANCE.polylineList?.let {
+                        sendHandler(
+                            START_MOCK_LOCATION_NAVI,
+                            it
+                        )
+                    }
+                }
+
+            }
+        }
     }
 
     fun getLatLngNext(polyline: ArrayList<*>): LatLng {
@@ -167,139 +169,6 @@ class GpsAndFloatingService : Service() {
         return getLatLngNext(polyline)
     }
 
-    private fun initSearch() {
-        mSearch.setOnGetRoutePlanResultListener(object : OnGetRoutePlanResultListener {
-            override fun onGetWalkingRouteResult(p0: WalkingRouteResult?) {
-                TODO("Not yet implemented")
-            }
-
-            override fun onGetTransitRouteResult(p0: TransitRouteResult?) {
-                TODO("Not yet implemented")
-            }
-
-            override fun onGetMassTransitRouteResult(p0: MassTransitRouteResult?) {
-                TODO("Not yet implemented")
-            }
-
-            override fun onGetDrivingRouteResult(drivingRouteResult: DrivingRouteResult?) {
-                //创建DrivingRouteOverlay实例
-                drivingRouteResult?.routeLines?.get(0)?.run {
-                    val polylineList = arrayListOf<LatLng>()
-                    for (step in allStep) {
-                        if (step.wayPoints != null && step.wayPoints.isNotEmpty()) {
-                            polylineList.addAll(step.wayPoints)
-                        }
-                    }
-                    //提前计算路线 目前没有使用
-//                    val polyLine = Utils.latLngToSpeedLatLng(polylineList, mSpeed)
-                    index = 0
-                    sendHandler(
-                        START_MOCK_LOCATION_NAVI,
-                        polylineList
-                    )
-                }
-            }
-
-            override fun onGetIndoorRouteResult(p0: IndoorRouteResult?) {
-                TODO("Not yet implemented")
-            }
-
-            override fun onGetBikingRouteResult(p0: BikingRouteResult?) {
-                TODO("Not yet implemented")
-            }
-        })
-    }
-
-    private fun initWindowAndParams() {
-        locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
-
-        windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
-
-        layoutParams = WindowManager.LayoutParams()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            layoutParams?.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-        } else {
-            layoutParams?.type = WindowManager.LayoutParams.TYPE_PHONE
-        }
-        layoutParams?.gravity = Gravity.CENTER
-        //焦点问题
-        layoutParams?.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-        //透明度
-        layoutParams?.format = PixelFormat.RGBA_8888
-        layoutParams?.x = mScreenWidth / 2
-        layoutParams?.y = 0
-        layoutParams?.width = WindowManager.LayoutParams.WRAP_CONTENT
-        layoutParams?.height = WindowManager.LayoutParams.WRAP_CONTENT
-    }
-
-    @SuppressLint("ClickableViewAccessibility")
-    private fun initView() {
-        view = LayoutInflater.from(this).inflate(R.layout.layout_floating, null)
-
-        //播放
-        view.startAndPause.setOnClickListener {
-            isStart = !view.isSelected
-            view.isSelected = isStart
-            if (!isStart) {
-                removeGps()
-                handle.removeCallbacksAndMessages(null)
-            } else {
-                mockLocation()
-            }
-        }
-        view.setOnClickListener(object : ClickUtils.OnMultiClickListener(2, 300) {
-            override fun onTriggerClick(v: View?) {
-                AppUtils.launchApp(packageName)
-            }
-
-            override fun onBeforeTriggerClick(v: View?, count: Int) {
-            }
-        })
-
-        view.setOnTouchListener(object : View.OnTouchListener {
-            private var x: Int = 0
-            private var y: Int = 0
-
-            override fun onTouch(v: View?, event: MotionEvent?): Boolean {
-                when (event?.action) {
-                    MotionEvent.ACTION_DOWN -> {
-                        x = event.rawX.toInt()
-                        y = event.rawY.toInt()
-                    }
-                    MotionEvent.ACTION_MOVE -> {
-                        val nowX = event.rawX
-                        val nowY = event.rawY
-                        val movedX = nowX - x
-                        val movedY = nowY - y
-                        x = nowX.toInt()
-                        y = nowY.toInt()
-                        layoutParams?.x = if (layoutParams?.x?.plus(movedX.toInt())!! > 0)
-                            min(
-                                layoutParams?.x?.plus(movedX.toInt())!!,
-                                (mScreenWidth - view.width) / 2
-                            )
-                        else
-                            (layoutParams?.x?.plus(movedX.toInt())!!).coerceAtLeast(-(mScreenWidth - view.width) / 2)
-
-                        layoutParams?.y = if (layoutParams?.y?.plus(movedY.toInt())!! > 0)
-                            min(
-                                layoutParams?.y?.plus(movedY.toInt())!!,
-                                (mScreenHeight - view.height) / 2
-                            )
-                        else
-                            (layoutParams?.y?.plus(movedY.toInt())!!).coerceAtLeast(-(mScreenHeight - view.height) / 2)
-
-                        // 更新悬浮窗控件布局
-                        windowManager?.updateViewLayout(view, layoutParams);
-                    }
-                }
-                return false
-            }
-
-        })
-    }
-
-
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
@@ -313,8 +182,6 @@ class GpsAndFloatingService : Service() {
             }
         }
         mockLocation()
-        //浮动窗
-        addView()
         return super.onStartCommand(intent, flags, startId)
     }
 
@@ -324,15 +191,19 @@ class GpsAndFloatingService : Service() {
                 NaviType.LOCATION -> {
                     sendHandler(START_MOCK_LOCATION, locationModel)
                 }
+
                 NaviType.NAVI -> {
                     mSpeed = speed / 3.6f
-                    mSearch.drivingSearch(
-                        DrivingRoutePlanOption()
-                            .policy(DrivingRoutePlanOption.DrivingPolicy.ECAR_DIS_FIRST)
-                            .from(PlanNode.withLocation(startNavi?.latLng))
-                            .to(PlanNode.withLocation(endNavi?.latLng))
-                    )
+                    //算路成功后 startService
+                    index = 0
+                    SearchManager.INSTANCE.polylineList?.let {
+                        sendHandler(
+                            START_MOCK_LOCATION_NAVI,
+                            it
+                        )
+                    }
                 }
+
                 NaviType.NAVI_FILE -> {
                     try {
                         mSpeed = speed / 3.6f
@@ -369,12 +240,13 @@ class GpsAndFloatingService : Service() {
                         )
                     }
                 }
+
                 else -> {
                 }
             }
         } ?: run {
             isStart = false
-            view.isSelected = isStart
+//            view.isSelected = isStart
         }
     }
 
@@ -387,7 +259,7 @@ class GpsAndFloatingService : Service() {
             removeGps()
             handle.removeCallbacksAndMessages(null)
             isStart = true
-            view.isSelected = isStart
+//            view.isSelected = isStart
             handle.sendMessage(it)
         }
     }
@@ -395,11 +267,8 @@ class GpsAndFloatingService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        unregisterReceiver(mMockReceiver)
         handle.removeCallbacksAndMessages(null)
         removeGps()
-        mSearch.destroy()
-        removeView()
     }
 
 
@@ -410,15 +279,16 @@ class GpsAndFloatingService : Service() {
             LocationUtils.gcj02 -> {
                 gps84 = LocationUtils.gcj02ToWGS84(latLng.longitude, latLng.latitude)
             }
+
             LocationUtils.bd09 -> {
                 gps84 = LocationUtils.bd09ToWGS84(latLng.longitude, latLng.latitude)
             }
+
             else -> {}
         }
 
         val loc = Location(providerStr)
 
-        loc.altitude = 2.0
         loc.accuracy = 1.0f
         loc.bearing = bearing
         loc.speed = if (isSingle) 0F else mSpeed
@@ -434,6 +304,7 @@ class GpsAndFloatingService : Service() {
         try {
             locationManager?.run {
                 removeTestProvider(providerStr)
+                removeTestProvider(networkStr)
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -449,53 +320,45 @@ class GpsAndFloatingService : Service() {
                     powerUsageMedium = ProviderProperties.POWER_USAGE_LOW
                     accuracyCoarse = ProviderProperties.ACCURACY_FINE
                 }
-                // @throws IllegalArgumentException if a provider with the given name already exists
                 addTestProvider(
                     providerStr,
                     false,
-                    false,
-                    false,
-                    false,
+                    true,
+                    true,
+                    true,
                     true,
                     true,
                     true,
                     powerUsageMedium,
                     accuracyCoarse
                 )
-                setTestProviderEnabled(providerStr, true)
+                if (!isProviderEnabled(providerStr)) {
+                    setTestProviderEnabled(providerStr, true)
+                }
                 setTestProviderLocation(providerStr, location)
-            } catch (e: IllegalArgumentException) {
-                setTestProviderLocation(providerStr, location)
+                //network
+                location.run {
+                    provider = networkStr
+                    addTestProvider(
+                        networkStr,
+                        true,
+                        false,
+                        true,
+                        true,
+                        true,
+                        true,
+                        true,
+                        powerUsageMedium,
+                        accuracyCoarse
+                    )
+                    if (!isProviderEnabled(networkStr)) {
+                        setTestProviderEnabled(networkStr, true)
+                    }
+                    setTestProviderLocation(networkStr, location)
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
     }
-
-    private fun addView() {
-        try {
-            if (isAddView) {
-                return
-            }
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M
-                || Settings.canDrawOverlays(applicationContext)
-            ) {
-                isAddView = true
-                windowManager?.addView(view, layoutParams)
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    private fun removeView() {
-        try {
-            isAddView = false
-            windowManager?.removeView(view)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-
 }

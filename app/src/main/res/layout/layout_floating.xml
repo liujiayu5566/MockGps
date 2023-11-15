@@ -6,14 +6,14 @@
     android:background="@color/black_50"
     android:gravity="center"
     android:orientation="horizontal"
-    android:paddingHorizontal="20dp"
+    android:paddingHorizontal="10dp"
     android:paddingVertical="10dp">
 
     <TextView
         android:id="@+id/tv_progress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="30dp"
+        android:layout_marginEnd="20dp"
         android:includeFontPadding="false"
         android:text="0 / 0"
         android:textColor="@color/white"
@@ -31,18 +31,6 @@
         app:layout_constraintLeft_toRightOf="@id/tv_progress"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-
-    <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/tv_current_position"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:textColor="@color/white"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/startAndPause" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

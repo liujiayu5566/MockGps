@@ -60,36 +60,40 @@ class MockReceiver : BroadcastReceiver() {
 
             try {
                 start!!.split(",").apply {
-                    when (type) {
+                    startLatLng = when (type) {
                         LocationUtils.bd09 -> {
                             val bd09ToGcj02 =
                                 LocationUtils.bd09ToGcj02(get(0).toDouble(), get(1).toDouble())
-                            startLatLng = LatLng(bd09ToGcj02[1], bd09ToGcj02[0])
+                            LatLng(bd09ToGcj02[1], bd09ToGcj02[0])
                         }
+
                         LocationUtils.gps84 -> {
                             val wgs84ToGcj02 =
                                 LocationUtils.wgs84ToGcj02(get(0).toDouble(), get(1).toDouble())
-                            startLatLng = LatLng(wgs84ToGcj02[1], wgs84ToGcj02[0])
+                            LatLng(wgs84ToGcj02[1], wgs84ToGcj02[0])
                         }
+
                         else -> {
-                            startLatLng = LatLng(get(1).toDouble(), get(0).toDouble())
+                            LatLng(get(1).toDouble(), get(0).toDouble())
                         }
                     }
                 }
                 end!!.split(",").apply {
-                    when (type) {
+                    endLatLng = when (type) {
                         LocationUtils.bd09 -> {
                             val wgs84ToGcj02 =
                                 LocationUtils.bd09ToGcj02(get(0).toDouble(), get(1).toDouble())
-                            endLatLng = LatLng(wgs84ToGcj02[1], wgs84ToGcj02[0])
+                            LatLng(wgs84ToGcj02[1], wgs84ToGcj02[0])
                         }
+
                         LocationUtils.gps84 -> {
                             val wgs84ToGcj02 =
                                 LocationUtils.wgs84ToGcj02(get(0).toDouble(), get(1).toDouble())
-                            endLatLng = LatLng(wgs84ToGcj02[1], wgs84ToGcj02[0])
+                            LatLng(wgs84ToGcj02[1], wgs84ToGcj02[0])
                         }
+
                         else -> {
-                            endLatLng = LatLng(get(1).toDouble(), get(0).toDouble())
+                            LatLng(get(1).toDouble(), get(0).toDouble())
                         }
                     }
                 }

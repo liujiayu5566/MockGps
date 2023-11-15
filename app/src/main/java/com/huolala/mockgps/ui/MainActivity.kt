@@ -6,8 +6,10 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.baidu.mapapi.search.route.DrivingRouteLine
 import com.blankj.utilcode.util.ClickUtils
 import com.blankj.utilcode.util.ConvertUtils
+import com.blankj.utilcode.util.ToastUtils
 import com.castiel.common.base.BaseActivity
 import com.castiel.common.base.BaseViewModel
 import com.google.android.material.appbar.AppBarLayout
@@ -15,6 +17,7 @@ import com.huolala.mockgps.R
 import com.huolala.mockgps.adaper.HistoryAdapter
 import com.huolala.mockgps.adaper.SimpleDividerDecoration
 import com.huolala.mockgps.databinding.ActivityMainBinding
+import com.huolala.mockgps.manager.SearchManager
 import com.huolala.mockgps.model.MockMessageModel
 import com.huolala.mockgps.model.NaviType
 import com.huolala.mockgps.model.PoiInfoModel
@@ -22,6 +25,7 @@ import com.huolala.mockgps.model.PoiInfoType
 import com.huolala.mockgps.utils.DialogUtils
 import com.huolala.mockgps.utils.MMKVUtils
 import com.huolala.mockgps.utils.Utils
+import com.huolala.mockgps.widget.MapSelectDialog
 import com.huolala.mockgps.widget.NaviPopupWindow
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.recycler
@@ -30,6 +34,7 @@ import kotlinx.android.synthetic.main.layout_location_card.tv_location_latlng
 import kotlinx.android.synthetic.main.layout_navi_card.*
 import kotlinx.android.synthetic.main.layout_navi_card.tv_navi_name_end
 import kotlinx.android.synthetic.main.layout_navi_card.tv_navi_name_start
+import kotlinx.coroutines.delay
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -67,10 +72,12 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>(), View.On
                     NaviType.LOCATION -> {
                         setDataToView(model.locationModel)
                     }
+
                     NaviType.NAVI -> {
                         setDataToView(model.startNavi)
                         setDataToView(model.endNavi)
                     }
+
                     else -> {
                     }
                 }
@@ -104,6 +111,35 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>(), View.On
         ClickUtils.applySingleDebouncing(tv_navi_name_end, this)
         ClickUtils.applySingleDebouncing(btn_start_navi, this)
         ClickUtils.applySingleDebouncing(iv_navi_setting, this)
+
+        SearchManager.INSTANCE.listener = object : SearchManager.SearchManagerListener {
+            override fun onDrivingRouteResultLines(routeLines: List<DrivingRouteLine>?) {
+                viewModel.loading.value = false
+                if (routeLines?.isEmpty() != false) {
+                    ToastUtils.showShort("路线规划数据获取失败,请检测网络or数据是否正确!")
+                    return
+                }
+                val startNavi = tv_navi_name_start.tag as PoiInfoModel?
+                val endNavi = tv_navi_name_end.tag as PoiInfoModel?
+                val model = MockMessageModel(
+                    startNavi = startNavi,
+                    endNavi = endNavi,
+                    naviType = NaviType.NAVI,
+                    speed = MMKVUtils.getSpeed(),
+                    uid = (startNavi?.uid ?: "") + (endNavi?.uid ?: "")
+                )
+                if (routeLines.size == 1) {
+                    SearchManager.INSTANCE.selectDriverLine(routeLines[0])
+                    val intent = Intent(this@MainActivity, MockLocationActivity::class.java)
+                    intent.putExtra("model", model)
+                    startActivity(intent)
+                    MMKVUtils.saveNaviData(model)
+                } else {
+                    MapSelectDialog(this@MainActivity, routeLines).show()
+                }
+
+            }
+        }
     }
 
 
@@ -150,6 +186,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>(), View.On
                     )
                     tv_location_latlng.tag = this
                 }
+
                 PoiInfoType.NAVI_START -> {
                     tv_navi_name_start.text = String.format(
                         "起点：%s",
@@ -157,6 +194,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>(), View.On
                     )
                     tv_navi_name_start.tag = this
                 }
+
                 PoiInfoType.NAVI_END -> {
                     tv_navi_name_end.text = String.format(
                         "终点：%s",
@@ -164,6 +202,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>(), View.On
                     )
                     tv_navi_name_end.tag = this
                 }
+
                 else -> {
                 }
             }
@@ -175,6 +214,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>(), View.On
             iv_expand -> {
                 startActivity(Intent(this, ExpandActivity::class.java))
             }
+
             ll_location_card -> {
                 registerForActivityResult.launch(
                     Intent(
@@ -188,9 +228,11 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>(), View.On
                     }
                 )
             }
+
             btn_start_location -> {
                 if (tv_location_latlng.tag == null) {
-                    Toast.makeText(this@MainActivity, "模拟位置不能为null", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, "模拟位置不能为null", Toast.LENGTH_SHORT)
+                        .show()
                     return
                 }
                 //启动模拟导航
@@ -212,6 +254,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>(), View.On
                     MMKVUtils.saveLocationData(model)
                 }
             }
+
             iv_change -> {
                 if (ll_location_card.visibility == View.VISIBLE) {
                     ll_location_card.visibility = View.GONE
@@ -224,6 +267,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>(), View.On
                 }
                 getHistoryData()
             }
+
             tv_navi_name_start -> {
                 registerForActivityResult.launch(
                     Intent(
@@ -237,6 +281,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>(), View.On
                     }
                 )
             }
+
             tv_navi_name_end -> {
                 registerForActivityResult.launch(
                     Intent(
@@ -250,9 +295,11 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>(), View.On
                     }
                 )
             }
+
             btn_start_navi -> {
                 if (tv_navi_name_start.tag == null || tv_navi_name_end.tag == null) {
-                    Toast.makeText(this@MainActivity, "模拟位置不能为null", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, "模拟位置不能为null", Toast.LENGTH_SHORT)
+                        .show()
                     return
                 }
                 Utils.checkFloatWindow(this).let {
@@ -262,26 +309,18 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>(), View.On
                     }
                     val startNavi = tv_navi_name_start.tag as PoiInfoModel?
                     val endNavi = tv_navi_name_end.tag as PoiInfoModel?
-                    val model = MockMessageModel(
-                        startNavi = startNavi,
-                        endNavi = endNavi,
-                        naviType = NaviType.NAVI,
-                        speed = MMKVUtils.getSpeed(),
-                        uid = (startNavi?.uid ?: "") + (endNavi?.uid ?: "")
-                    )
-                    val intent = Intent(this, MockLocationActivity::class.java)
-                    intent.putExtra("model", model)
-                    startActivity(intent)
-
-                    MMKVUtils.saveNaviData(model)
+                    viewModel.loading.value = true
+                    SearchManager.INSTANCE.driverSearch(startNavi?.latLng!!, endNavi?.latLng!!)
                 }
             }
+
             iv_navi_setting -> {
                 //导航设置
                 NaviPopupWindow(this).apply {
                     show(iv_navi_setting)
                 }
             }
+
             else -> {
             }
         }
