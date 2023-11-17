@@ -18,6 +18,7 @@ import com.castiel.common.base.BaseActivity
 import com.castiel.common.base.BaseViewModel
 import com.huolala.mockgps.R
 import com.huolala.mockgps.databinding.ActivityCalculateRouteBinding
+import com.huolala.mockgps.manager.MapLocationManager
 import com.huolala.mockgps.model.PoiInfoModel
 import com.huolala.mockgps.model.PoiInfoType
 import java.io.File
@@ -29,8 +30,8 @@ import kotlin.collections.ArrayList
  */
 class CalculateRouteActivity : BaseActivity<ActivityCalculateRouteBinding, BaseViewModel>(),
     View.OnClickListener {
-    private lateinit var mLocationClient: LocationClient
     private lateinit var mBaiduMap: BaiduMap
+    private var mapLocationManager: MapLocationManager? = null
     private val mDefaultPadding = 50
     private var mSearch: RoutePlanSearch = RoutePlanSearch.newInstance()
 
@@ -58,35 +59,6 @@ class CalculateRouteActivity : BaseActivity<ActivityCalculateRouteBinding, BaseV
             }
         }
 
-    //注册LocationListener监听器
-    private val myLocationListener = object : BDAbstractLocationListener() {
-        override fun onReceiveLocation(location: BDLocation?) {
-            //mapView 销毁后不在处理新接收的位置
-            if (location == null) {
-                return
-            }
-            mBaiduMap.locationData?.run {
-                //如果相等 不能更新
-                if (latitude == location.latitude && longitude == location.longitude) {
-                    return
-                }
-            }
-            val locData = MyLocationData.Builder()
-                .accuracy(location.radius) // 此处设置开发者获取到的方向信息，顺时针0-360
-                .direction(location.direction).latitude(location.latitude)
-                .longitude(location.longitude).build()
-            mBaiduMap.setMyLocationData(locData)
-            mBaiduMap.animateMapStatus(
-                MapStatusUpdateFactory.newLatLngZoom(
-                    LatLng(
-                        locData.latitude,
-                        locData.longitude
-                    ), 16f
-                )
-            )
-        }
-    }
-
     override fun initViewModel(): Class<BaseViewModel> {
         return BaseViewModel::class.java
     }
@@ -111,7 +83,6 @@ class CalculateRouteActivity : BaseActivity<ActivityCalculateRouteBinding, BaseV
     private fun initMap() {
 
         mBaiduMap = dataBinding.mapview.map
-        mBaiduMap.isMyLocationEnabled = true
 
         mBaiduMap.setMyLocationConfiguration(
             MyLocationConfiguration(
@@ -122,19 +93,7 @@ class CalculateRouteActivity : BaseActivity<ActivityCalculateRouteBinding, BaseV
 
         mBaiduMap.setMapStatus(MapStatusUpdateFactory.zoomBy(16f))
 
-        mLocationClient = LocationClient(this)
-
-        //通过LocationClientOption设置LocationClient相关参数
-        val option = LocationClientOption()
-        option.isOpenGps = true // 打开gps
-        option.setOnceLocation(true) // 设置是否进行单次定位，单次定位时调用start之后会默认返回一次定位结果
-
-        //设置locationClientOption
-        mLocationClient.locOption = option
-
-        mLocationClient.registerLocationListener(myLocationListener)
-        //开启地图定位图层
-        mLocationClient.start()
+        mapLocationManager = MapLocationManager(this, mBaiduMap, false)
 
         mSearch.setOnGetRoutePlanResultListener(object : OnGetRoutePlanResultListener {
             override fun onGetWalkingRouteResult(p0: WalkingRouteResult?) {
@@ -200,6 +159,7 @@ class CalculateRouteActivity : BaseActivity<ActivityCalculateRouteBinding, BaseV
                     }
                 })
             }
+
             dataBinding.tvEnd -> {
                 registerForActivityResultToEndPoi.launch(Intent(
                     this@CalculateRouteActivity,
@@ -211,6 +171,7 @@ class CalculateRouteActivity : BaseActivity<ActivityCalculateRouteBinding, BaseV
                     }
                 })
             }
+
             dataBinding.btnStartRoute -> {
                 var stNode: PlanNode? = null
                 (dataBinding.tvStart.tag as PoiInfoModel?)?.run {
@@ -234,6 +195,7 @@ class CalculateRouteActivity : BaseActivity<ActivityCalculateRouteBinding, BaseV
                         .to(enNode)
                 )
             }
+
             dataBinding.btnChange -> {
                 if (mPaths.isEmpty()) {
                     ToastUtils.showShort("没有路线切换")
@@ -250,6 +212,7 @@ class CalculateRouteActivity : BaseActivity<ActivityCalculateRouteBinding, BaseV
                 }
                 dataBinding.fileName = "${dataBinding.tvStart.text}-${dataBinding.tvEnd.text}"
             }
+
             dataBinding.btnSaveFile -> {
                 if (mPaths.isEmpty()) {
                     ToastUtils.showShort("数据列表为null！，无法保存")
@@ -273,6 +236,7 @@ class CalculateRouteActivity : BaseActivity<ActivityCalculateRouteBinding, BaseV
                     }
                 }
             }
+
             else -> {
             }
         }
@@ -292,9 +256,7 @@ class CalculateRouteActivity : BaseActivity<ActivityCalculateRouteBinding, BaseV
     }
 
     private fun destroy() {
-        mLocationClient.unRegisterLocationListener(myLocationListener)
-        mLocationClient.stop()
-        mBaiduMap.isMyLocationEnabled = false
+        mapLocationManager?.onDestroy()
         dataBinding.mapview.onDestroy()
         mSearch.destroy()
     }
@@ -310,6 +272,7 @@ class CalculateRouteActivity : BaseActivity<ActivityCalculateRouteBinding, BaseV
                     )
                     view.tag = this
                 }
+
                 else -> {
                 }
             }

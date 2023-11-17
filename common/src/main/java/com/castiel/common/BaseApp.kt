@@ -21,6 +21,6 @@ open class BaseApp : Application() {
                 context
             )
         }
-        AppManager.instance.init(this)
+        AppManager.INSTANCE.init(this)
     }
 }

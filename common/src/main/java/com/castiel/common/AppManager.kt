@@ -6,11 +6,11 @@ import com.blankj.utilcode.util.LogUtils
 import com.tencent.bugly.crashreport.CrashReport
 import com.tencent.mmkv.MMKV
 
-class AppManager {
+class AppManager private constructor() {
     private var context: Application? = null
 
     companion object {
-        val instance: AppManager by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
+        val INSTANCE: AppManager by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
             AppManager()
         }
     }

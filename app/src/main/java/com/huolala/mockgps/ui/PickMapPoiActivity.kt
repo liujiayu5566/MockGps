@@ -11,10 +11,6 @@ import android.text.TextWatcher
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import com.baidu.location.BDAbstractLocationListener
-import com.baidu.location.BDLocation
-import com.baidu.location.LocationClient
-import com.baidu.location.LocationClientOption
 import com.baidu.mapapi.map.*
 import com.baidu.mapapi.model.LatLng
 import com.baidu.mapapi.search.core.SearchResult
@@ -35,6 +31,7 @@ import com.huolala.mockgps.R
 import com.huolala.mockgps.adaper.PoiListAdapter
 import com.huolala.mockgps.adaper.SimpleDividerDecoration
 import com.huolala.mockgps.databinding.ActivityPickBinding
+import com.huolala.mockgps.manager.MapLocationManager
 import com.huolala.mockgps.model.PoiInfoType
 import kotlinx.android.synthetic.main.activity_pick.*
 import java.lang.ref.WeakReference
@@ -47,7 +44,6 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
     View.OnClickListener {
     private val REVERSE_GEO_CODE = 0
     private val DEFAULT_DELAYED: Long = 300
-    private lateinit var mLocationClient: LocationClient
     private lateinit var mBaiduMap: BaiduMap
     private lateinit var mCoder: GeoCoder
     private var poiListAdapter: PoiListAdapter = PoiListAdapter()
@@ -55,6 +51,7 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
     private var mSuggestionSearch: SuggestionSearch = SuggestionSearch.newInstance()
     private var mCity: String = ""
     private var mHandler: PickMapPoiHandler? = null
+    private var mapLocationManager: MapLocationManager? = null
 
     @PoiInfoType
     private var poiInfoType: Int = PoiInfoType.DEFAULT
@@ -69,37 +66,6 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
                 }
             }
         }
-
-    //注册LocationListener监听器
-    private val myLocationListener = object : BDAbstractLocationListener() {
-        override fun onReceiveLocation(location: BDLocation?) {
-            //mapView 销毁后不在处理新接收的位置
-            if (location == null) {
-                return
-            }
-            mBaiduMap.locationData?.run {
-                //如果相等 不能更新
-                if (latitude == location.latitude && longitude == location.longitude) {
-                    return
-                }
-            }
-            mCity = location.city ?: ""
-            val locData = MyLocationData.Builder()
-                .accuracy(location.radius) // 此处设置开发者获取到的方向信息，顺时针0-360
-                .direction(location.direction).latitude(location.latitude)
-                .longitude(location.longitude).build()
-            mBaiduMap.setMyLocationData(locData)
-            //更新中心点
-            if (mPoiInfoModel == null) {
-                mHandler?.removeMessages(REVERSE_GEO_CODE)
-                mHandler?.sendMessageDelayed(Message.obtain().apply {
-                    what = REVERSE_GEO_CODE
-                    obj = LatLng(location.latitude, location.longitude)
-                }, DEFAULT_DELAYED)
-                changeCenterLatLng(locData.latitude, locData.longitude)
-            }
-        }
-    }
 
     private fun reverseGeoCode(latLng: LatLng?) {
         latLng?.let {
@@ -186,7 +152,6 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
 
     private fun initMap() {
         mBaiduMap = mapview.map
-        mBaiduMap.isMyLocationEnabled = true
 
         mBaiduMap.uiSettings?.run {
             isRotateGesturesEnabled = false
@@ -209,7 +174,11 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
             override fun onGetReverseGeoCodeResult(reverseGeoCodeResult: ReverseGeoCodeResult?) {
                 reverseGeoCodeResult?.run {
                     if (error != SearchResult.ERRORNO.NO_ERROR) {
-                        Toast.makeText(this@PickMapPoiActivity, "逆地理编码失败", Toast.LENGTH_SHORT)
+                        Toast.makeText(
+                            this@PickMapPoiActivity,
+                            "逆地理编码失败",
+                            Toast.LENGTH_SHORT
+                        )
                             .show()
                         return
                     }
@@ -242,21 +211,10 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
                 changeCenterLatLng(latitude, longitude)
             }
         }
-        mLocationClient = LocationClient(this)
-
-        //通过LocationClientOption设置LocationClient相关参数
-        val option = LocationClientOption()
-        option.isOpenGps = true // 打开gps
-        option.setScanSpan(1000)
 
         //设置locationClientOption
-        mLocationClient.locOption = option
+        mapLocationManager = MapLocationManager(this, mBaiduMap, false)
         mSuggestionSearch.setOnGetSuggestionResultListener(listener)
-
-
-        mLocationClient.registerLocationListener(myLocationListener)
-        //开启地图定位图层
-        mLocationClient.start()
 
         mBaiduMap.setOnMapStatusChangeListener(object : BaiduMap.OnMapStatusChangeListener {
             override fun onMapStatusChangeStart(mapStatus: MapStatus?) {
@@ -308,11 +266,9 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
     }
 
     private fun destroy() {
+        mapLocationManager?.onDestroy()
         mSuggestionSearch.destroy()
         mCoder.destroy()
-        mLocationClient.unRegisterLocationListener(myLocationListener)
-        mLocationClient.stop()
-        mBaiduMap.isMyLocationEnabled = false
         mapview.onDestroy()
     }
 
@@ -322,9 +278,10 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
                 et_search.setText("")
                 editViewShow(true)
             }
+
             R.id.confirm_location -> {
                 mPoiInfoModel?.let {
-                    if (it.latLng?.longitude ?: 0.0 <= 0.0 || it.latLng?.latitude ?: 0.0 <= 0.0) {
+                    if ((it.latLng?.longitude ?: 0.0) <= 0.0 || (it.latLng?.latitude ?: 0.0) <= 0.0) {
                         ToastUtils.showShort("数据异常，请重新选择！")
                         return@let
                     }
@@ -339,6 +296,7 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
                     finish()
                 }
             }
+
             R.id.iv_cur_location -> {
                 mBaiduMap.locationData?.run {
                     mHandler?.removeMessages(REVERSE_GEO_CODE)
@@ -349,6 +307,7 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
                     changeCenterLatLng(latitude, longitude)
                 }
             }
+
             else -> {
             }
         }
@@ -384,6 +343,7 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
                     it.REVERSE_GEO_CODE -> {
                         it.reverseGeoCode(msg.obj as LatLng)
                     }
+
                     else -> {
                     }
                 }

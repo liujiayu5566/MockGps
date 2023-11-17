@@ -10,19 +10,22 @@ import com.baidu.location.LocationClient
 import com.baidu.location.LocationClientOption
 import com.baidu.mapapi.map.*
 import com.baidu.mapapi.model.LatLng
-import com.baidu.mapapi.model.LatLngBounds
 import com.blankj.utilcode.util.ClickUtils
+import com.blankj.utilcode.util.ConvertUtils
 import com.blankj.utilcode.util.FileIOUtils
 import com.castiel.common.base.BaseActivity
 import com.castiel.common.base.BaseViewModel
 import com.huolala.mockgps.R
 import com.huolala.mockgps.databinding.ActivityNaviBinding
+import com.huolala.mockgps.manager.MapLocationManager
+import com.huolala.mockgps.manager.utils.MapDrawUtils
 import com.huolala.mockgps.manager.SearchManager
 import com.huolala.mockgps.model.MockMessageModel
 import com.huolala.mockgps.model.NaviType
 import com.huolala.mockgps.server.GpsAndFloatingService
 import com.huolala.mockgps.utils.Utils
 import kotlinx.android.synthetic.main.activity_navi.*
+import kotlinx.android.synthetic.main.dialog_select_navi_map.texture_mapview
 import java.lang.ref.WeakReference
 
 
@@ -32,44 +35,11 @@ import java.lang.ref.WeakReference
 class MockLocationActivity : BaseActivity<ActivityNaviBinding, BaseViewModel>(),
     View.OnClickListener {
     private var DRAW_MAP = 0;
-    private lateinit var mLocationClient: LocationClient
     private lateinit var mBaiduMap: BaiduMap
     private var mNaviType: Int = NaviType.LOCATION
     private val mHandle: Handler = MockLocationHandler(this)
-
-    //注册LocationListener监听器
-    private val myLocationListener = object : BDAbstractLocationListener() {
-        override fun onReceiveLocation(location: BDLocation?) {
-            //mapView 销毁后不在处理新接收的位置
-            if (location == null) {
-                return
-            }
-            mBaiduMap.locationData?.run {
-                //如果相等 不能更新
-                if (latitude == location.latitude && longitude == location.longitude) {
-                    return
-                }
-            }
-            val locData = MyLocationData.Builder()
-                .accuracy(location.radius) // 此处设置开发者获取到的方向信息，顺时针0-360
-                .direction(location.direction).latitude(location.latitude)
-                .longitude(location.longitude).build()
-            mBaiduMap.setMyLocationData(locData)
-            //更新中心点
-            if (mNaviType == NaviType.LOCATION) {
-                mBaiduMap.animateMapStatus(
-                    MapStatusUpdateFactory.newLatLngZoom(
-                        LatLng(
-                            locData.latitude,
-                            locData.longitude
-                        ), 16f
-                    )
-                )
-            }
-
-        }
-    }
-
+    private val mPadding: Int = ConvertUtils.dp2px(50f)
+    private var mapLocationManager: MapLocationManager? = null
 
     override fun initViewModel(): Class<BaseViewModel> {
         return BaseViewModel::class.java
@@ -83,7 +53,10 @@ class MockLocationActivity : BaseActivity<ActivityNaviBinding, BaseViewModel>(),
         ClickUtils.applySingleDebouncing(iv_back, this)
 
         mBaiduMap = mapview.map
-        mBaiduMap.isMyLocationEnabled = true
+        mapview.showScaleControl(false)
+        mapview.showZoomControls(false)
+        mapview.getChildAt(1).visibility = View.GONE
+        mBaiduMap.uiSettings?.isCompassEnabled = false
 
         mBaiduMap.setMyLocationConfiguration(
             MyLocationConfiguration(
@@ -94,20 +67,6 @@ class MockLocationActivity : BaseActivity<ActivityNaviBinding, BaseViewModel>(),
         mBaiduMap.setOnMapLoadedCallback {
             startMock()
         }
-
-        mLocationClient = LocationClient(this)
-
-        //通过LocationClientOption设置LocationClient相关参数
-        val option = LocationClientOption()
-        option.isOpenGps = true // 打开gps
-        option.setScanSpan(1000)
-
-        //设置locationClientOption
-        mLocationClient.locOption = option
-
-        mLocationClient.registerLocationListener(myLocationListener)
-        //开启地图定位图层
-        mLocationClient.start()
     }
 
     override fun initData() {}
@@ -118,8 +77,14 @@ class MockLocationActivity : BaseActivity<ActivityNaviBinding, BaseViewModel>(),
             pickPoiError()
             return
         }
-        model.run {
+        with(model) {
             this@MockLocationActivity.mNaviType = naviType
+            //开启定位小蓝点展示
+            mapLocationManager = MapLocationManager(
+                this@MockLocationActivity,
+                mBaiduMap,
+                mNaviType == NaviType.LOCATION
+            )
             when (naviType) {
                 NaviType.LOCATION -> {
                     locationModel?.run {
@@ -134,8 +99,15 @@ class MockLocationActivity : BaseActivity<ActivityNaviBinding, BaseViewModel>(),
                         pickPoiError()
                         return
                     }
-                    SearchManager.INSTANCE.polylineList?.let {
-                        drawLineToMap(it)
+                    SearchManager.INSTANCE.polylineList.let {
+                        mBaiduMap.clear()
+                        startNavi?.latLng?.let { start ->
+                            MapDrawUtils.drawMarkerToMap(mBaiduMap, start, "marker_start.png")
+                        }
+                        endNavi?.latLng?.let { end ->
+                            MapDrawUtils.drawMarkerToMap(mBaiduMap, end, "marker_end.png")
+                        }
+                        MapDrawUtils.drawLineToMap(mBaiduMap, it, mPadding)
                         startMockServer(model)
                     }
                 }
@@ -187,28 +159,6 @@ class MockLocationActivity : BaseActivity<ActivityNaviBinding, BaseViewModel>(),
         finish()
     }
 
-
-    private fun drawLineToMap(polylineList: List<LatLng>) {
-        mBaiduMap.clear()
-        if (polylineList.isEmpty()) {
-            return
-        }
-
-        val mOverlayOptions: OverlayOptions = PolylineOptions()
-            .width(15)
-            .color(0xAAFF0000.toInt())
-            .keepScale(true)
-            .lineCapType(PolylineOptions.LineCapType.LineCapRound)
-            .points(polylineList)
-
-        mBaiduMap.addOverlay(mOverlayOptions)
-        mBaiduMap.animateMapStatus(
-            MapStatusUpdateFactory.newLatLngBounds(
-                LatLngBounds.Builder().include(polylineList).build(), 50, 50, 50, 50
-            )
-        )
-    }
-
     private fun startMockServer(parcelable: Parcelable?) {
         //判断  为null先启动服务  悬浮窗需要
         parcelable?.run {
@@ -246,9 +196,7 @@ class MockLocationActivity : BaseActivity<ActivityNaviBinding, BaseViewModel>(),
     }
 
     private fun destroy() {
-        mLocationClient.unRegisterLocationListener(myLocationListener)
-        mLocationClient.stop()
-        mBaiduMap.isMyLocationEnabled = false
+        mapLocationManager?.onDestroy()
         mapview.onDestroy()
     }
 
@@ -277,8 +225,8 @@ class MockLocationActivity : BaseActivity<ActivityNaviBinding, BaseViewModel>(),
                 when (msg.what) {
                     DRAW_MAP -> {
                         (msg.obj as ArrayList<LatLng>?)?.let {
-
-                            drawLineToMap(it)
+                            mBaiduMap.clear()
+                            MapDrawUtils.drawLineToMap(mBaiduMap, it, mPadding)
                         }
 
                     }

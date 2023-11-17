@@ -8,9 +8,9 @@
     android:layout_marginTop="1dp"
     android:layout_marginBottom="3dp"
     android:background="@drawable/shape_round_5_color_white"
+    android:elevation="3dp"
     android:orientation="vertical"
     android:padding="10dp"
-    android:elevation="3dp"
     android:visibility="visible">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -33,8 +33,8 @@
             style="@style/title_style"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="15dp"
-            android:text="起点:"
+            android:paddingVertical="15dp"
+            android:text="起点："
             app:layout_constraintHorizontal_bias="0"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toLeftOf="@id/iv_navi_start_arrow"
@@ -45,7 +45,7 @@
             style="@style/title_style"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="15dp"
+            android:paddingVertical="15dp"
             android:text="终点："
             app:layout_constraintHorizontal_bias="0"
             app:layout_constraintLeft_toLeftOf="parent"
@@ -68,11 +68,24 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_navi_name_end" />
 
+        <CheckBox
+            android:id="@+id/radio_multi_route"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:includeFontPadding="false"
+            android:text="多路线"
+            app:layout_constraintBottom_toBottomOf="@id/iv_navi_setting"
+            app:layout_constraintHorizontal_bias="1"
+            app:layout_constraintLeft_toRightOf="@id/btn_start_navi"
+            app:layout_constraintRight_toLeftOf="@id/iv_navi_setting"
+            app:layout_constraintTop_toTopOf="@id/iv_navi_setting" />
+
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/iv_navi_setting"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingHorizontal="5dp"
+            android:padding="5dp"
             android:src="@drawable/ic_navi_setting"
             app:layout_constraintBottom_toBottomOf="@id/btn_start_navi"
             app:layout_constraintRight_toRightOf="parent"

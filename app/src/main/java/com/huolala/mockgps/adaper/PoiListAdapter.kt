@@ -6,10 +6,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.baidu.mapapi.search.core.PoiInfo
 import com.baidu.mapapi.search.sug.SuggestionResult
 import com.huolala.mockgps.R
-import com.huolala.mockgps.model.MockMessageModel
 import kotlinx.android.synthetic.main.item_poiinfo.view.*
 
 /**

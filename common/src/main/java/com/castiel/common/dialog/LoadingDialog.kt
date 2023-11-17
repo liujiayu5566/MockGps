@@ -9,6 +9,7 @@ class LoadingDialog(context: Context) : BaseDialog(context) {
     init {
         val view: View = layoutInflater.inflate(R.layout.dialog_loading, null)
         setContentView(view)
+        setCanceledOnTouchOutside(false)
     }
 
 }

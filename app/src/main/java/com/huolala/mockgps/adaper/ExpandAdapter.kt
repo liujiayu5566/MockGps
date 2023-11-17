@@ -41,7 +41,6 @@ class ExpandAdapter :
         val binding: ItemTitleBinding? = DataBindingUtil.bind(
             LayoutInflater.from(parent.context).inflate(R.layout.item_title, parent, false)
         )
-        println(parent.context.getExternalFilesDir("navi_data")?.absoluteFile ?: "null")
         return ViewHolder(binding!!)
     }
 

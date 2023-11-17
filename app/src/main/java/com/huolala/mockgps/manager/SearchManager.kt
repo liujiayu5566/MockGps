@@ -13,15 +13,16 @@ import com.baidu.mapapi.search.route.RoutePlanSearch
 import com.baidu.mapapi.search.route.TransitRouteResult
 import com.baidu.mapapi.search.route.WalkingRouteResult
 import com.blankj.utilcode.util.ToastUtils
+import com.huolala.mockgps.utils.Utils
 
 /**
  * @author jiayu.liu
  */
-class SearchManager() {
+class SearchManager private constructor() {
     private var mSearch: RoutePlanSearch = RoutePlanSearch.newInstance()
     private var isSearchIng = false
     var listener: SearchManagerListener? = null
-    var polylineList: List<LatLng>? = null
+    var polylineList: ArrayList<LatLng> = arrayListOf()
 
 
     companion object {
@@ -55,7 +56,7 @@ class SearchManager() {
         })
     }
 
-    fun driverSearch(startLatLng: LatLng?, endLatLng: LatLng?) {
+    fun driverSearch(startLatLng: LatLng?, endLatLng: LatLng?, multiroute: Boolean) {
         if (startLatLng == null || endLatLng == null) {
             return
         }
@@ -66,9 +67,12 @@ class SearchManager() {
         isSearchIng = true
         mSearch.drivingSearch(
             DrivingRoutePlanOption()
-                .policy(DrivingRoutePlanOption.DrivingPolicy.ECAR_DIS_FIRST)
                 .from(PlanNode.withLocation(startLatLng))
-                .to(PlanNode.withLocation(endLatLng))
+                .to(PlanNode.withLocation(endLatLng)).apply {
+                    if (!multiroute) {
+                        this.policy(DrivingRoutePlanOption.DrivingPolicy.ECAR_DIS_FIRST)
+                    }
+                }
         )
     }
 
@@ -80,7 +84,10 @@ class SearchManager() {
                     polylineList.addAll(step.wayPoints)
                 }
             }
-            this@SearchManager.polylineList = polylineList
+            this@SearchManager.polylineList.run {
+                clear()
+                addAll(polylineList)
+            }
         }
     }
 

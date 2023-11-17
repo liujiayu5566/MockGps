@@ -2,6 +2,7 @@ package com.huolala.mockgps
 
 import android.app.Application
 import android.content.IntentFilter
+import com.baidu.location.LocationClient
 import com.baidu.mapapi.CoordType
 import com.baidu.mapapi.SDKInitializer
 import com.blankj.utilcode.util.Utils
@@ -18,7 +19,13 @@ class MyApp : BaseApp() {
         super.onCreate()
 
         Utils.init(this)
-        SDKInitializer.initialize(this)
+        SDKInitializer.setAgreePrivacy(this, true)
+        LocationClient.setAgreePrivacy(true);
+        try {
+            SDKInitializer.initialize(this)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
         SDKInitializer.setCoordType(CoordType.GCJ02);
         initReceiver()
     }

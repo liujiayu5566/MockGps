@@ -100,14 +100,21 @@ class GpsAndFloatingService : Service() {
         //浮动窗
         FloatingViewManger.INSTANCE.run {
             addFloatViewToWindow()
-            listener = object:FloatingViewManger.FloatingViewListener{
+            listener = object : FloatingViewManger.FloatingViewListener {
                 override fun pause() {
                     removeGps()
                     handle.removeCallbacksAndMessages(null)
                 }
 
                 override fun reStart() {
-                    SearchManager.INSTANCE.polylineList?.let {
+                    SearchManager.INSTANCE.polylineList.let {
+                        if (it.isEmpty()) {
+                            FloatingViewManger.INSTANCE.stopMock()
+                            return
+                        }
+                        if (index >= it.size) {
+                            index = 0
+                        }
                         sendHandler(
                             START_MOCK_LOCATION_NAVI,
                             it
@@ -120,7 +127,6 @@ class GpsAndFloatingService : Service() {
     }
 
     fun getLatLngNext(polyline: ArrayList<*>): LatLng {
-        //根据循环间隔处理  目前按照500ms进行处理  将speed进行除2处理  speed单位:m/s
         val mSpeed = this.mSpeed / (1000.0 / mNaviUpdateValue)
 
         val indexLonLat = polyline[index] as LatLng
@@ -137,16 +143,11 @@ class GpsAndFloatingService : Service() {
 
         if (dis > mSpeed) {
             //距离大于speed 计算经纬度
-            var location =
-                CalculationLogLatDistance.getNextLonLat(mCurrentLocation, yaw, mSpeed.toDouble())
-            println("${location.latitude}  ||  ${location.longitude}")
+            var location = CalculationLogLatDistance.getNextLonLat(mCurrentLocation, yaw, mSpeed)
             //计算经纬度为非法值则直接取下一阶段经纬度更新
             if (location.latitude <= 0.0 || location.longitude <= 0.0 || location.latitude.isNaN() || location.longitude.isNaN()) {
                 location = polyline[index] as LatLng
                 index++
-                println("非法")
-            } else {
-                println("计算经纬度 $index ,  $mSpeed , $dis , $yaw")
             }
             return location
         }
@@ -155,17 +156,14 @@ class GpsAndFloatingService : Service() {
         if (index >= polyLineCount - 1) {
             val latLng = polyline[polyLineCount - 1] as LatLng
             index++
-            println("终点")
             return latLng
         }
         if (dis > 0) {
-            println("直接取下一阶段经纬 $index ,  $mSpeed , $dis , $yaw")
             index++
             return indexLonLat
         }
         //循环递归计算经纬度
         index++
-        println("递归")
         return getLatLngNext(polyline)
     }
 
@@ -196,7 +194,7 @@ class GpsAndFloatingService : Service() {
                     mSpeed = speed / 3.6f
                     //算路成功后 startService
                     index = 0
-                    SearchManager.INSTANCE.polylineList?.let {
+                    SearchManager.INSTANCE.polylineList.let {
                         sendHandler(
                             START_MOCK_LOCATION_NAVI,
                             it
@@ -246,7 +244,6 @@ class GpsAndFloatingService : Service() {
             }
         } ?: run {
             isStart = false
-//            view.isSelected = isStart
         }
     }
 
@@ -259,8 +256,8 @@ class GpsAndFloatingService : Service() {
             removeGps()
             handle.removeCallbacksAndMessages(null)
             isStart = true
-//            view.isSelected = isStart
             handle.sendMessage(it)
+            FloatingViewManger.INSTANCE.startMock()
         }
     }
 
@@ -306,6 +303,7 @@ class GpsAndFloatingService : Service() {
                 removeTestProvider(providerStr)
                 removeTestProvider(networkStr)
             }
+            FloatingViewManger.INSTANCE.stopMock()
         } catch (e: Exception) {
             e.printStackTrace()
         }

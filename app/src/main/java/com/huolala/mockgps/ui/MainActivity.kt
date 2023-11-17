@@ -34,7 +34,6 @@ import kotlinx.android.synthetic.main.layout_location_card.tv_location_latlng
 import kotlinx.android.synthetic.main.layout_navi_card.*
 import kotlinx.android.synthetic.main.layout_navi_card.tv_navi_name_end
 import kotlinx.android.synthetic.main.layout_navi_card.tv_navi_name_start
-import kotlinx.coroutines.delay
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -45,6 +44,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>(), View.On
     private var topMarginOffset: Int = 0
     private var topMargin: Int = 0
     private lateinit var adapter: HistoryAdapter
+    private var mMapSelectDialog: MapSelectDialog? = null
 
     private var registerForActivityResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -95,7 +95,6 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>(), View.On
                 val params = ll_card.layoutParams as ViewGroup.MarginLayoutParams
                 val topMarginOffsetValue = (topMarginOffset * (1 - scale)).roundToInt()
                 val topMarginValue = (topMargin * scale).roundToInt()
-                println("$topMarginOffsetValue , $topMarginValue, $scale")
                 params.topMargin = topMarginOffsetValue + topMarginValue
                 ll_card.layoutParams = params
             }
@@ -129,17 +128,38 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>(), View.On
                     uid = (startNavi?.uid ?: "") + (endNavi?.uid ?: "")
                 )
                 if (routeLines.size == 1) {
-                    SearchManager.INSTANCE.selectDriverLine(routeLines[0])
-                    val intent = Intent(this@MainActivity, MockLocationActivity::class.java)
-                    intent.putExtra("model", model)
-                    startActivity(intent)
-                    MMKVUtils.saveNaviData(model)
+                    goToMockLocation(routeLines[0], model)
                 } else {
-                    MapSelectDialog(this@MainActivity, routeLines).show()
+                    mMapSelectDialog = MapSelectDialog(
+                        this@MainActivity,
+                        routeLines,
+                        startNavi?.latLng,
+                        endNavi?.latLng
+                    ).apply {
+                        listener = object : MapSelectDialog.MapSelectDialogListener {
+                            override fun onSelectLine(routeLine: DrivingRouteLine) {
+                                goToMockLocation(routeLine, model)
+                                mMapSelectDialog = null
+                            }
+                        }
+                        show()
+                    }
                 }
 
             }
         }
+    }
+
+    private fun goToMockLocation(
+        routeLine: DrivingRouteLine,
+        model: MockMessageModel
+    ) {
+        SearchManager.INSTANCE.selectDriverLine(routeLine)
+        val intent =
+            Intent(this@MainActivity, MockLocationActivity::class.java)
+        intent.putExtra("model", model)
+        startActivity(intent)
+        MMKVUtils.saveNaviData(model)
     }
 
 
@@ -161,6 +181,12 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>(), View.On
         super.onResume()
         //获取历史数据
         getHistoryData()
+        mMapSelectDialog?.onResume()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        mMapSelectDialog?.onPause()
     }
 
     private fun getHistoryData() {
@@ -298,8 +324,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>(), View.On
 
             btn_start_navi -> {
                 if (tv_navi_name_start.tag == null || tv_navi_name_end.tag == null) {
-                    Toast.makeText(this@MainActivity, "模拟位置不能为null", Toast.LENGTH_SHORT)
-                        .show()
+                    ToastUtils.showShort("模拟位置不能为null")
                     return
                 }
                 Utils.checkFloatWindow(this).let {
@@ -309,8 +334,16 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>(), View.On
                     }
                     val startNavi = tv_navi_name_start.tag as PoiInfoModel?
                     val endNavi = tv_navi_name_end.tag as PoiInfoModel?
+                    if (startNavi == null || endNavi == null) {
+                        ToastUtils.showShort("模拟位置不能为null")
+                        return
+                    }
                     viewModel.loading.value = true
-                    SearchManager.INSTANCE.driverSearch(startNavi?.latLng!!, endNavi?.latLng!!)
+                    SearchManager.INSTANCE.driverSearch(
+                        startNavi.latLng!!,
+                        endNavi.latLng!!,
+                        radio_multi_route.isChecked
+                    )
                 }
             }
 

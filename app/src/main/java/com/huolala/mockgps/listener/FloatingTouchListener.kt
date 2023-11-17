@@ -45,6 +45,6 @@ class FloatingTouchListener(
                 windowManager.updateViewLayout(view, layoutParams)
             }
         }
-        return false
+        return true
     }
 }

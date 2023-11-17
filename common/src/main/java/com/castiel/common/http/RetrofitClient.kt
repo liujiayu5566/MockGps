@@ -7,7 +7,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 
-class RetrofitClient {
+class RetrofitClient private constructor() {
     private val baseUrl = ""
 
     private val retrofit: Retrofit by lazy {
@@ -24,7 +24,7 @@ class RetrofitClient {
     }
 
     companion object {
-        val instance: RetrofitClient by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
+        val INSTANCE: RetrofitClient by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
             RetrofitClient()
         }
     }
