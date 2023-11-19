@@ -5,4 +5,9 @@
         <attr name="rockerBackground" format="color|reference" />
         <attr name="rockerRadius" format="dimension" />
     </declare-styleable>
+    <declare-styleable name="RegulateView">
+        <attr name="defaultValue" format="integer" />
+        <attr name="unit" format="string" />
+        <attr name="minThreshold" format="integer" />
+    </declare-styleable>
 </resources>

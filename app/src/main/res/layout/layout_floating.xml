@@ -12,7 +12,7 @@
         android:layout_height="100dp"
         android:layout_margin="-50dp"
         android:background="@drawable/shape_round_10_color_black_30_left"
-        android:visibility="visible"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toLeftOf="@id/spacer"
         app:layout_constraintTop_toTopOf="parent"
@@ -28,25 +28,39 @@
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/startAndPause"
             android:layout_width="50dp"
-            android:layout_height="0dp"
-            android:padding="10dp"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
             android:src="@drawable/selector_floating_play"
-            app:layout_constraintBottom_toTopOf="@id/iv_adjust"
+            app:layout_constraintBottom_toTopOf="@id/iv_rest"
             app:layout_constraintLeft_toLeftOf="@id/info_guideline"
             app:layout_constraintRight_toRightOf="@id/info_guideline"
             app:layout_constraintTop_toTopOf="parent" />
 
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/iv_rest"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:src="@drawable/ic_refresh"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@id/iv_adjust"
+            app:layout_constraintLeft_toLeftOf="@id/info_guideline"
+            app:layout_constraintRight_toRightOf="@id/info_guideline"
+            app:layout_constraintTop_toBottomOf="@id/startAndPause"
+            tools:visibility="visible" />
+
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/iv_adjust"
             android:layout_width="50dp"
-            android:layout_height="0dp"
-            android:padding="10dp"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
             android:src="@drawable/ic_location_adjust"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="@id/info_guideline"
             app:layout_constraintRight_toRightOf="@id/info_guideline"
-            app:layout_constraintTop_toBottomOf="@id/startAndPause"
+            app:layout_constraintTop_toBottomOf="@id/iv_rest"
             tools:visibility="visible" />
 
 
@@ -97,45 +111,5 @@
         app:layout_constraintRight_toRightOf="@id/card"
         app:layout_constraintTop_toBottomOf="@id/card"
         tools:visibility="visible" />
-
-    <!--    <androidx.constraintlayout.widget.ConstraintLayout-->
-    <!--        android:id="@+id/info"-->
-    <!--        android:layout_width="wrap_content"-->
-    <!--        android:layout_height="100dp"-->
-    <!--        android:layout_marginStart="-50dp"-->
-    <!--        android:background="@drawable/shape_round_10_color_black_30_right"-->
-    <!--        android:paddingStart="50dp"-->
-    <!--        android:visibility="visible"-->
-    <!--        app:layout_constraintBottom_toBottomOf="@id/card"-->
-    <!--        app:layout_constraintLeft_toRightOf="@id/card"-->
-    <!--        app:layout_constraintTop_toTopOf="@id/card"-->
-    <!--        tools:visibility="visible">-->
-
-    <!--        <androidx.appcompat.widget.AppCompatImageView-->
-    <!--            android:id="@+id/startAndPause"-->
-    <!--            android:layout_width="wrap_content"-->
-    <!--            android:layout_height="0dp"-->
-    <!--            android:paddingStart="10dp"-->
-    <!--            android:paddingEnd="15dp"-->
-    <!--            android:src="@drawable/selector_floating_play"-->
-    <!--            app:layout_constraintBottom_toTopOf="@id/iv_reset"-->
-    <!--            app:layout_constraintLeft_toLeftOf="parent"-->
-    <!--            app:layout_constraintRight_toRightOf="parent"-->
-    <!--            app:layout_constraintTop_toTopOf="parent" />-->
-
-    <!--        <androidx.appcompat.widget.AppCompatImageView-->
-    <!--            android:id="@+id/iv_reset"-->
-    <!--            android:layout_width="wrap_content"-->
-    <!--            android:layout_height="0dp"-->
-    <!--            android:paddingStart="10dp"-->
-    <!--            android:paddingEnd="15dp"-->
-    <!--            android:src="@drawable/selector_floating_play"-->
-    <!--            app:layout_constraintBottom_toBottomOf="parent"-->
-    <!--            app:layout_constraintLeft_toLeftOf="parent"-->
-    <!--            app:layout_constraintRight_toRightOf="parent"-->
-    <!--            app:layout_constraintTop_toBottomOf="@id/startAndPause" />-->
-
-
-    <!--    </androidx.constraintlayout.widget.ConstraintLayout>-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -17,6 +17,7 @@ import com.huolala.mockgps.model.PoiInfoModel
 import com.huolala.mockgps.model.PoiInfoType
 import com.huolala.mockgps.utils.CalculationLogLatDistance
 import com.huolala.mockgps.utils.LocationUtils
+import com.huolala.mockgps.utils.MMKVUtils
 import com.huolala.mockgps.utils.Utils
 
 /**
@@ -78,7 +79,13 @@ class GpsAndFloatingService : Service() {
                                 } else if (index < it.size) {
                                     mCurrentLocation = getLatLngNext(it)
                                 }
-//                                view.tv_progress.text = String.format("%d / %d", index, it.size)
+                                FloatingViewManger.INSTANCE.updateNaviInfo(
+                                    String.format(
+                                        "当前进度(道路)：%d/%d",
+                                        index,
+                                        it.size
+                                    )
+                                )
                                 startSimulateLocation(mCurrentLocation, false)
                                 handle.sendMessageDelayed(Message.obtain(msg), mNaviUpdateValue)
                             }
@@ -108,7 +115,7 @@ class GpsAndFloatingService : Service() {
                     handle.removeCallbacksAndMessages(null)
                 }
 
-                override fun reStart() {
+                override fun reStart(isRest: Boolean) {
                     model?.run {
                         if (naviType == NaviType.LOCATION) {
                             mockLocation()
@@ -118,7 +125,7 @@ class GpsAndFloatingService : Service() {
                                     FloatingViewManger.INSTANCE.stopMock()
                                     return
                                 }
-                                if (index >= it.size) {
+                                if (isRest || index >= it.size) {
                                     index = 0
                                 }
                                 sendHandler(
@@ -149,6 +156,14 @@ class GpsAndFloatingService : Service() {
                         )
                     }
 
+                }
+
+                override fun changeSpeed(speed: Int) {
+                    MMKVUtils.setSpeed(speed)
+                    mSpeed = speed / 3.6f
+                    if (!isStart) {
+                        reStart(false)
+                    }
                 }
 
             }

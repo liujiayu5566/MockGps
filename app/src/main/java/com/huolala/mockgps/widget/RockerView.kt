@@ -273,17 +273,13 @@ class RockerView(context: Context, attrs: AttributeSet) :
             MotionEvent.ACTION_MOVE -> {
                 val moveX = event.x
                 val moveY = event.y
-                //延迟才触发回调  防止首次方向与意图不一致问题
-                System.currentTimeMillis().let {
-                    if (it - currentTimeMillis >= 500) {
-                        mRockerPosition = getRockerPositionPoint(
-                            mCenterPoint,
-                            Point(moveX.toInt(), moveY.toInt()),
-                            mAreaRadius.toFloat(),
-                            mRockerRadius.toFloat()
-                        )
-                    }
-                }
+                mRockerPosition = getRockerPositionPoint(
+                    mCenterPoint,
+                    Point(moveX.toInt(), moveY.toInt()),
+                    mAreaRadius.toFloat(),
+                    mRockerRadius.toFloat()
+                )
+
                 moveRocker(mRockerPosition.x.toFloat(), mRockerPosition.y.toFloat())
             }
 
@@ -324,7 +320,12 @@ class RockerView(context: Context, attrs: AttributeSet) :
         val angle = radian2Angle(radian)
 
         // 回调 返回参数
-        callBack(angle)
+        //延迟才触发回调  防止首次方向与意图不一致问题
+        System.currentTimeMillis().let {
+            if (it - currentTimeMillis >= 500) {
+                callBack(angle)
+            }
+        }
         return if (lenXY + rockerRadius <= regionRadius) { // 触摸位置在可活动范围内
             touchPoint
         } else { // 触摸位置在可活动范围以外

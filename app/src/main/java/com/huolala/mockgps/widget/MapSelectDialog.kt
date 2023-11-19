@@ -7,7 +7,6 @@ import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import com.baidu.mapapi.map.BaiduMap
-import com.baidu.mapapi.map.Overlay
 import com.baidu.mapapi.model.LatLng
 import com.baidu.mapapi.search.route.DrivingRouteLine
 import com.blankj.utilcode.util.ClickUtils
@@ -15,7 +14,6 @@ import com.blankj.utilcode.util.ConvertUtils
 import com.blankj.utilcode.util.ScreenUtils
 import com.castiel.common.dialog.BaseDialog
 import com.huolala.mockgps.R
-import com.huolala.mockgps.manager.SearchManager
 import com.huolala.mockgps.manager.utils.MapConvertUtils
 import com.huolala.mockgps.manager.utils.MapDrawUtils
 import kotlinx.android.synthetic.main.dialog_select_navi_map.*
@@ -83,10 +81,11 @@ class MapSelectDialog(
 
     }
 
-    private fun drawLine(it: BaiduMap) {
+    private fun drawLine(baiduMap: BaiduMap) {
+        baiduMap.clear()
         routeLines.mapIndexed { index, line ->
             MapDrawUtils.drawLineToMap(
-                it,
+                baiduMap,
                 MapConvertUtils.convertLatLngList(line),
                 Rect(mMapPadding, mMapPadding, mMapPadding, mMapPadding),
                 index == mainIndex

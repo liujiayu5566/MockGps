@@ -11,25 +11,26 @@
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/iv_subtract"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="30dp"
-        android:padding="10dp"
+        android:layout_weight="1"
+        android:padding="5dp"
         android:src="@drawable/ic_speed_setting_left" />
 
     <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/tv_speed"
+        android:id="@+id/tv_value"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:singleLine="true"
-        android:text="10米"
         android:textColor="@color/white"
-        android:textSize="10sp" />
+        android:textSize="12sp" />
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/iv_add"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="30dp"
-        android:padding="10dp"
+        android:layout_weight="1"
+        android:padding="5dp"
         android:src="@drawable/ic_speed_setting_right" />
 
 </merge>

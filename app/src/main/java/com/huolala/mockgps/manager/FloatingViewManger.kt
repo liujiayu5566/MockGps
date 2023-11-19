@@ -13,6 +13,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import com.baidu.mapapi.model.LatLng
 import com.blankj.utilcode.util.AppUtils
 import com.blankj.utilcode.util.ClickUtils
+import com.blankj.utilcode.util.ConvertUtils
 import com.blankj.utilcode.util.ScreenUtils
 import com.blankj.utilcode.util.ToastUtils
 import com.blankj.utilcode.util.Utils
@@ -21,31 +22,54 @@ import com.huolala.mockgps.listener.FloatingTouchListener
 import com.huolala.mockgps.model.NaviType
 import com.huolala.mockgps.utils.CalculationLogLatDistance
 import com.huolala.mockgps.utils.HandlerUtils
+import com.huolala.mockgps.utils.MMKVUtils
 import com.huolala.mockgps.widget.RockerView
 import kotlinx.android.synthetic.main.layout_floating.view.*
 import kotlinx.android.synthetic.main.layout_floating_location_adjust.view.*
+import kotlinx.android.synthetic.main.layout_floating_navi_adjust.view.*
 import okhttp3.internal.format
-import java.text.Format
 
 /**
  * @author jiayu.liu
  */
 class FloatingViewManger private constructor() {
-    private var view: View? = null
-    private var locationAdjust: View? = null
     private var windowManager: WindowManager =
         Utils.getApp().getSystemService(Service.WINDOW_SERVICE) as WindowManager
 
+    /**
+     * 悬浮窗
+     */
+    private var view: View? = null
+
+    /**
+     * 定位控制悬浮窗
+     */
+    private var locationAdjust: View? = null
+
+    /**
+     * 导航控制悬浮窗
+     */
+    private var naviAdjust: View? = null
+    private var angle: Double = 0.0
     private val mScreenWidth = ScreenUtils.getScreenWidth()
     private val mScreenHeight = ScreenUtils.getScreenHeight()
     private var curLocation: LatLng? = null
+
+    /**
+     * 是否已增加悬浮窗
+     */
     private var isAddFloatingView = false
-    private var infoViewCurVisibility: Int = View.VISIBLE
+
+    /**
+     * 是否已添加调整悬浮窗
+     */
+    private var isAddAdjust = false
+    private var infoViewCurVisibility: Int = View.GONE
     var listener: FloatingViewListener? = null
 
     private val runnable: Runnable = Runnable { view?.iv_setting?.visibility = View.INVISIBLE }
     private val rockerRunnable: Runnable = Runnable {
-
+        changeLocation(angle)
     }
 
     companion object {
@@ -69,6 +93,7 @@ class FloatingViewManger private constructor() {
             it.uiSettings?.isCompassEnabled = false
             it.uiSettings?.setAllGesturesEnabled(false)
             it.setOnMapLoadedCallback {
+
                 MapLocationManager(
                     Utils.getApp(),
                     it,
@@ -81,11 +106,16 @@ class FloatingViewManger private constructor() {
         ClickUtils.applySingleDebouncing(view?.startAndPause) {
             listener?.let { listener ->
                 if (!it.isSelected) {
-                    listener.reStart()
+                    listener.reStart(false)
                 } else {
                     listener.pause()
                 }
             }
+        }
+
+
+        ClickUtils.applySingleDebouncing(view?.iv_rest) {
+            listener?.reStart(true)
         }
 
         //控制展示暂停面板
@@ -95,8 +125,14 @@ class FloatingViewManger private constructor() {
             view?.info?.visibility = infoViewCurVisibility
         }
 
+        //微调控制面板
         ClickUtils.applySingleDebouncing(view?.iv_adjust) {
-            addAdjustLocationToWindow()
+            isAddAdjust = true
+            when (listener?.getNaviType()) {
+                NaviType.LOCATION -> addAdjustLocationToWindow()
+                NaviType.NAVI, NaviType.NAVI_FILE -> addAdjustNaviToWindow()
+                else -> {}
+            }
         }
 
         HandlerUtils.INSTANCE.postDelayed(runnable, 5000)
@@ -189,33 +225,22 @@ class FloatingViewManger private constructor() {
             locationAdjust?.rocker_view!!.setOnAngleChangeListener(object :
                 RockerView.OnAngleChangeListener {
                 private var currentTimeMillis: Long = 0L
-                private val interval: Long = 1000L
+                private val interval: Long = 500L
 
                 override fun onStart() {}
 
                 override fun angle(angle: Double) {
+                    this@FloatingViewManger.angle = angle
                     System.currentTimeMillis().let {
-                        //2s内触发一次
+                        //限制触发间隔
                         if (it - currentTimeMillis <= interval) {
                             return
                         }
                         currentTimeMillis = it
-                        curLocation?.let {
-                            val location =
-                                CalculationLogLatDistance.getNextLonLat(
-                                    curLocation,
-                                    angle,
-                                    locationAdjust?.speed_view!!.getCurSpeed().toDouble()
-                                )
-                            if (CalculationLogLatDistance.isCheckNaN(location)) {
-                                ToastUtils.showShort("计算经纬度失败,请重试！")
-                                return
-                            }
-                            listener?.changeLocation(location)
-                        }
-                        //2s后如果没有角度变化 则回调上次的数据
+                        changeLocation(angle)
+                        //1s后如果没有角度变化 则回调上次的数据
                         HandlerUtils.INSTANCE.removeCallbacks(rockerRunnable)
-                        HandlerUtils.INSTANCE.postDelayed(rockerRunnable, interval)
+                        HandlerUtils.INSTANCE.postDelayed(rockerRunnable, interval * 2)
                     }
                 }
 
@@ -226,14 +251,65 @@ class FloatingViewManger private constructor() {
             })
             ClickUtils.applySingleDebouncing(locationAdjust?.iv_close!!) {
                 removeFromWindow(locationAdjust!!)
+                isAddAdjust = false
+            }
+        }
+        locationAdjust?.parent ?: kotlin.run {
+            val layoutParams = getLayoutParams()
+            layoutParams.x = 0
+            addToWindow(locationAdjust, layoutParams)
+            layoutParams.let {
+                locationAdjust?.setOnTouchListener(FloatingTouchListener(windowManager, it))
+            }
+        }
+    }
+
+    /**
+     * 增加导航微调悬浮窗
+     */
+    @SuppressLint("ClickableViewAccessibility")
+    private fun addAdjustNaviToWindow() {
+        if (naviAdjust == null) {
+            naviAdjust = LayoutInflater.from(Utils.getApp())
+                .inflate(R.layout.layout_floating_navi_adjust, null)
+
+
+            naviAdjust?.speed_nav_view!!.setCurValue(MMKVUtils.getSpeed())
+
+            ClickUtils.applySingleDebouncing(naviAdjust?.btn_nav_change!!) {
+                listener?.changeSpeed(naviAdjust?.speed_nav_view!!.getCurValue())
+            }
+
+            //关闭微调悬浮窗
+            ClickUtils.applySingleDebouncing(naviAdjust?.iv_nav_close!!) {
+                removeFromWindow(naviAdjust!!)
+                isAddAdjust = false
+            }
+        }
+        naviAdjust?.parent ?: kotlin.run {
+            val layoutParams = getLayoutParams()
+            layoutParams.x = 0
+            addToWindow(naviAdjust, layoutParams)
+            layoutParams.let {
+                naviAdjust?.setOnTouchListener(FloatingTouchListener(windowManager, it))
             }
         }
 
-        val layoutParams = getLayoutParams()
-        layoutParams.x = 0
-        addToWindow(locationAdjust, layoutParams)
-        layoutParams.let {
-            locationAdjust?.setOnTouchListener(FloatingTouchListener(windowManager, it))
+    }
+
+    private fun changeLocation(angle: Double) {
+        curLocation?.let {
+            val location =
+                CalculationLogLatDistance.getNextLonLat(
+                    curLocation,
+                    angle,
+                    locationAdjust?.speed_view!!.getCurValue().toDouble()
+                )
+            if (CalculationLogLatDistance.isCheckNaN(location)) {
+                ToastUtils.showShort("计算经纬度失败,请重试！")
+                return
+            }
+            listener?.changeLocation(location)
         }
     }
 
@@ -249,7 +325,7 @@ class FloatingViewManger private constructor() {
         params.height = WindowManager.LayoutParams.WRAP_CONTENT
         params.gravity = Gravity.LEFT or Gravity.TOP
         params.x = mScreenWidth - (view?.width ?: 0)
-        params.y = mScreenHeight / 2
+        params.y = mScreenHeight / 2 + ConvertUtils.dp2px(100f)
         //焦点问题  透明度
         params.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
         params.format = PixelFormat.TRANSPARENT
@@ -260,11 +336,23 @@ class FloatingViewManger private constructor() {
         view?.startAndPause?.isSelected = true
         when (listener?.getNaviType()) {
             NaviType.LOCATION -> {
-
+                view?.iv_rest?.visibility = View.GONE
+                if (isAddAdjust) {
+                    naviAdjust?.let {
+                        removeFromWindow(it)
+                    }
+                    addAdjustLocationToWindow()
+                }
             }
 
             NaviType.NAVI, NaviType.NAVI_FILE -> {
-
+                view?.iv_rest?.visibility = View.VISIBLE
+                if (isAddAdjust) {
+                    locationAdjust?.let {
+                        removeFromWindow(it)
+                    }
+                    addAdjustNaviToWindow()
+                }
             }
 
             else -> {}
@@ -274,9 +362,7 @@ class FloatingViewManger private constructor() {
 
     fun stopMock() {
         view?.startAndPause?.isSelected = false
-        if (listener?.getNaviType() == NaviType.LOCATION) {
-            view?.iv_adjust?.visibility = View.GONE
-        }
+        view?.iv_adjust?.visibility = View.GONE
     }
 
     fun setCurLocation(curLocation: LatLng?) {
@@ -295,13 +381,25 @@ class FloatingViewManger private constructor() {
         }
     }
 
+    /**
+     * 更新当前进度（道路）
+     */
+    fun updateNaviInfo(str: String) {
+        //已加载到window中
+        naviAdjust?.parent?.run {
+            naviAdjust?.tv_nav_info!!.text = str
+        }
+    }
+
+
     interface FloatingViewListener {
         fun pause()
 
-        fun reStart()
+        fun reStart(isRest: Boolean)
 
         fun getNaviType(): Int
 
         fun changeLocation(latLng: LatLng)
+        fun changeSpeed(speed: Int)
     }
 }
