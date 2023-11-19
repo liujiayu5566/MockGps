@@ -10,12 +10,21 @@ import com.baidu.mapapi.map.MapStatusUpdateFactory
 import com.baidu.mapapi.map.MyLocationData
 import com.baidu.mapapi.model.LatLng
 
+
 /**
  * 定位小蓝点显示控制类
  * @author jiayu.liu
  */
-class MapLocationManager(context: Context, private var baiduMap: BaiduMap, follow: Boolean) {
+
+enum class FollowMode {
+    MODE_SINGLE,
+    MODE_PERSISTENT,
+    MODE_NONE
+}
+
+class MapLocationManager(context: Context, private var baiduMap: BaiduMap, follow: FollowMode) {
     private var mLocationClient: LocationClient
+    private var isZoom = false
     private val myLocationListener = object : BDAbstractLocationListener() {
         override fun onReceiveLocation(location: BDLocation?) {
             //mapView 销毁后不在处理新接收的位置
@@ -37,17 +46,33 @@ class MapLocationManager(context: Context, private var baiduMap: BaiduMap, follo
                 .build()
             baiduMap.setMyLocationData(locData)
             //更新中心点
-            if (follow) {
-                baiduMap.animateMapStatus(
-                    MapStatusUpdateFactory.newLatLngZoom(
-                        LatLng(
-                            locData.latitude,
-                            locData.longitude
-                        ), 16f
-                    )
-                )
+            when (follow) {
+                FollowMode.MODE_SINGLE -> {
+                    if (!isZoom) {
+                        zoom(locData)
+                        isZoom = true
+                    }
+                }
+
+                FollowMode.MODE_PERSISTENT ->
+                    zoom(locData)
+
+                else -> {
+
+                }
             }
         }
+    }
+
+    fun zoom(locData: MyLocationData) {
+        baiduMap.animateMapStatus(
+            MapStatusUpdateFactory.newLatLngZoom(
+                LatLng(
+                    locData.latitude,
+                    locData.longitude
+                ), 16f
+            )
+        )
     }
 
     init {
@@ -56,9 +81,11 @@ class MapLocationManager(context: Context, private var baiduMap: BaiduMap, follo
 
         //通过LocationClientOption设置LocationClient相关参数
         val option = LocationClientOption()
-        option.isOpenGps = true // 打开gps
         option.setScanSpan(1000)
-
+        option.setNeedDeviceDirect(true)
+        option.isOpenGnss = true
+        option.setIsNeedAltitude(true)
+        option.setOpenAutoNotifyMode(1000, 0, LocationClientOption.LOC_SENSITIVITY_MIDDLE)
         //设置locationClientOption
         mLocationClient.locOption = option
 

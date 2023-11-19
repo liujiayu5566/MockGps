@@ -1,6 +1,7 @@
 package com.huolala.mockgps.widget
 
 import android.content.Context
+import android.graphics.Rect
 import android.view.Gravity
 import android.view.View
 import android.view.Window
@@ -32,7 +33,6 @@ class MapSelectDialog(
     private val mHorizontalPadding = ConvertUtils.dp2px(20f)
     private val mMapPadding = ConvertUtils.dp2px(30f)
     private val screenWidth = ScreenUtils.getScreenWidth()
-    private val mOverlayList = ArrayList<Overlay>()
     private var mainIndex = 0
     var listener: MapSelectDialogListener? = null
 
@@ -84,21 +84,13 @@ class MapSelectDialog(
     }
 
     private fun drawLine(it: BaiduMap) {
-        mOverlayList.map {
-            it.remove()
-        }.also {
-            mOverlayList.clear()
-        }
-
         routeLines.mapIndexed { index, line ->
             MapDrawUtils.drawLineToMap(
                 it,
                 MapConvertUtils.convertLatLngList(line),
-                mMapPadding,
+                Rect(mMapPadding, mMapPadding, mMapPadding, mMapPadding),
                 index == mainIndex
-            )?.let { overlay ->
-                mOverlayList.add(overlay)
-            }
+            )
         }
     }
 

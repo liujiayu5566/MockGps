@@ -70,12 +70,11 @@ class GuideActivity : BaseActivity<ActivityGuideBinding, BaseViewModel>(), View.
         if (needPermissions.size == 0) {
             return true
         }
-        if (needPermissions.size > 0) {
-            requestPermissions(
-                needPermissions.toArray(arrayOfNulls(needPermissions.size)),
-                PERMISSION_REQUEST
-            )
-        }
+
+        requestPermissions(
+            needPermissions.toArray(arrayOfNulls(needPermissions.size)),
+            PERMISSION_REQUEST
+        )
         return false
     }
 
@@ -127,6 +126,7 @@ class GuideActivity : BaseActivity<ActivityGuideBinding, BaseViewModel>(), View.
                 startActivity(Intent(this, MainActivity::class.java))
                 finish()
             }
+
             else -> {}
         }
     }

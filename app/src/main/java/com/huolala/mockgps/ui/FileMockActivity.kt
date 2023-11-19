@@ -7,8 +7,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
+import com.baidu.mapapi.model.LatLng
 import com.blankj.utilcode.util.ClickUtils
 import com.blankj.utilcode.util.ConvertUtils
+import com.blankj.utilcode.util.FileIOUtils
 import com.blankj.utilcode.util.KeyboardUtils
 import com.blankj.utilcode.util.ToastUtils
 import com.castiel.common.base.BaseActivity
@@ -17,6 +19,7 @@ import com.huolala.mockgps.R
 import com.huolala.mockgps.databinding.ActivityFileBinding
 import com.huolala.mockgps.databinding.DialogFileMockHintBinding
 import com.huolala.mockgps.databinding.DialogHintBinding
+import com.huolala.mockgps.manager.SearchManager
 import com.huolala.mockgps.model.MockMessageModel
 import com.huolala.mockgps.model.NaviType
 import com.huolala.mockgps.utils.DialogUtils
@@ -72,15 +75,18 @@ class FileMockActivity : BaseActivity<ActivityFileBinding, BaseViewModel>(), Vie
                     getString(R.string.file_navi_hint)
                 ).show()
             }
+
             dataBinding.btnCreatePath -> {
                 //生成路径文件
                 startActivity(Intent(this, CalculateRouteActivity::class.java))
             }
+
             dataBinding.ivNaviSetting -> {
                 NaviPopupWindow(this).apply {
                     show(dataBinding.ivNaviSetting)
                 }
             }
+
             dataBinding.btnFile -> {
                 NaviPathDialog(this).run {
                     listener = object : NaviPathDialog.NaviPathListener {
@@ -94,20 +100,45 @@ class FileMockActivity : BaseActivity<ActivityFileBinding, BaseViewModel>(), Vie
                     show()
                 }
             }
+
             dataBinding.btnStartNavi -> {
                 val text = dataBinding.edFile.text
                 if (TextUtils.isEmpty(text)) {
                     ToastUtils.showShort("路径不能为null")
                     return
                 }
-                Utils.checkFloatWindow(this).let {
+                Utils.checkFloatWindow(this).let { it ->
                     if (!it) {
                         DialogUtils.setFloatWindowDialog(this@FileMockActivity)
                         return
                     }
+                    val polylineList = arrayListOf<LatLng>()
+                    FileIOUtils.readFile2String(text.toString())?.run {
+                        split(";").run {
+                            if (isNotEmpty()) {
+                                map {
+                                    it.split(",").run {
+                                        if (size == 2) {
+                                            polylineList.add(
+                                                LatLng(
+                                                    get(1).toDouble(),
+                                                    get(0).toDouble()
+                                                )
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        //文件数据导航替换
+                        SearchManager.INSTANCE.polylineList = polylineList
+                    }
+                    if (polylineList.isEmpty()) {
+                        ToastUtils.showShort("文件数据解析失败,无法启动导航")
+                        return
+                    }
                     val model = MockMessageModel(
                         naviType = NaviType.NAVI_FILE,
-                        path = text.toString(),
                         speed = MMKVUtils.getSpeed(),
                         pointType = mPointType,
                     )
@@ -116,6 +147,7 @@ class FileMockActivity : BaseActivity<ActivityFileBinding, BaseViewModel>(), Vie
                     startActivity(intent)
                 }
             }
+
             dataBinding.btnPointType -> {
                 PointTypeDialog(this).apply {
                     listener = object : PointTypeDialog.PointTypeDialogListener {
@@ -126,6 +158,7 @@ class FileMockActivity : BaseActivity<ActivityFileBinding, BaseViewModel>(), Vie
                     }
                 }.show(mPointType)
             }
+
             else -> {
             }
         }

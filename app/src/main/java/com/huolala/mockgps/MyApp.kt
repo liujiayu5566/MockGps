@@ -1,19 +1,41 @@
 package com.huolala.mockgps
 
-import android.app.Application
+import android.animation.ValueAnimator
+import android.annotation.SuppressLint
+import android.content.Context
 import android.content.IntentFilter
+import android.os.Build
 import com.baidu.location.LocationClient
 import com.baidu.mapapi.CoordType
 import com.baidu.mapapi.SDKInitializer
 import com.blankj.utilcode.util.Utils
-import com.castiel.common.AppManager
 import com.castiel.common.BaseApp
+import me.weishu.reflection.Reflection
+import java.lang.reflect.Field
+
 
 /**
  * @author jiayu.liu
  */
 class MyApp : BaseApp() {
     private lateinit var mMockReceiver: MockReceiver
+    override fun attachBaseContext(base: Context?) {
+        super.attachBaseContext(base)
+        Reflection.unseal(base)
+        reflectionValueAnimator()
+    }
+
+    @SuppressLint("SoonBlockedPrivateApi")
+    private fun reflectionValueAnimator() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (!ValueAnimator.areAnimatorsEnabled()) {
+                val field: Field = ValueAnimator::class.java.getDeclaredField("sDurationScale")
+                field.isAccessible = true
+                field.set(null, 1)
+            }
+        }
+    }
+
 
     override fun onCreate() {
         super.onCreate()

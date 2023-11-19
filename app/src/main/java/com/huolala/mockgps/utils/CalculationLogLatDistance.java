@@ -144,6 +144,10 @@ public class CalculationLogLatDistance {
         return new LatLng(lat, lon);
     }
 
+    public static boolean isCheckNaN(LatLng location) {
+        return location.latitude <= 0.0 || location.longitude <= 0.0 || Double.isNaN(location.latitude) || Double.isNaN(location.longitude);
+    }
+
 
     /**
      * 角度转弧度

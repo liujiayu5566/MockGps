@@ -31,6 +31,7 @@ import com.huolala.mockgps.R
 import com.huolala.mockgps.adaper.PoiListAdapter
 import com.huolala.mockgps.adaper.SimpleDividerDecoration
 import com.huolala.mockgps.databinding.ActivityPickBinding
+import com.huolala.mockgps.manager.FollowMode
 import com.huolala.mockgps.manager.MapLocationManager
 import com.huolala.mockgps.model.PoiInfoType
 import kotlinx.android.synthetic.main.activity_pick.*
@@ -49,7 +50,6 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
     private var poiListAdapter: PoiListAdapter = PoiListAdapter()
     private var mPoiInfoModel: PoiInfoModel? = null
     private var mSuggestionSearch: SuggestionSearch = SuggestionSearch.newInstance()
-    private var mCity: String = ""
     private var mHandler: PickMapPoiHandler? = null
     private var mapLocationManager: MapLocationManager? = null
 
@@ -201,6 +201,8 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
             }
         })
 
+        var follow = FollowMode.MODE_SINGLE
+
         intent.getParcelableExtra<PoiInfoModel>("model")?.run model@{
             mPoiInfoModel = this
             latLng?.run {
@@ -209,11 +211,12 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
                 tv_lonlat.text = this@model.latLng.toString()
                 editViewShow(false)
                 changeCenterLatLng(latitude, longitude)
+                follow = FollowMode.MODE_NONE
             }
         }
 
         //设置locationClientOption
-        mapLocationManager = MapLocationManager(this, mBaiduMap, false)
+        mapLocationManager = MapLocationManager(this, mBaiduMap, follow)
         mSuggestionSearch.setOnGetSuggestionResultListener(listener)
 
         mBaiduMap.setOnMapStatusChangeListener(object : BaiduMap.OnMapStatusChangeListener {
@@ -281,7 +284,9 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
 
             R.id.confirm_location -> {
                 mPoiInfoModel?.let {
-                    if ((it.latLng?.longitude ?: 0.0) <= 0.0 || (it.latLng?.latitude ?: 0.0) <= 0.0) {
+                    if ((it.latLng?.longitude ?: 0.0) <= 0.0 || (it.latLng?.latitude
+                            ?: 0.0) <= 0.0
+                    ) {
                         ToastUtils.showShort("数据异常，请重新选择！")
                         return@let
                     }

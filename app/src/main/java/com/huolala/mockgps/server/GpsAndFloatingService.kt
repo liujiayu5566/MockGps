@@ -7,27 +7,28 @@ import android.location.Location
 import android.location.LocationManager
 import android.location.provider.ProviderProperties
 import android.os.*
-import android.provider.Settings
-import android.view.*
 import com.baidu.mapapi.model.LatLng
-import com.baidu.mapapi.search.route.*
 import com.blankj.utilcode.util.*
 import com.huolala.mockgps.manager.FloatingViewManger
 import com.huolala.mockgps.manager.SearchManager
 import com.huolala.mockgps.model.MockMessageModel
 import com.huolala.mockgps.model.NaviType
 import com.huolala.mockgps.model.PoiInfoModel
+import com.huolala.mockgps.model.PoiInfoType
 import com.huolala.mockgps.utils.CalculationLogLatDistance
 import com.huolala.mockgps.utils.LocationUtils
 import com.huolala.mockgps.utils.Utils
-import kotlinx.android.synthetic.main.layout_floating.view.*
 
 /**
  * @author jiayu.liu
  */
 class GpsAndFloatingService : Service() {
-    private val START_MOCK_LOCATION = 1001
-    private val START_MOCK_LOCATION_NAVI = 1002
+    companion object {
+        private const val START_MOCK_LOCATION = 1001
+        private const val START_MOCK_NAVI = 1002
+        private const val START_MOCK_FILE_NAVI = 1003
+    }
+
     private var locationManager: LocationManager? = null
     private var isStart = false
     private lateinit var handle: Handler
@@ -42,6 +43,7 @@ class GpsAndFloatingService : Service() {
      */
     private var mSpeed: Float = 60 / 3.6f
     private lateinit var mCurrentLocation: LatLng
+    private var naviType: Int = NaviType.NONE
 
     /**
      * 模拟导航点更新间隔  单位：ms  小于等于1000ms
@@ -57,13 +59,14 @@ class GpsAndFloatingService : Service() {
                         if (isStart) {
                             (msg.obj as PoiInfoModel?)?.latLng?.let {
 //                                view.tv_progress.text = String.format("%d / %d", 0, 0)
+                                mCurrentLocation = it
                                 startSimulateLocation(it, true)
                                 handle.sendMessageDelayed(Message.obtain(msg), mNaviUpdateValue)
                             }
                         }
                     }
 
-                    START_MOCK_LOCATION_NAVI -> {
+                    START_MOCK_NAVI, START_MOCK_FILE_NAVI -> {
                         if (isStart) {
                             (msg.obj as ArrayList<*>?)?.let {
                                 if (it.isEmpty()) {
@@ -89,7 +92,6 @@ class GpsAndFloatingService : Service() {
             }
         }
         initLocationManager()
-        initFloatingView()
     }
 
     private fun initLocationManager() {
@@ -107,19 +109,46 @@ class GpsAndFloatingService : Service() {
                 }
 
                 override fun reStart() {
-                    SearchManager.INSTANCE.polylineList.let {
-                        if (it.isEmpty()) {
-                            FloatingViewManger.INSTANCE.stopMock()
-                            return
+                    model?.run {
+                        if (naviType == NaviType.LOCATION) {
+                            mockLocation()
+                        } else {
+                            SearchManager.INSTANCE.polylineList.let {
+                                if (it.isEmpty()) {
+                                    FloatingViewManger.INSTANCE.stopMock()
+                                    return
+                                }
+                                if (index >= it.size) {
+                                    index = 0
+                                }
+                                sendHandler(
+                                    START_MOCK_NAVI,
+                                    it
+                                )
+                            }
                         }
-                        if (index >= it.size) {
-                            index = 0
-                        }
+                    }
+                }
+
+                override fun getNaviType(): Int {
+                    return naviType
+                }
+
+                override fun changeLocation(latLng: LatLng) {
+                    if (model == null) {
+                        return
+                    }
+                    PoiInfoModel(
+                        latLng = latLng,
+                        poiInfoType = PoiInfoType.LOCATION,
+                    ).also {
+                        model?.locationModel = it
                         sendHandler(
-                            START_MOCK_LOCATION_NAVI,
+                            START_MOCK_LOCATION,
                             it
                         )
                     }
+
                 }
 
             }
@@ -145,7 +174,7 @@ class GpsAndFloatingService : Service() {
             //距离大于speed 计算经纬度
             var location = CalculationLogLatDistance.getNextLonLat(mCurrentLocation, yaw, mSpeed)
             //计算经纬度为非法值则直接取下一阶段经纬度更新
-            if (location.latitude <= 0.0 || location.longitude <= 0.0 || location.latitude.isNaN() || location.longitude.isNaN()) {
+            if (CalculationLogLatDistance.isCheckNaN(location)) {
                 location = polyline[index] as LatLng
                 index++
             }
@@ -172,6 +201,7 @@ class GpsAndFloatingService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        initFloatingView()
         //开始模拟
         model = null
         if (Utils.isAllowMockLocation(this)) {
@@ -184,57 +214,21 @@ class GpsAndFloatingService : Service() {
     }
 
     private fun mockLocation() {
+        addTestProvider()
         model?.run {
             when (naviType) {
                 NaviType.LOCATION -> {
                     sendHandler(START_MOCK_LOCATION, locationModel)
                 }
 
-                NaviType.NAVI -> {
+                NaviType.NAVI, NaviType.NAVI_FILE -> {
                     mSpeed = speed / 3.6f
                     //算路成功后 startService
                     index = 0
                     SearchManager.INSTANCE.polylineList.let {
                         sendHandler(
-                            START_MOCK_LOCATION_NAVI,
+                            START_MOCK_NAVI,
                             it
-                        )
-                    }
-                }
-
-                NaviType.NAVI_FILE -> {
-                    try {
-                        mSpeed = speed / 3.6f
-                        val polylineList = arrayListOf<LatLng>()
-                        val readFile2String = FileIOUtils.readFile2String(path)
-                        readFile2String?.run {
-                            split(";").run {
-                                if (isNotEmpty()) {
-                                    map {
-                                        it.split(",").run {
-                                            if (size == 2) {
-                                                polylineList.add(
-                                                    LatLng(
-                                                        get(1).toDouble(),
-                                                        get(0).toDouble()
-                                                    )
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            index = 0
-                            sendHandler(
-                                START_MOCK_LOCATION_NAVI,
-                                polylineList
-                            )
-                        } ?: kotlin.run { ToastUtils.showShort("文件无法读取") }
-
-                    } catch (e: Exception) {
-                        ToastUtils.showShort(
-                            "文件解析失败，是否点串格式正确 \n" +
-                                    " ${e.printStackTrace()}"
                         )
                     }
                 }
@@ -252,8 +246,17 @@ class GpsAndFloatingService : Service() {
             what = code
             obj = model
         }
+        when (code) {
+            START_MOCK_LOCATION -> this.naviType = NaviType.LOCATION
+            START_MOCK_NAVI -> this.naviType = NaviType.NAVI
+            START_MOCK_FILE_NAVI -> this.naviType = NaviType.NAVI_FILE
+            else -> {
+                this.naviType = NaviType.NONE
+            }
+        }
+
         msg.let {
-            removeGps()
+            addTestProvider()
             handle.removeCallbacksAndMessages(null)
             isStart = true
             handle.sendMessage(it)
@@ -293,23 +296,47 @@ class GpsAndFloatingService : Service() {
         loc.latitude = gps84[1]
         loc.time = System.currentTimeMillis()
         loc.elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos()
+        //通知悬浮窗当前位置
+        FloatingViewManger.INSTANCE.setCurLocation(latLng)
 
         mockGps(loc)
     }
 
     private fun removeGps() {
         try {
+            println("removeGps")
             locationManager?.run {
+                setTestProviderEnabled(providerStr, false)
+                setTestProviderEnabled(networkStr, false)
                 removeTestProvider(providerStr)
                 removeTestProvider(networkStr)
             }
-            FloatingViewManger.INSTANCE.stopMock()
         } catch (e: Exception) {
             e.printStackTrace()
+        } finally {
+            isStart = false
+            //先通知stopMock  再修改naviType为NaviType.NONE
+            FloatingViewManger.INSTANCE.stopMock()
+            naviType = NaviType.NONE
         }
     }
 
     private fun mockGps(location: Location) {
+        locationManager?.run {
+            try {
+                setTestProviderLocation(providerStr, location)
+                //network
+                location.run {
+                    provider = networkStr
+                    setTestProviderLocation(networkStr, location)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private fun addTestProvider() {
         locationManager?.run {
             try {
                 var powerUsageMedium = Criteria.POWER_LOW
@@ -333,26 +360,21 @@ class GpsAndFloatingService : Service() {
                 if (!isProviderEnabled(providerStr)) {
                     setTestProviderEnabled(providerStr, true)
                 }
-                setTestProviderLocation(providerStr, location)
+                addTestProvider(
+                    networkStr,
+                    true,
+                    false,
+                    true,
+                    true,
+                    true,
+                    true,
+                    true,
+                    powerUsageMedium,
+                    accuracyCoarse
+                )
                 //network
-                location.run {
-                    provider = networkStr
-                    addTestProvider(
-                        networkStr,
-                        true,
-                        false,
-                        true,
-                        true,
-                        true,
-                        true,
-                        true,
-                        powerUsageMedium,
-                        accuracyCoarse
-                    )
-                    if (!isProviderEnabled(networkStr)) {
-                        setTestProviderEnabled(networkStr, true)
-                    }
-                    setTestProviderLocation(networkStr, location)
+                if (!isProviderEnabled(networkStr)) {
+                    setTestProviderEnabled(networkStr, true)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()

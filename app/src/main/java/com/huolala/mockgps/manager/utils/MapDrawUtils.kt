@@ -1,6 +1,7 @@
 package com.huolala.mockgps.manager.utils
 
 import android.R
+import android.graphics.Rect
 import android.text.TextUtils
 import com.baidu.mapapi.map.BaiduMap
 import com.baidu.mapapi.map.BitmapDescriptorFactory
@@ -35,7 +36,7 @@ object MapDrawUtils {
     fun drawLineToMap(
         baiduMap: BaiduMap,
         polylineList: List<LatLng>,
-        padding: Int,
+        rect: Rect,
         isMainLine: Boolean = true
     ): Overlay? {
         if (polylineList.isEmpty()) {
@@ -58,16 +59,17 @@ object MapDrawUtils {
             .points(polylineList)
             .zIndex(if (isMainLine) 1 else 0)
         val addOverlay = baiduMap.addOverlay(mOverlayOptions)
-
-        baiduMap.animateMapStatus(
-            MapStatusUpdateFactory.newLatLngBounds(
-                LatLngBounds.Builder().include(polylineList).build(),
-                padding,
-                padding,
-                padding,
-                padding
+        if (isMainLine) {
+            baiduMap.animateMapStatus(
+                MapStatusUpdateFactory.newLatLngBounds(
+                    LatLngBounds.Builder().include(polylineList).build(),
+                    rect.left,
+                    rect.top,
+                    rect.right,
+                    rect.bottom
+                )
             )
-        )
+        }
         return addOverlay
     }
 }

@@ -1,24 +1,23 @@
 package com.huolala.mockgps.ui
 
 import android.content.Intent
+import android.graphics.Rect
 import android.text.TextUtils
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.AppCompatTextView
-import com.baidu.location.BDAbstractLocationListener
-import com.baidu.location.BDLocation
-import com.baidu.location.LocationClient
-import com.baidu.location.LocationClientOption
 import com.baidu.mapapi.map.*
-import com.baidu.mapapi.model.LatLng
-import com.baidu.mapapi.model.LatLngBounds
 import com.baidu.mapapi.search.route.*
 import com.blankj.utilcode.util.*
 import com.castiel.common.base.BaseActivity
 import com.castiel.common.base.BaseViewModel
 import com.huolala.mockgps.R
 import com.huolala.mockgps.databinding.ActivityCalculateRouteBinding
+import com.huolala.mockgps.manager.FollowMode
 import com.huolala.mockgps.manager.MapLocationManager
+import com.huolala.mockgps.manager.SearchManager
+import com.huolala.mockgps.manager.utils.MapConvertUtils
+import com.huolala.mockgps.manager.utils.MapDrawUtils
 import com.huolala.mockgps.model.PoiInfoModel
 import com.huolala.mockgps.model.PoiInfoType
 import java.io.File
@@ -32,13 +31,13 @@ class CalculateRouteActivity : BaseActivity<ActivityCalculateRouteBinding, BaseV
     View.OnClickListener {
     private lateinit var mBaiduMap: BaiduMap
     private var mapLocationManager: MapLocationManager? = null
-    private val mDefaultPadding = 50
-    private var mSearch: RoutePlanSearch = RoutePlanSearch.newInstance()
+    private val mDefaultPadding = ConvertUtils.dp2px(50f)
+    private var mainIndex = 0
 
     /**
      * 算路成功的路线
      */
-    private var mPaths: ArrayList<ArrayList<LatLng>> = arrayListOf()
+    private var routeLines: ArrayList<DrivingRouteLine> = arrayListOf()
 
     private var registerForActivityResultToStartPoi =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -93,48 +92,41 @@ class CalculateRouteActivity : BaseActivity<ActivityCalculateRouteBinding, BaseV
 
         mBaiduMap.setMapStatus(MapStatusUpdateFactory.zoomBy(16f))
 
-        mapLocationManager = MapLocationManager(this, mBaiduMap, false)
+        mapLocationManager = MapLocationManager(this, mBaiduMap, FollowMode.MODE_SINGLE)
 
-        mSearch.setOnGetRoutePlanResultListener(object : OnGetRoutePlanResultListener {
-            override fun onGetWalkingRouteResult(p0: WalkingRouteResult?) {
-                TODO("Not yet implemented")
-            }
-
-            override fun onGetTransitRouteResult(p0: TransitRouteResult?) {
-                TODO("Not yet implemented")
-            }
-
-            override fun onGetMassTransitRouteResult(p0: MassTransitRouteResult?) {
-                TODO("Not yet implemented")
-            }
-
-            override fun onGetDrivingRouteResult(drivingRouteResult: DrivingRouteResult?) {
-                //创建DrivingRouteOverlay实例
-                //选址主路线  默认第一个为主路线
-                var isMaster = true
-                drivingRouteResult?.routeLines?.let {
-                    it.map { data ->
-                        val polylineList = arrayListOf<LatLng>()
-                        for (step in data.allStep) {
-                            if (step.wayPoints != null && step.wayPoints.isNotEmpty()) {
-                                polylineList.addAll(step.wayPoints)
-                            }
-                        }
-                        drawLineToMap(polylineList, isMaster)
-                        isMaster = false
-                    }
-                    dataBinding.fileName = "${dataBinding.tvStart.text}-${dataBinding.tvEnd.text}"
+        SearchManager.INSTANCE.listener = object : SearchManager.SearchManagerListener {
+            override fun onDrivingRouteResultLines(routeLines: List<DrivingRouteLine>?) {
+                viewModel.loading.value = false
+                if (routeLines?.isEmpty() != false) {
+                    ToastUtils.showShort("路线规划数据获取失败,请检测网络or数据是否正确!")
+                    return
                 }
-            }
+                this@CalculateRouteActivity.routeLines = routeLines as ArrayList<DrivingRouteLine>
+                mBaiduMap.let {
+                    (dataBinding.tvStart.tag as PoiInfoModel?)?.latLng?.let { start ->
+                        MapDrawUtils.drawMarkerToMap(it, start, "marker_start.png")
+                    }
+                    (dataBinding.tvEnd.tag as PoiInfoModel?)?.latLng?.let { end ->
+                        MapDrawUtils.drawMarkerToMap(it, end, "marker_end.png")
+                    }
 
-            override fun onGetIndoorRouteResult(p0: IndoorRouteResult?) {
-                TODO("Not yet implemented")
+                    routeLines.mapIndexed { index, line ->
+                        MapDrawUtils.drawLineToMap(
+                            it,
+                            MapConvertUtils.convertLatLngList(line),
+                            Rect(
+                                mDefaultPadding,
+                                mDefaultPadding + dataBinding.clPanel.height,
+                                mDefaultPadding,
+                                mDefaultPadding
+                            ),
+                            index == mainIndex
+                        )
+                    }
+                }
+                dataBinding.fileName = "${dataBinding.tvStart.text}-${dataBinding.tvEnd.text}"
             }
-
-            override fun onGetBikingRouteResult(p0: BikingRouteResult?) {
-                TODO("Not yet implemented")
-            }
-        })
+        }
     }
 
 
@@ -188,38 +180,45 @@ class CalculateRouteActivity : BaseActivity<ActivityCalculateRouteBinding, BaseV
                     return
                 }
                 mBaiduMap.clear()
-                mPaths.clear()
-                mSearch.drivingSearch(
-                    DrivingRoutePlanOption()
-                        .from(stNode)
-                        .to(enNode)
-                )
+                routeLines.clear()
+                viewModel.loading.value = true
+                SearchManager.INSTANCE.driverSearch(stNode?.location, enNode?.location, true)
             }
 
             dataBinding.btnChange -> {
-                if (mPaths.isEmpty()) {
+                if (routeLines.isEmpty()) {
                     ToastUtils.showShort("没有路线切换")
                     return
                 }
                 mBaiduMap.clear()
-                var isMaster = true
-                ArrayList(mPaths).let {
-                    mPaths.clear()
-                    it.map { data ->
-                        drawLineToMap(data, isMaster)
-                        isMaster = false
+
+                mainIndex = ++mainIndex % routeLines.size
+                mBaiduMap.let {
+                    routeLines.mapIndexed { index, line ->
+                        MapDrawUtils.drawLineToMap(
+                            it,
+                            MapConvertUtils.convertLatLngList(line),
+                            Rect(
+                                mDefaultPadding,
+                                mDefaultPadding + dataBinding.clPanel.height,
+                                mDefaultPadding,
+                                mDefaultPadding
+                            ),
+                            index == mainIndex
+                        )
                     }
                 }
                 dataBinding.fileName = "${dataBinding.tvStart.text}-${dataBinding.tvEnd.text}"
             }
 
             dataBinding.btnSaveFile -> {
-                if (mPaths.isEmpty()) {
+                if (routeLines.isEmpty() || mainIndex < 0 || mainIndex >= routeLines.size) {
                     ToastUtils.showShort("数据列表为null！，无法保存")
                     return
                 }
+                val convertLatLngList = MapConvertUtils.convertLatLngList(routeLines[mainIndex])
                 val builder = StringBuilder()
-                mPaths[mPaths.size - 1].map {
+                convertLatLngList.map {
                     builder.append(it.longitude).append(",").append(it.latitude).append(";")
                 }
                 if (!TextUtils.isEmpty(builder)) {
@@ -233,6 +232,9 @@ class CalculateRouteActivity : BaseActivity<ActivityCalculateRouteBinding, BaseV
                         builder.toString()
                     ).let {
                         ToastUtils.showShort(if (it) "保存成功" else "保存失败")
+                        if (it) {
+                            finish()
+                        }
                     }
                 }
             }
@@ -258,7 +260,6 @@ class CalculateRouteActivity : BaseActivity<ActivityCalculateRouteBinding, BaseV
     private fun destroy() {
         mapLocationManager?.onDestroy()
         dataBinding.mapview.onDestroy()
-        mSearch.destroy()
     }
 
 
@@ -276,43 +277,6 @@ class CalculateRouteActivity : BaseActivity<ActivityCalculateRouteBinding, BaseV
                 else -> {
                 }
             }
-        }
-    }
-
-    private fun drawLineToMap(polylineList: ArrayList<LatLng>?, isMaster: Boolean = true) {
-        if (polylineList == null || polylineList.size == 0) {
-            return
-        }
-
-        val color: Int
-        if (isMaster) {
-            color = 0xFF00FF00.toInt()
-            mPaths.add(polylineList)
-        } else {
-            color = 0xFF0000FF.toInt()
-            mPaths.add(mPaths.size - 1, polylineList)
-        }
-
-        val mOverlayOptions: OverlayOptions = PolylineOptions()
-            .width(15)
-            .color(color)
-            .zIndex(if (isMaster) 1 else 0)
-            .lineCapType(PolylineOptions.LineCapType.LineCapRound)
-            .points(polylineList)
-        mBaiduMap.addOverlay(mOverlayOptions)
-        if (isMaster) {
-            mBaiduMap.animateMapStatus(
-                MapStatusUpdateFactory.newLatLngBounds(
-                    LatLngBounds.Builder().include(polylineList).build(),
-                    mDefaultPadding,
-                    if (dataBinding.clPanel.height == 0)
-                        mDefaultPadding
-                    else
-                        dataBinding.clPanel.height + mDefaultPadding,
-                    mDefaultPadding,
-                    mDefaultPadding
-                )
-            )
         }
     }
 }

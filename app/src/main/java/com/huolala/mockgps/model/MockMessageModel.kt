@@ -6,13 +6,14 @@ import androidx.annotation.IntDef
 import com.huolala.mockgps.utils.LocationUtils
 
 
-@IntDef(NaviType.LOCATION, NaviType.NAVI, NaviType.NAVI_FILE)
-@kotlin.annotation.Retention(AnnotationRetention.SOURCE)
+@IntDef(NaviType.NONE, NaviType.LOCATION, NaviType.NAVI, NaviType.NAVI_FILE)
+@Retention(AnnotationRetention.SOURCE)
 annotation class NaviType {
     companion object {
-        const val LOCATION = 0
-        const val NAVI = 1
-        const val NAVI_FILE = 2
+        const val NONE = 0
+        const val LOCATION = 1
+        const val NAVI = 2
+        const val NAVI_FILE = 3
     }
 }
 
@@ -32,10 +33,6 @@ data class MockMessageModel(
      * 速度 单位 KM/H
      */
     var speed: Int = 60,
-    /**
-     * 文件数据路径
-     */
-    var path: String? = "",
     var uid: String? = "",
     var pointType: String? = LocationUtils.gcj02
 ) : Parcelable {
@@ -45,7 +42,6 @@ data class MockMessageModel(
         parcel.readParcelable(PoiInfoModel::class.java.classLoader),
         parcel.readInt(),
         parcel.readInt(),
-        parcel.readString(),
         parcel.readString(),
         parcel.readString()
     ) {
@@ -57,7 +53,6 @@ data class MockMessageModel(
         parcel.writeParcelable(endNavi, flags)
         parcel.writeInt(naviType)
         parcel.writeInt(speed)
-        parcel.writeString(path)
         parcel.writeString(uid)
         parcel.writeString(pointType)
     }

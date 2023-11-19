@@ -45,6 +45,7 @@ class HistoryAdapter : ListAdapter<MockMessageModel, HistoryAdapter.ViewHolder>(
                     model.locationModel?.latLng?.latitude ?: 0f
                 )
             }
+
             else -> {
                 holder.itemView.tv_poi_name.text = String.format(
                     "%s -> %s",

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    tools:background="@color/black_30"
+    tools:parentTag="android.widget.LinearLayout">
+
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/iv_subtract"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:padding="10dp"
+        android:src="@drawable/ic_speed_setting_left" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/tv_speed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:text="10米"
+        android:textColor="@color/white"
+        android:textSize="10sp" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/iv_add"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:padding="10dp"
+        android:src="@drawable/ic_speed_setting_right" />
+
+</merge>

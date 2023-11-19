@@ -1,6 +1,7 @@
 package com.huolala.mockgps.ui
 
 import android.content.Intent
+import android.graphics.Rect
 import android.os.*
 import android.view.View
 import android.widget.Toast
@@ -17,6 +18,7 @@ import com.castiel.common.base.BaseActivity
 import com.castiel.common.base.BaseViewModel
 import com.huolala.mockgps.R
 import com.huolala.mockgps.databinding.ActivityNaviBinding
+import com.huolala.mockgps.manager.FollowMode
 import com.huolala.mockgps.manager.MapLocationManager
 import com.huolala.mockgps.manager.utils.MapDrawUtils
 import com.huolala.mockgps.manager.SearchManager
@@ -37,7 +39,6 @@ class MockLocationActivity : BaseActivity<ActivityNaviBinding, BaseViewModel>(),
     private var DRAW_MAP = 0;
     private lateinit var mBaiduMap: BaiduMap
     private var mNaviType: Int = NaviType.LOCATION
-    private val mHandle: Handler = MockLocationHandler(this)
     private val mPadding: Int = ConvertUtils.dp2px(50f)
     private var mapLocationManager: MapLocationManager? = null
 
@@ -83,7 +84,7 @@ class MockLocationActivity : BaseActivity<ActivityNaviBinding, BaseViewModel>(),
             mapLocationManager = MapLocationManager(
                 this@MockLocationActivity,
                 mBaiduMap,
-                mNaviType == NaviType.LOCATION
+                if (mNaviType == NaviType.LOCATION) FollowMode.MODE_PERSISTENT else FollowMode.MODE_NONE
             )
             when (naviType) {
                 NaviType.LOCATION -> {
@@ -94,12 +95,12 @@ class MockLocationActivity : BaseActivity<ActivityNaviBinding, BaseViewModel>(),
                     }
                 }
 
-                NaviType.NAVI -> {
-                    if (startNavi == null || endNavi == null) {
-                        pickPoiError()
-                        return
-                    }
+                NaviType.NAVI, NaviType.NAVI_FILE -> {
                     SearchManager.INSTANCE.polylineList.let {
+                        if (it.isEmpty()) {
+                            pickPoiError()
+                            return
+                        }
                         mBaiduMap.clear()
                         startNavi?.latLng?.let { start ->
                             MapDrawUtils.drawMarkerToMap(mBaiduMap, start, "marker_start.png")
@@ -107,41 +108,13 @@ class MockLocationActivity : BaseActivity<ActivityNaviBinding, BaseViewModel>(),
                         endNavi?.latLng?.let { end ->
                             MapDrawUtils.drawMarkerToMap(mBaiduMap, end, "marker_end.png")
                         }
-                        MapDrawUtils.drawLineToMap(mBaiduMap, it, mPadding)
+                        MapDrawUtils.drawLineToMap(
+                            mBaiduMap,
+                            it,
+                            Rect(mPadding, mPadding, mPadding, mPadding)
+                        )
                         startMockServer(model)
                     }
-                }
-
-                NaviType.NAVI_FILE -> {
-                    try {
-                        val polylineList = arrayListOf<LatLng>()
-                        val readFile2String = FileIOUtils.readFile2String(path)
-                        readFile2String?.run {
-                            split(";").run {
-                                if (isNotEmpty()) {
-                                    map {
-                                        it.split(",").run {
-                                            if (size == 2) {
-                                                polylineList.add(
-                                                    LatLng(
-                                                        get(1).toDouble(),
-                                                        get(0).toDouble()
-                                                    )
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        mHandle.sendMessageDelayed(Message.obtain().apply {
-                            what = DRAW_MAP
-                            obj = polylineList
-                        }, 500)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                    startMockServer(model)
                 }
 
                 else -> {
@@ -226,7 +199,11 @@ class MockLocationActivity : BaseActivity<ActivityNaviBinding, BaseViewModel>(),
                     DRAW_MAP -> {
                         (msg.obj as ArrayList<LatLng>?)?.let {
                             mBaiduMap.clear()
-                            MapDrawUtils.drawLineToMap(mBaiduMap, it, mPadding)
+                            MapDrawUtils.drawLineToMap(
+                                mBaiduMap,
+                                it,
+                                Rect(mPadding, mPadding, mPadding, mPadding)
+                            )
                         }
 
                     }

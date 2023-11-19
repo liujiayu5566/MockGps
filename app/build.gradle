@@ -65,4 +65,5 @@ dependencies {
     implementation 'com.baidu.lbsyun:BaiduMapSDK_Location:9.3.7'
     implementation 'com.baidu.lbsyun:BaiduMapSDK_Map:7.5.4'
     implementation 'com.baidu.lbsyun:BaiduMapSDK_Search:7.5.4'
+    implementation 'com.github.tiann:FreeReflection:3.1.0'
 }
