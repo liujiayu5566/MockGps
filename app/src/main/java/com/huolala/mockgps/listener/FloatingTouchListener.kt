@@ -9,12 +9,14 @@ import com.blankj.utilcode.util.ScreenUtils
 
 
 /**
+ * 悬浮窗touch监听处理
  * @author jiayu.liu
  */
 class FloatingTouchListener(
     private var windowManager: WindowManager,
     private var layoutParams: WindowManager.LayoutParams,
-    private var isAutoMove: Boolean = false
+    private var isAutoMove: Boolean = false,
+    private var touchView: View? = null //悬浮窗根布局  解决touch的View与悬浮窗根布局不一致的情况
 ) : View.OnTouchListener {
     private var x: Int = 0
     private var y: Int = 0
@@ -25,6 +27,10 @@ class FloatingTouchListener(
 
 
     override fun onTouch(view: View?, event: MotionEvent?): Boolean {
+        var curTouchView = view
+        if (touchView != null) {
+            curTouchView = touchView
+        }
         when (event?.action) {
             MotionEvent.ACTION_DOWN -> {
                 animator?.cancel()
@@ -43,7 +49,7 @@ class FloatingTouchListener(
                 val movedY = nowY - y
                 x = nowX
                 y = nowY
-                val viewWidth = view?.width ?: 0
+                val viewWidth = curTouchView?.width ?: 0
                 layoutParams.run {
                     x += movedX
                     y += movedY
@@ -54,28 +60,27 @@ class FloatingTouchListener(
                     y = if (y >= mScreenHeight) mScreenHeight else y
                 }
                 // 更新悬浮窗控件布局
-                windowManager.updateViewLayout(view, layoutParams)
+                windowManager.updateViewLayout(curTouchView, layoutParams)
             }
 
             MotionEvent.ACTION_UP -> {
                 if (!isAutoMove) {
                     return true
                 }
-                val viewWidth = view?.width ?: 0
-                var nowX = event.rawX.toInt() - viewWidth / 2
-                println("nowX:$nowX")
+                val viewWidth = curTouchView?.width ?: 0
+                var nowX = event.rawX.toInt()
                 val movedToX: Int
-                if (nowX + viewWidth / 2 <= mScreenWidth / 2) {
-                    nowX -= viewWidth / 2
+                if (nowX <= mScreenWidth / 2) {
+                    nowX -= viewWidth
                     movedToX = 0
                 } else {
-                    nowX += viewWidth / 2
                     movedToX = mScreenWidth - viewWidth
                 }
+                callBack?.onActionUp(movedToX == 0)
                 animMoveView(
                     nowX,
                     movedToX,
-                    view
+                    curTouchView
                 )
 
             }
@@ -93,9 +98,6 @@ class FloatingTouchListener(
             layoutParams.x = animatedValue as Int
             // 更新悬浮窗控件布局
             windowManager.updateViewLayout(view, layoutParams)
-            if (animatedValue == x) {
-                callBack?.onActionUp(x == 0)
-            }
         }
         animator?.start()
     }

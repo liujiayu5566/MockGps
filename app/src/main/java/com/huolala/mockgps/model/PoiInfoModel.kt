@@ -7,7 +7,7 @@ import com.baidu.mapapi.model.LatLng
 
 
 @IntDef(PoiInfoType.DEFAULT, PoiInfoType.LOCATION, PoiInfoType.NAVI_START, PoiInfoType.NAVI_END)
-@kotlin.annotation.Retention(AnnotationRetention.SOURCE)
+@Retention(AnnotationRetention.SOURCE)
 annotation class PoiInfoType {
     companion object {
         const val DEFAULT = -1

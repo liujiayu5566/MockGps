@@ -1,15 +1,10 @@
 package com.huolala.mockgps.ui
 
-import android.app.Dialog
 import android.content.Intent
 import android.text.TextUtils
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import androidx.databinding.DataBindingUtil
 import com.baidu.mapapi.model.LatLng
 import com.blankj.utilcode.util.ClickUtils
-import com.blankj.utilcode.util.ConvertUtils
 import com.blankj.utilcode.util.FileIOUtils
 import com.blankj.utilcode.util.KeyboardUtils
 import com.blankj.utilcode.util.ToastUtils
@@ -17,12 +12,10 @@ import com.castiel.common.base.BaseActivity
 import com.castiel.common.base.BaseViewModel
 import com.huolala.mockgps.R
 import com.huolala.mockgps.databinding.ActivityFileBinding
-import com.huolala.mockgps.databinding.DialogFileMockHintBinding
-import com.huolala.mockgps.databinding.DialogHintBinding
 import com.huolala.mockgps.manager.SearchManager
 import com.huolala.mockgps.model.MockMessageModel
 import com.huolala.mockgps.model.NaviType
-import com.huolala.mockgps.utils.DialogUtils
+import com.huolala.mockgps.utils.WarnDialogUtils
 import com.huolala.mockgps.utils.LocationUtils
 import com.huolala.mockgps.utils.MMKVUtils
 import com.huolala.mockgps.utils.Utils
@@ -109,7 +102,7 @@ class FileMockActivity : BaseActivity<ActivityFileBinding, BaseViewModel>(), Vie
                 }
                 Utils.checkFloatWindow(this).let { it ->
                     if (!it) {
-                        DialogUtils.setFloatWindowDialog(this@FileMockActivity)
+                        WarnDialogUtils.setFloatWindowDialog(this@FileMockActivity)
                         return
                     }
                     val polylineList = arrayListOf<LatLng>()

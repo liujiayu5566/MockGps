@@ -79,13 +79,7 @@ class GpsAndFloatingService : Service() {
                                 } else if (index < it.size) {
                                     mCurrentLocation = getLatLngNext(it)
                                 }
-                                FloatingViewManger.INSTANCE.updateNaviInfo(
-                                    String.format(
-                                        "当前进度(道路)：%d/%d",
-                                        index,
-                                        it.size
-                                    )
-                                )
+                                FloatingViewManger.INSTANCE.updateNaviInfo(index, it.size)
                                 startSimulateLocation(mCurrentLocation, false)
                                 handle.sendMessageDelayed(Message.obtain(msg), mNaviUpdateValue)
                             }
@@ -145,8 +139,38 @@ class GpsAndFloatingService : Service() {
                     if (model == null) {
                         return
                     }
+                    sendMockLocation(latLng)
+                }
+
+                override fun changeNaviInfo(index: Int, speed: Int) {
+                    MMKVUtils.setSpeed(speed)
+                    mSpeed = speed / 3.6f
+                    SearchManager.INSTANCE.polylineList.let {
+                        if (index >= 0 && index < it.size) {
+                            mCurrentLocation = it[index]
+                            this@GpsAndFloatingService.index = index
+                        }
+                    }
+                    if (!isStart) {
+                        reStart(false)
+                    }
+                }
+
+                override fun switchLocation() {
+                    if (model == null) {
+                        return
+                    }
+                    //将模拟导航切换成模拟定位
+                    model?.naviType = NaviType.LOCATION
+                    sendMockLocation(mCurrentLocation)
+                }
+
+                /**
+                 * 发送模拟定位Handler
+                 */
+                private fun sendMockLocation(location: LatLng) {
                     PoiInfoModel(
-                        latLng = latLng,
+                        latLng = location,
                         poiInfoType = PoiInfoType.LOCATION,
                     ).also {
                         model?.locationModel = it
@@ -154,15 +178,6 @@ class GpsAndFloatingService : Service() {
                             START_MOCK_LOCATION,
                             it
                         )
-                    }
-
-                }
-
-                override fun changeSpeed(speed: Int) {
-                    MMKVUtils.setSpeed(speed)
-                    mSpeed = speed / 3.6f
-                    if (!isStart) {
-                        reStart(false)
                     }
                 }
 
@@ -272,8 +287,8 @@ class GpsAndFloatingService : Service() {
 
         msg.let {
             addTestProvider()
-            handle.removeCallbacksAndMessages(null)
             isStart = true
+            handle.removeCallbacksAndMessages(null)
             handle.sendMessage(it)
             FloatingViewManger.INSTANCE.startMock()
         }
@@ -282,6 +297,7 @@ class GpsAndFloatingService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        FloatingViewManger.INSTANCE.onDestroy()
         handle.removeCallbacksAndMessages(null)
         removeGps()
     }
@@ -319,7 +335,6 @@ class GpsAndFloatingService : Service() {
 
     private fun removeGps() {
         try {
-            println("removeGps")
             locationManager?.run {
                 setTestProviderEnabled(providerStr, false)
                 setTestProviderEnabled(networkStr, false)

@@ -6,9 +6,13 @@ import com.baidu.location.BDLocation
 import com.baidu.location.LocationClient
 import com.baidu.location.LocationClientOption
 import com.baidu.mapapi.map.BaiduMap
+import com.baidu.mapapi.map.BitmapDescriptor
+import com.baidu.mapapi.map.BitmapDescriptorFactory
 import com.baidu.mapapi.map.MapStatusUpdateFactory
+import com.baidu.mapapi.map.MyLocationConfiguration
 import com.baidu.mapapi.map.MyLocationData
 import com.baidu.mapapi.model.LatLng
+import com.huolala.mockgps.R
 
 
 /**
@@ -17,12 +21,25 @@ import com.baidu.mapapi.model.LatLng
  */
 
 enum class FollowMode {
-    MODE_SINGLE,
-    MODE_PERSISTENT,
-    MODE_NONE
+    MODE_SINGLE,//单次调整中心点
+    MODE_PERSISTENT,//跟随调整中心点
+    MODE_NONE//不调整
 }
 
-class MapLocationManager(context: Context, private var baiduMap: BaiduMap, follow: FollowMode) {
+/**
+ * 来源
+ */
+enum class Source {
+    FLOATING,//悬浮窗
+    OTHER,//其他
+}
+
+class MapLocationManager(
+    context: Context,
+    private var baiduMap: BaiduMap,
+    follow: FollowMode,
+    source: Source = Source.OTHER
+) {
     private var mLocationClient: LocationClient
     private var isZoom = false
     private val myLocationListener = object : BDAbstractLocationListener() {
@@ -76,8 +93,17 @@ class MapLocationManager(context: Context, private var baiduMap: BaiduMap, follo
     }
 
     init {
-        baiduMap.isMyLocationEnabled = true
+        if (source == Source.FLOATING) {
+            MyLocationConfiguration(
+                MyLocationConfiguration.LocationMode.NORMAL,
+                false,
+                BitmapDescriptorFactory.fromResource(R.drawable.ic_cur_location_icon)
+            ).apply {
+                baiduMap.setMyLocationConfiguration(this)
+            }
+        }
         mLocationClient = LocationClient(context)
+        baiduMap.isMyLocationEnabled = true
 
         //通过LocationClientOption设置LocationClient相关参数
         val option = LocationClientOption()

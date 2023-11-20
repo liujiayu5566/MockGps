@@ -64,10 +64,19 @@ class FloatingViewManger private constructor() {
      * 是否已添加调整悬浮窗
      */
     private var isAddAdjust = false
-    private var infoViewCurVisibility: Int = View.GONE
+    private var curNaviType: Int = NaviType.NONE
+    private var infoViewCurVisibility: Int = View.VISIBLE
     var listener: FloatingViewListener? = null
 
-    private val runnable: Runnable = Runnable { view?.iv_setting?.visibility = View.INVISIBLE }
+    /**
+     * 隐藏设置按钮
+     */
+    private val settingViewRunnable: Runnable =
+        Runnable { view?.iv_setting?.visibility = View.INVISIBLE }
+
+    /**
+     * 摇杆不动 补发当前方向
+     */
     private val rockerRunnable: Runnable = Runnable {
         changeLocation(angle)
     }
@@ -78,6 +87,9 @@ class FloatingViewManger private constructor() {
         }
     }
 
+    /**
+     * 悬浮窗添加
+     */
     @SuppressLint("ClickableViewAccessibility")
     fun addFloatViewToWindow() {
         if (isAddFloatingView) {
@@ -93,11 +105,11 @@ class FloatingViewManger private constructor() {
             it.uiSettings?.isCompassEnabled = false
             it.uiSettings?.setAllGesturesEnabled(false)
             it.setOnMapLoadedCallback {
-
                 MapLocationManager(
                     Utils.getApp(),
                     it,
-                    FollowMode.MODE_PERSISTENT
+                    FollowMode.MODE_PERSISTENT,
+                    Source.FLOATING
                 )
             }
         }
@@ -121,7 +133,7 @@ class FloatingViewManger private constructor() {
         //控制展示暂停面板
         ClickUtils.applySingleDebouncing(view?.iv_setting) {
             infoViewCurVisibility =
-                if (view?.info?.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+                if (view?.info?.visibility == View.VISIBLE) View.INVISIBLE else View.VISIBLE
             view?.info?.visibility = infoViewCurVisibility
         }
 
@@ -135,7 +147,7 @@ class FloatingViewManger private constructor() {
             }
         }
 
-        HandlerUtils.INSTANCE.postDelayed(runnable, 5000)
+        HandlerUtils.INSTANCE.postDelayed(settingViewRunnable, 5000)
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M
             || Settings.canDrawOverlays(Utils.getApp())
@@ -144,49 +156,55 @@ class FloatingViewManger private constructor() {
             val layoutParams = getLayoutParams()
             addToWindow(view, layoutParams)
             layoutParams.let { params ->
-                view?.setOnTouchListener(FloatingTouchListener(windowManager, params, true).apply {
-                    callBack = object : FloatingTouchListener.FloatingTouchCallBack {
-                        override fun onActionUp(isLeft: Boolean) {
-                            HandlerUtils.INSTANCE.postDelayed(runnable, 5000)
+                view?.card?.setOnTouchListener(
+                    FloatingTouchListener(
+                        windowManager,
+                        params,
+                        true,
+                        view
+                    ).apply {
+                        callBack = object : FloatingTouchListener.FloatingTouchCallBack {
 
-                            (view?.info?.layoutParams as ConstraintLayout.LayoutParams).let {
-                                if (isLeft) {
-                                    view?.info?.setBackgroundResource(R.drawable.shape_round_10_color_black_30_right)
-                                    view?.info_guideline?.setGuidelinePercent(0.75f)
-                                    it.leftToRight = R.id.spacer
-                                    it.rightToLeft = ConstraintLayout.LayoutParams.UNSET
-                                } else {
-                                    view?.info?.setBackgroundResource(R.drawable.shape_round_10_color_black_30_left)
-                                    view?.info_guideline?.setGuidelinePercent(0.25f)
-                                    it.leftToRight = ConstraintLayout.LayoutParams.UNSET
-                                    it.rightToLeft = R.id.spacer
-
-                                }
-                                view?.info?.layoutParams = it
+                            override fun onActionDown() {
+                                HandlerUtils.INSTANCE.removeCallbacks(settingViewRunnable)
+                                view?.iv_setting?.visibility = View.VISIBLE
+                                view?.info!!.visibility = View.INVISIBLE
                             }
 
-                            (view?.card?.layoutParams as ConstraintLayout.LayoutParams).let {
-                                if (isLeft) {
-                                    it.rightToRight = ConstraintLayout.LayoutParams.UNSET
-                                    it.leftToLeft = ConstraintLayout.LayoutParams.PARENT_ID
-                                } else {
-                                    it.rightToRight = ConstraintLayout.LayoutParams.PARENT_ID
-                                    it.leftToLeft = ConstraintLayout.LayoutParams.UNSET
+                            override fun onActionUp(isLeft: Boolean) {
+                                HandlerUtils.INSTANCE.postDelayed(settingViewRunnable, 5000)
+                                (view?.info?.layoutParams as ConstraintLayout.LayoutParams).let {
+                                    if (isLeft) {
+                                        view?.info?.setBackgroundResource(R.drawable.shape_round_10_color_black_30_right)
+                                        view?.info_guideline?.setGuidelinePercent(0.75f)
+                                        it.leftToRight = R.id.spacer
+                                        it.rightToLeft = ConstraintLayout.LayoutParams.UNSET
+                                    } else {
+                                        view?.info?.setBackgroundResource(R.drawable.shape_round_10_color_black_30_left)
+                                        view?.info_guideline?.setGuidelinePercent(0.25f)
+                                        it.rightToLeft = R.id.spacer
+                                        it.leftToRight = ConstraintLayout.LayoutParams.UNSET
 
+                                    }
+                                    view?.info?.layoutParams = it
                                 }
-                                view?.card?.layoutParams = it
+
+                                (view?.card?.layoutParams as ConstraintLayout.LayoutParams).let {
+                                    if (isLeft) {
+                                        it.rightToRight = ConstraintLayout.LayoutParams.UNSET
+                                        it.leftToLeft = ConstraintLayout.LayoutParams.PARENT_ID
+                                    } else {
+                                        it.rightToRight = ConstraintLayout.LayoutParams.PARENT_ID
+                                        it.leftToLeft = ConstraintLayout.LayoutParams.UNSET
+
+                                    }
+                                    view?.card?.layoutParams = it
+                                }
+
+                                view?.info?.visibility = infoViewCurVisibility
                             }
-
-                            view?.info?.visibility = infoViewCurVisibility
                         }
-
-                        override fun onActionDown() {
-                            HandlerUtils.INSTANCE.removeCallbacks(runnable)
-                            view?.iv_setting?.visibility = View.VISIBLE
-                            view?.info?.visibility = View.GONE
-                        }
-                    }
-                })
+                    })
             }
         }
     }
@@ -231,6 +249,7 @@ class FloatingViewManger private constructor() {
 
                 override fun angle(angle: Double) {
                     this@FloatingViewManger.angle = angle
+                    println("angle: $angle")
                     System.currentTimeMillis().let {
                         //限制触发间隔
                         if (it - currentTimeMillis <= interval) {
@@ -274,16 +293,26 @@ class FloatingViewManger private constructor() {
                 .inflate(R.layout.layout_floating_navi_adjust, null)
 
 
-            naviAdjust?.speed_nav_view!!.setCurValue(MMKVUtils.getSpeed())
+            naviAdjust?.speed_nav_view!!.updateCurValue(MMKVUtils.getSpeed())
 
+            //修改参数
             ClickUtils.applySingleDebouncing(naviAdjust?.btn_nav_change!!) {
-                listener?.changeSpeed(naviAdjust?.speed_nav_view!!.getCurValue())
+                ToastUtils.showShort("修改成功")
+                val index = naviAdjust?.road_nav_view!!.getCurValue()
+                val speed = naviAdjust?.speed_nav_view!!.getCurValue()
+                listener?.changeNaviInfo(index, speed)
+                naviAdjust?.road_nav_view!!.clearLongClickWait()
             }
 
             //关闭微调悬浮窗
             ClickUtils.applySingleDebouncing(naviAdjust?.iv_nav_close!!) {
                 removeFromWindow(naviAdjust!!)
                 isAddAdjust = false
+            }
+
+            //切换成模拟定位微调
+            ClickUtils.applySingleDebouncing(naviAdjust?.btn_change_location!!) {
+                listener?.switchLocation()
             }
         }
         naviAdjust?.parent ?: kotlin.run {
@@ -332,14 +361,21 @@ class FloatingViewManger private constructor() {
         return params
     }
 
+    /**
+     * 开启模拟
+     */
     fun startMock() {
+        if (curNaviType == listener?.getNaviType() && view?.startAndPause?.isSelected == true) {
+            //模拟模式未变&&当前状态是模拟状态  过滤
+            return
+        }
         view?.startAndPause?.isSelected = true
         when (listener?.getNaviType()) {
             NaviType.LOCATION -> {
                 view?.iv_rest?.visibility = View.GONE
                 if (isAddAdjust) {
-                    naviAdjust?.let {
-                        removeFromWindow(it)
+                    naviAdjust?.parent?.let {
+                        removeFromWindow(naviAdjust!!)
                     }
                     addAdjustLocationToWindow()
                 }
@@ -348,11 +384,16 @@ class FloatingViewManger private constructor() {
             NaviType.NAVI, NaviType.NAVI_FILE -> {
                 view?.iv_rest?.visibility = View.VISIBLE
                 if (isAddAdjust) {
-                    locationAdjust?.let {
-                        removeFromWindow(it)
+                    locationAdjust?.parent?.let {
+                        removeFromWindow(locationAdjust!!)
                     }
                     addAdjustNaviToWindow()
+                    naviAdjust?.btn_change_location?.visibility = View.INVISIBLE
                 }
+                //清空等待  更新当前速度信息
+                naviAdjust?.speed_nav_view?.clearLongClickWait()
+                naviAdjust?.speed_nav_view?.updateCurValue(MMKVUtils.getSpeed())
+                naviAdjust?.road_nav_view?.clearLongClickWait()
             }
 
             else -> {}
@@ -360,11 +401,17 @@ class FloatingViewManger private constructor() {
         view?.iv_adjust?.visibility = View.VISIBLE
     }
 
+    /**
+     * 停止模拟
+     */
     fun stopMock() {
         view?.startAndPause?.isSelected = false
         view?.iv_adjust?.visibility = View.GONE
     }
 
+    /**
+     * 更新当前模拟位置¬
+     */
     fun setCurLocation(curLocation: LatLng?) {
         this.curLocation = curLocation
         if (curLocation == null) {
@@ -384,22 +431,90 @@ class FloatingViewManger private constructor() {
     /**
      * 更新当前进度（道路）
      */
-    fun updateNaviInfo(str: String) {
+    fun updateNaviInfo(index: Int, size: Int) {
         //已加载到window中
         naviAdjust?.parent?.run {
-            naviAdjust?.tv_nav_info!!.text = str
+            naviAdjust?.tv_nav_info!!.text = String.format(
+                "当前进度(道路)：%d/%d",
+                index,
+                size
+            )
         }
+        if (index == size) {
+            arriveDestination()
+        } else {
+            naviAdjust?.btn_change_location?.visibility = View.INVISIBLE
+        }
+        naviAdjust?.road_nav_view?.updateCurValue(index)
+        naviAdjust?.road_nav_view?.maxValue = size - 1
+    }
+
+    fun onDestroy() {
+        try {
+            view?.let {
+                windowManager.removeView(it)
+            }
+            isAddFloatingView = false
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    /**
+     * 到达目的地
+     */
+    private fun arriveDestination() {
+        //不是模拟导航 则忽略
+        if (!isNaviType() || naviAdjust?.btn_change_location?.visibility == View.VISIBLE
+        ) {
+            return
+        }
+        naviAdjust?.btn_change_location?.visibility = View.VISIBLE
+    }
+
+    /**
+     * 是否是导航模式
+     */
+    private fun isNaviType(): Boolean {
+        return listener?.getNaviType() == NaviType.NAVI ||
+                listener?.getNaviType() == NaviType.NAVI_FILE
     }
 
 
     interface FloatingViewListener {
+        /**
+         * 暂停
+         */
         fun pause()
 
+        /**
+         * 重新启动
+         */
         fun reStart(isRest: Boolean)
 
+        /**
+         * 获取当前导航模拟
+         * @see NaviType
+         */
         fun getNaviType(): Int
 
+        /**
+         * 更新当前定位点
+         * 微调 仅支持模拟定位
+         */
         fun changeLocation(latLng: LatLng)
-        fun changeSpeed(speed: Int)
+
+        /**
+         * 更新导航信息
+         * 微调 支持模拟导航
+         * @param index 修改道路index
+         * @param speed 修改速度
+         */
+        fun changeNaviInfo(index: Int, speed: Int)
+
+        /**
+         * 切换成模拟定位
+         */
+        fun switchLocation()
     }
 }

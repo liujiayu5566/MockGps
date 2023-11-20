@@ -8,28 +8,30 @@
     tools:background="@color/black_30"
     tools:parentTag="android.widget.LinearLayout">
 
-
-    <androidx.appcompat.widget.AppCompatImageView
+    <com.huolala.mockgps.widget.LongClickImageButton
         android:id="@+id/iv_subtract"
         android:layout_width="0dp"
-        android:layout_height="30dp"
+        android:layout_height="match_parent"
         android:layout_weight="1"
+        android:background="@null"
         android:padding="5dp"
         android:src="@drawable/ic_speed_setting_left" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/tv_value"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:gravity="center"
         android:singleLine="true"
         android:textColor="@color/white"
         android:textSize="12sp" />
 
-    <androidx.appcompat.widget.AppCompatImageView
+    <com.huolala.mockgps.widget.LongClickImageButton
         android:id="@+id/iv_add"
         android:layout_width="0dp"
         android:layout_height="30dp"
         android:layout_weight="1"
+        android:background="@null"
         android:padding="5dp"
         android:src="@drawable/ic_speed_setting_right" />
 

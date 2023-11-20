@@ -1,17 +1,17 @@
 package com.huolala.mockgps.utils
 
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
-import androidx.appcompat.app.AlertDialog
 import java.lang.Exception
 
 /**
  * @author jiayu.liu
  */
-object DialogUtils {
+object WarnDialogUtils {
 
     /**
      * 悬浮窗提示

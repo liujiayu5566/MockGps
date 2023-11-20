@@ -7,6 +7,7 @@ import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import com.baidu.mapapi.map.BaiduMap
+import com.baidu.mapapi.map.Overlay
 import com.baidu.mapapi.model.LatLng
 import com.baidu.mapapi.search.route.DrivingRouteLine
 import com.blankj.utilcode.util.ClickUtils
@@ -31,6 +32,7 @@ class MapSelectDialog(
     private val mHorizontalPadding = ConvertUtils.dp2px(20f)
     private val mMapPadding = ConvertUtils.dp2px(30f)
     private val screenWidth = ScreenUtils.getScreenWidth()
+    private val mOverlayList = ArrayList<Overlay>()
     private var mainIndex = 0
     var listener: MapSelectDialogListener? = null
 
@@ -82,14 +84,21 @@ class MapSelectDialog(
     }
 
     private fun drawLine(baiduMap: BaiduMap) {
-        baiduMap.clear()
+        mOverlayList.map {
+            it.remove()
+        }.also {
+            mOverlayList.clear()
+        }
+
         routeLines.mapIndexed { index, line ->
             MapDrawUtils.drawLineToMap(
                 baiduMap,
                 MapConvertUtils.convertLatLngList(line),
                 Rect(mMapPadding, mMapPadding, mMapPadding, mMapPadding),
                 index == mainIndex
-            )
+            )?.let { overlay ->
+                mOverlayList.add(overlay)
+            }
         }
     }
 

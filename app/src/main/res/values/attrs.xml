@@ -9,5 +9,8 @@
         <attr name="defaultValue" format="integer" />
         <attr name="unit" format="string" />
         <attr name="minThreshold" format="integer" />
+        <attr name="minValue" format="integer" />
+        <attr name="isColorWarn" format="boolean" />
+        <attr name="useMultiple" format="boolean" />
     </declare-styleable>
 </resources>

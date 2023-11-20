@@ -27,7 +27,10 @@ import java.lang.Exception
  * @author jiayu.liu
  */
 class GuideActivity : BaseActivity<ActivityGuideBinding, BaseViewModel>(), View.OnClickListener {
-    private val PERMISSION_REQUEST = 1001
+    companion object {
+        private const val PERMISSION_REQUEST = 1001
+    }
+
     private val permissions: Array<String> = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.ACCESS_COARSE_LOCATION,

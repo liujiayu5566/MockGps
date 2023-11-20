@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:background="@drawable/shape_round_5_color_black_30"
@@ -12,10 +13,13 @@
         android:id="@+id/iv_nav_close"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="5dp"
+        android:paddingHorizontal="5dp"
+        android:paddingTop="5dp"
         android:src="@drawable/ic_floating_adjust_close"
+        app:layout_constraintBottom_toTopOf="@id/btn_change_location"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="spread_inside" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/tv_nav_info"
@@ -29,30 +33,80 @@
         app:layout_constraintRight_toLeftOf="@id/iv_nav_close"
         app:layout_constraintTop_toTopOf="parent" />
 
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/tv_road"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:gravity="center"
+        android:text="道路："
+        android:textColor="@color/white"
+        android:textSize="10sp"
+        app:layout_constraintBottom_toTopOf="@id/tv_speed_title"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_nav_info" />
+
+    <com.huolala.mockgps.widget.RegulateView
+        android:id="@+id/road_nav_view"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:defaultValue="0"
+        app:isColorWarn="true"
+        app:layout_constraintBottom_toBottomOf="@id/tv_road"
+        app:layout_constraintLeft_toRightOf="@id/tv_road"
+        app:layout_constraintRight_toLeftOf="@id/btn_change_location"
+        app:layout_constraintTop_toTopOf="@id/tv_road"
+        app:minThreshold="1"
+        app:minValue="0"
+        app:unit=""
+        app:useMultiple="true" />
+
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/tv_speed_title"
         android:layout_width="wrap_content"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="5dp"
         android:gravity="center"
         android:text="速度："
         android:textColor="@color/white"
         android:textSize="10sp"
-        app:layout_constraintBottom_toBottomOf="@id/speed_nav_view"
+        app:layout_constraintBottom_toBottomOf="@id/btn_nav_change"
         app:layout_constraintHorizontal_chainStyle="spread_inside"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toLeftOf="@id/speed_nav_view"
-        app:layout_constraintTop_toTopOf="@id/speed_nav_view" />
+        app:layout_constraintTop_toTopOf="@id/btn_nav_change" />
 
     <com.huolala.mockgps.widget.RegulateView
         android:id="@+id/speed_nav_view"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/btn_nav_change"
         app:layout_constraintLeft_toRightOf="@id/tv_speed_title"
         app:layout_constraintRight_toLeftOf="@id/btn_nav_change"
+        app:layout_constraintTop_toTopOf="@id/btn_nav_change"
         app:minThreshold="10"
         app:unit="km/h" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn_change_location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="5dp"
+        android:background="@drawable/shape_round_10_color_red_stroke"
+        android:gravity="center"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:paddingHorizontal="5dp"
+        android:paddingVertical="3dp"
+        android:text="微调"
+        android:textColor="@color/red"
+        android:textSize="10sp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@id/btn_nav_change"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/iv_nav_close"
+        tools:visibility="visible" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btn_nav_change"
@@ -71,6 +125,7 @@
         android:textSize="10sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toRightOf="@id/speed_nav_view"
-        app:layout_constraintRight_toRightOf="parent" />
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btn_change_location" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

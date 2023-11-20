@@ -1,14 +1,22 @@
 package com.huolala.mockgps.ui
 
+import android.Manifest
 import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
+import android.view.Gravity
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.baidu.mapapi.search.route.DrivingRouteLine
 import com.blankj.utilcode.util.ClickUtils
 import com.blankj.utilcode.util.ConvertUtils
+import com.blankj.utilcode.util.PermissionUtils
 import com.blankj.utilcode.util.ToastUtils
 import com.castiel.common.base.BaseActivity
 import com.castiel.common.base.BaseViewModel
@@ -22,18 +30,14 @@ import com.huolala.mockgps.model.MockMessageModel
 import com.huolala.mockgps.model.NaviType
 import com.huolala.mockgps.model.PoiInfoModel
 import com.huolala.mockgps.model.PoiInfoType
-import com.huolala.mockgps.utils.DialogUtils
+import com.huolala.mockgps.utils.WarnDialogUtils
 import com.huolala.mockgps.utils.MMKVUtils
 import com.huolala.mockgps.utils.Utils
 import com.huolala.mockgps.widget.MapSelectDialog
 import com.huolala.mockgps.widget.NaviPopupWindow
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.activity_main.recycler
 import kotlinx.android.synthetic.main.layout_location_card.*
-import kotlinx.android.synthetic.main.layout_location_card.tv_location_latlng
 import kotlinx.android.synthetic.main.layout_navi_card.*
-import kotlinx.android.synthetic.main.layout_navi_card.tv_navi_name_end
-import kotlinx.android.synthetic.main.layout_navi_card.tv_navi_name_start
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -45,6 +49,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>(), View.On
     private var topMargin: Int = 0
     private lateinit var adapter: HistoryAdapter
     private var mMapSelectDialog: MapSelectDialog? = null
+    private var locationAlwaysView: View? = null
 
     private var registerForActivityResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -182,6 +187,46 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>(), View.On
         //获取历史数据
         getHistoryData()
         mMapSelectDialog?.onResume()
+        //后台定位提示
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (!PermissionUtils.isGranted(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
+                if (locationAlwaysView == null) {
+                    locationAlwaysView = LayoutInflater.from(this)
+                        .inflate(R.layout.layout_location_always_allow, null)
+                    locationAlwaysView?.let {
+                        it.findViewById<View>(R.id.btn_skip)?.setOnClickListener {
+                            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            intent.data = Uri.parse("package:$packageName");
+                            try {
+                                startActivity(intent)
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                ToastUtils.showShort("跳转失败，请手动开启！")
+                            }
+                        }
+
+                        val frameLayout = this.window.decorView as FrameLayout
+                        frameLayout.addView(
+                            it,
+                            FrameLayout.LayoutParams(
+                                FrameLayout.LayoutParams.MATCH_PARENT,
+                                FrameLayout.LayoutParams.WRAP_CONTENT
+                            ).apply {
+                                gravity = Gravity.BOTTOM
+                                val margin = ConvertUtils.dp2px(10f)
+                                setMargins(margin, 0, margin, margin * 2)
+                            }
+                        )
+                    }
+                }
+            } else {
+                locationAlwaysView?.let {
+                    (window.decorView as FrameLayout).removeView(it)
+                    locationAlwaysView = null
+                }
+            }
+        }
     }
 
     override fun onPause() {
@@ -264,7 +309,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>(), View.On
                 //启动模拟导航
                 Utils.checkFloatWindow(this).let {
                     if (!it) {
-                        DialogUtils.setFloatWindowDialog(this@MainActivity)
+                        WarnDialogUtils.setFloatWindowDialog(this@MainActivity)
                         return
                     }
                     val locationModel = tv_location_latlng.tag as PoiInfoModel?
@@ -329,7 +374,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>(), View.On
                 }
                 Utils.checkFloatWindow(this).let {
                     if (!it) {
-                        DialogUtils.setFloatWindowDialog(this@MainActivity)
+                        WarnDialogUtils.setFloatWindowDialog(this@MainActivity)
                         return
                     }
                     val startNavi = tv_navi_name_start.tag as PoiInfoModel?

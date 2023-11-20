@@ -10,7 +10,8 @@
     android:background="@drawable/shape_round_5_color_white"
     android:elevation="3dp"
     android:orientation="vertical"
-    android:padding="10dp">
+    android:paddingHorizontal="10dp"
+    android:paddingTop="10dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -55,9 +56,10 @@
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btn_start_location"
             style="@style/hint_style"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="30dp"
             android:layout_marginTop="20dp"
+            android:layout_marginBottom="10dp"
             android:background="@drawable/shape_round_30_color_master"
             android:paddingVertical="0dp"
             android:text="启动模拟"

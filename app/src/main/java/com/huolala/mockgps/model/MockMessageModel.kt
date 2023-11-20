@@ -10,10 +10,10 @@ import com.huolala.mockgps.utils.LocationUtils
 @Retention(AnnotationRetention.SOURCE)
 annotation class NaviType {
     companion object {
-        const val NONE = 0
-        const val LOCATION = 1
-        const val NAVI = 2
-        const val NAVI_FILE = 3
+        const val NONE = -1
+        const val LOCATION = 0
+        const val NAVI = 1
+        const val NAVI_FILE = 2
     }
 }
 
