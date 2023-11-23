@@ -3,6 +3,8 @@
 <h3>Apk DownLoad</h3>
 https://www.pgyer.com/hHJ9
 
+v2.0 已上传  目前代码分支origin/feature/dev  待稳定后合入master分支。
+
 <h2>功能</h2>
 1. 支持模拟定位以及模拟导航<br>
 2. 历史记录存储<br>
@@ -21,3 +23,4 @@ https://www.pgyer.com/hHJ9
 <h2>更新</h2>
 1. 2022.2.18 适配部分手机出现IllegalArgumentException异常，手里机型有限。<br>
 2. 2022.9.5  v1.1 优化选址模块、新增广播启动模拟导航功能、支持文件数据模拟&文件生成模块(多路线选择指定模块)<br>
+3. 2023.11.23 v2.0 增加微调功能，以及优化功能。<br>
