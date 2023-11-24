@@ -38,7 +38,7 @@ class MapLocationManager(
     context: Context,
     private var baiduMap: BaiduMap,
     follow: FollowMode,
-    source: Source = Source.OTHER
+    private val source: Source = Source.OTHER
 ) {
     private var mLocationClient: LocationClient
     private var isZoom = false
@@ -87,7 +87,7 @@ class MapLocationManager(
                 LatLng(
                     locData.latitude,
                     locData.longitude
-                ), 16f
+                ), if (source == Source.FLOATING) 18f else 16f
             )
         )
     }

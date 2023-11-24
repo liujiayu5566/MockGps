@@ -139,11 +139,22 @@ class FloatingViewManger private constructor() {
 
         //微调控制面板
         ClickUtils.applySingleDebouncing(view?.iv_adjust) {
-            isAddAdjust = true
-            when (listener?.getNaviType()) {
-                NaviType.LOCATION -> addAdjustLocationToWindow()
-                NaviType.NAVI, NaviType.NAVI_FILE -> addAdjustNaviToWindow()
-                else -> {}
+            if (isAddAdjust) {
+                isAddAdjust = false
+
+                locationAdjust?.let {
+                    removeFromWindow(it)
+                }
+                naviAdjust?.let {
+                    removeFromWindow(it)
+                }
+            } else {
+                isAddAdjust = true
+                when (listener?.getNaviType()) {
+                    NaviType.LOCATION -> addAdjustLocationToWindow()
+                    NaviType.NAVI, NaviType.NAVI_FILE -> addAdjustNaviToWindow()
+                    else -> {}
+                }
             }
         }
 
@@ -298,7 +309,10 @@ class FloatingViewManger private constructor() {
             //修改参数
             ClickUtils.applySingleDebouncing(naviAdjust?.btn_nav_change!!) {
                 ToastUtils.showShort("修改成功")
-                val index = naviAdjust?.road_nav_view!!.getCurValue()
+
+                val index = naviAdjust?.road_nav_view!!.let {
+                    if (it.isLongClickWait) it.getCurValue() else -1
+                }
                 val speed = naviAdjust?.speed_nav_view!!.getCurValue()
                 listener?.changeNaviInfo(index, speed)
                 naviAdjust?.road_nav_view!!.clearLongClickWait()

@@ -8,6 +8,7 @@ import android.os.Build
 import com.baidu.location.LocationClient
 import com.baidu.mapapi.CoordType
 import com.baidu.mapapi.SDKInitializer
+import com.blankj.utilcode.util.ClickUtils
 import com.blankj.utilcode.util.Utils
 import com.castiel.common.BaseApp
 import me.weishu.reflection.Reflection
@@ -28,10 +29,14 @@ class MyApp : BaseApp() {
     @SuppressLint("SoonBlockedPrivateApi")
     private fun reflectionValueAnimator() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (!ValueAnimator.areAnimatorsEnabled()) {
-                val field: Field = ValueAnimator::class.java.getDeclaredField("sDurationScale")
-                field.isAccessible = true
-                field.set(null, 1)
+            try {
+                if (!ValueAnimator.areAnimatorsEnabled()) {
+                    val field: Field = ValueAnimator::class.java.getDeclaredField("sDurationScale")
+                    field.isAccessible = true
+                    field.set(null, 1)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }

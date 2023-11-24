@@ -93,6 +93,7 @@ class GpsAndFloatingService : Service() {
             }
         }
         initLocationManager()
+        initFloatingView()
     }
 
     private fun initLocationManager() {
@@ -145,10 +146,13 @@ class GpsAndFloatingService : Service() {
                 override fun changeNaviInfo(index: Int, speed: Int) {
                     MMKVUtils.setSpeed(speed)
                     mSpeed = speed / 3.6f
-                    SearchManager.INSTANCE.polylineList.let {
-                        if (index >= 0 && index < it.size) {
-                            mCurrentLocation = it[index]
-                            this@GpsAndFloatingService.index = index
+                    //index==-1 仅调整速度
+                    if (index >= 0) {
+                        SearchManager.INSTANCE.polylineList.let {
+                            if (index < it.size) {
+                                mCurrentLocation = it[index]
+                                this@GpsAndFloatingService.index = index
+                            }
                         }
                     }
                     if (!isStart) {
@@ -231,12 +235,12 @@ class GpsAndFloatingService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        initFloatingView()
         //开始模拟
-        model = null
         if (Utils.isAllowMockLocation(this)) {
             intent?.run {
-                model = getParcelableExtra("info")
+                getParcelableExtra<MockMessageModel?>("info")?.let {
+                    model = it
+                }
             }
         }
         mockLocation()

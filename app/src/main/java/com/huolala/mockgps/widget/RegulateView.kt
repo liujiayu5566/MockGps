@@ -19,7 +19,7 @@ class RegulateView(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
     /**
      * 默认值
      */
-    private var valueTextStr = 10
+    private var valueTextStr = 5
 
     /**
      * 单位
@@ -59,7 +59,7 @@ class RegulateView(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
     /**
      * 处于长按之后等待阶段   该阶段无法使用#setCurValue(Int)方法
      */
-    private var isLongClickWait = false
+    var isLongClickWait = false
 
     private val valueTextView: AppCompatTextView
 
