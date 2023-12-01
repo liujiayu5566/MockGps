@@ -13,7 +13,7 @@ import com.huolala.mockgps.model.MockMessageModel
 import com.huolala.mockgps.model.NaviType
 import com.huolala.mockgps.model.PoiInfoModel
 import com.huolala.mockgps.model.PoiInfoType
-import com.huolala.mockgps.server.GpsAndFloatingService
+import com.huolala.mockgps.server.GpsService
 import com.huolala.mockgps.utils.LocationUtils
 import com.huolala.mockgps.utils.MMKVUtils
 import com.huolala.mockgps.utils.Utils
@@ -139,7 +139,7 @@ class MockReceiver : BroadcastReceiver() {
             }
         }
         //启动服务  定位以及悬浮窗
-        context.startService(Intent(context, GpsAndFloatingService::class.java).apply {
+        context.startService(Intent(context, GpsService::class.java).apply {
             parcelable?.let {
                 putExtras(
                     Bundle().apply {

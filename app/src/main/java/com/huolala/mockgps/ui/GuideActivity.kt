@@ -1,12 +1,10 @@
 package com.huolala.mockgps.ui
 
 import android.Manifest
-import android.animation.ValueAnimator
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.PackageManager
 import android.os.Build
-import android.os.Bundle
 import android.provider.Settings
 import android.view.View
 import android.widget.Toast
@@ -18,7 +16,7 @@ import com.castiel.common.base.BaseActivity
 import com.castiel.common.base.BaseViewModel
 import com.huolala.mockgps.R
 import com.huolala.mockgps.databinding.ActivityGuideBinding
-import com.huolala.mockgps.server.GpsAndFloatingService
+import com.huolala.mockgps.server.GpsService
 import com.huolala.mockgps.utils.Utils
 import kotlinx.android.synthetic.main.activity_guide.*
 import java.lang.Exception
@@ -125,7 +123,7 @@ class GuideActivity : BaseActivity<ActivityGuideBinding, BaseViewModel>(), View.
                         .show()
                     return
                 }
-                startService(Intent(this, GpsAndFloatingService::class.java))
+                startService(Intent(this, GpsService::class.java))
                 startActivity(Intent(this, MainActivity::class.java))
                 finish()
             }

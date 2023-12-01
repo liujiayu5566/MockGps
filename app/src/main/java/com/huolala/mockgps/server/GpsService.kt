@@ -8,7 +8,6 @@ import android.location.LocationManager
 import android.location.provider.ProviderProperties
 import android.os.*
 import com.baidu.mapapi.model.LatLng
-import com.blankj.utilcode.util.*
 import com.huolala.mockgps.manager.FloatingViewManger
 import com.huolala.mockgps.manager.SearchManager
 import com.huolala.mockgps.model.MockMessageModel
@@ -23,7 +22,7 @@ import com.huolala.mockgps.utils.Utils
 /**
  * @author jiayu.liu
  */
-class GpsAndFloatingService : Service() {
+class GpsService : Service() {
     companion object {
         private const val START_MOCK_LOCATION = 1001
         private const val START_MOCK_NAVI = 1002
@@ -151,7 +150,7 @@ class GpsAndFloatingService : Service() {
                         SearchManager.INSTANCE.polylineList.let {
                             if (index < it.size) {
                                 mCurrentLocation = it[index]
-                                this@GpsAndFloatingService.index = index
+                                this@GpsService.index = index
                             }
                         }
                     }

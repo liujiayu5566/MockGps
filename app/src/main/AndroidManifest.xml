@@ -92,7 +92,7 @@
             tools:ignore="LockedOrientationActivity" />
 
         <service
-            android:name=".server.GpsAndFloatingService"
+            android:name=".server.GpsService"
             android:exported="false" />
     </application>
 

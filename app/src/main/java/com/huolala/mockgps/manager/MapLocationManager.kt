@@ -1,6 +1,7 @@
 package com.huolala.mockgps.manager
 
 import android.content.Context
+import android.graphics.Color
 import com.baidu.location.BDAbstractLocationListener
 import com.baidu.location.BDLocation
 import com.baidu.location.LocationClient
@@ -97,7 +98,9 @@ class MapLocationManager(
             MyLocationConfiguration(
                 MyLocationConfiguration.LocationMode.NORMAL,
                 false,
-                BitmapDescriptorFactory.fromResource(R.drawable.ic_cur_location_icon)
+                BitmapDescriptorFactory.fromResource(R.drawable.ic_cur_location_icon),
+                Color.TRANSPARENT,
+                Color.TRANSPARENT
             ).apply {
                 baiduMap.setMyLocationConfiguration(this)
             }

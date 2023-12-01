@@ -5,15 +5,9 @@ import android.graphics.Rect
 import android.os.*
 import android.view.View
 import android.widget.Toast
-import com.baidu.location.BDAbstractLocationListener
-import com.baidu.location.BDLocation
-import com.baidu.location.LocationClient
-import com.baidu.location.LocationClientOption
 import com.baidu.mapapi.map.*
-import com.baidu.mapapi.model.LatLng
 import com.blankj.utilcode.util.ClickUtils
 import com.blankj.utilcode.util.ConvertUtils
-import com.blankj.utilcode.util.FileIOUtils
 import com.castiel.common.base.BaseActivity
 import com.castiel.common.base.BaseViewModel
 import com.huolala.mockgps.R
@@ -24,11 +18,9 @@ import com.huolala.mockgps.manager.utils.MapDrawUtils
 import com.huolala.mockgps.manager.SearchManager
 import com.huolala.mockgps.model.MockMessageModel
 import com.huolala.mockgps.model.NaviType
-import com.huolala.mockgps.server.GpsAndFloatingService
+import com.huolala.mockgps.server.GpsService
 import com.huolala.mockgps.utils.Utils
 import kotlinx.android.synthetic.main.activity_navi.*
-import kotlinx.android.synthetic.main.dialog_select_navi_map.texture_mapview
-import java.lang.ref.WeakReference
 
 
 /**
@@ -36,7 +28,6 @@ import java.lang.ref.WeakReference
  */
 class MockLocationActivity : BaseActivity<ActivityNaviBinding, BaseViewModel>(),
     View.OnClickListener {
-    private var DRAW_MAP = 0;
     private lateinit var mBaiduMap: BaiduMap
     private var mNaviType: Int = NaviType.LOCATION
     private val mPadding: Int = ConvertUtils.dp2px(50f)
@@ -145,7 +136,7 @@ class MockLocationActivity : BaseActivity<ActivityNaviBinding, BaseViewModel>(),
             }
         }
         //启动服务  定位以及悬浮窗
-        startService(Intent(this, GpsAndFloatingService::class.java).apply {
+        startService(Intent(this, GpsService::class.java).apply {
             parcelable?.let {
                 putExtras(
                     Bundle().apply {
@@ -183,38 +174,4 @@ class MockLocationActivity : BaseActivity<ActivityNaviBinding, BaseViewModel>(),
             }
         }
     }
-
-    class MockLocationHandler(activity: MockLocationActivity) :
-        Handler(Looper.getMainLooper()) {
-        private var weakReference: WeakReference<MockLocationActivity>? = null
-
-        init {
-            weakReference = WeakReference(activity)
-        }
-
-        override fun handleMessage(msg: Message) {
-            super.handleMessage(msg)
-            weakReference?.get()?.run {
-                when (msg.what) {
-                    DRAW_MAP -> {
-                        (msg.obj as ArrayList<LatLng>?)?.let {
-                            mBaiduMap.clear()
-                            MapDrawUtils.drawLineToMap(
-                                mBaiduMap,
-                                it,
-                                Rect(mPadding, mPadding, mPadding, mPadding)
-                            )
-                        }
-
-                    }
-
-                    else -> {
-                    }
-                }
-
-            }
-        }
-
-    }
-
 }
