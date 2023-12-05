@@ -47,15 +47,8 @@ class MockLocationActivity : BaseActivity<ActivityNaviBinding, BaseViewModel>(),
         mBaiduMap = mapview.map
         mapview.showScaleControl(false)
         mapview.showZoomControls(false)
-        mapview.getChildAt(1).visibility = View.GONE
         mBaiduMap.uiSettings?.isCompassEnabled = false
 
-        mBaiduMap.setMyLocationConfiguration(
-            MyLocationConfiguration(
-                MyLocationConfiguration.LocationMode.NORMAL,
-                true, null
-            )
-        )
         mBaiduMap.setOnMapLoadedCallback {
             startMock()
         }

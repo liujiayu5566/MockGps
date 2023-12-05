@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit
 
 
 class RetrofitClient private constructor() {
-    private val baseUrl = ""
+    private val baseUrl = "https://www.pgyer.com"
 
     private val retrofit: Retrofit by lazy {
         Retrofit.Builder().apply {

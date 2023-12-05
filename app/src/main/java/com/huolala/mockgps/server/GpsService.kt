@@ -135,10 +135,11 @@ class GpsService : Service() {
                     return naviType
                 }
 
-                override fun changeLocation(latLng: LatLng) {
+                override fun changeLocation(latLng: LatLng, angle: Double) {
                     if (model == null) {
                         return
                     }
+                    bearing = angle.toFloat()
                     sendMockLocation(latLng)
                 }
 

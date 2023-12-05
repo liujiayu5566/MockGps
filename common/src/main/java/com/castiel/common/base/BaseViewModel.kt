@@ -28,14 +28,14 @@ open class BaseViewModel : ViewModel() {
         return viewModelScope.launch {
             try {
                 val response = block()
-                if (response.errorCode == 0) {
+                if (response.code == 0) {
                     success(response.data)
                 } else {
                     failure?.run {
                         invoke(response)
                     } ?: run {
-                        if (!TextUtils.isEmpty(response.errorMsg))
-                            toast.value = response.errorMsg
+                        if (!TextUtils.isEmpty(response.message))
+                            toast.value = response.message
                     }
                 }
             } catch (e: Exception) {

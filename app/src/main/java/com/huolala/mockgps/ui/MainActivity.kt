@@ -1,10 +1,12 @@
 package com.huolala.mockgps.ui
 
 import android.Manifest
+import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import android.text.TextUtils
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -12,14 +14,15 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.baidu.mapapi.search.route.DrivingRouteLine
 import com.blankj.utilcode.util.ClickUtils
+import com.blankj.utilcode.util.ClipboardUtils
 import com.blankj.utilcode.util.ConvertUtils
 import com.blankj.utilcode.util.PermissionUtils
 import com.blankj.utilcode.util.ToastUtils
 import com.castiel.common.base.BaseActivity
-import com.castiel.common.base.BaseViewModel
 import com.google.android.material.appbar.AppBarLayout
 import com.huolala.mockgps.R
 import com.huolala.mockgps.adaper.HistoryAdapter
@@ -30,9 +33,10 @@ import com.huolala.mockgps.model.MockMessageModel
 import com.huolala.mockgps.model.NaviType
 import com.huolala.mockgps.model.PoiInfoModel
 import com.huolala.mockgps.model.PoiInfoType
-import com.huolala.mockgps.utils.WarnDialogUtils
 import com.huolala.mockgps.utils.MMKVUtils
 import com.huolala.mockgps.utils.Utils
+import com.huolala.mockgps.utils.WarnDialogUtils
+import com.huolala.mockgps.viewmodel.HomeViewModel
 import com.huolala.mockgps.widget.MapSelectDialog
 import com.huolala.mockgps.widget.NaviPopupWindow
 import kotlinx.android.synthetic.main.activity_main.*
@@ -44,7 +48,7 @@ import kotlin.math.roundToInt
 /**
  * @author jiayu.liu
  */
-class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>(), View.OnClickListener {
+class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel>(), View.OnClickListener {
     private var topMarginOffset: Int = 0
     private var topMargin: Int = 0
     private lateinit var adapter: HistoryAdapter
@@ -115,6 +119,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>(), View.On
         ClickUtils.applySingleDebouncing(tv_navi_name_end, this)
         ClickUtils.applySingleDebouncing(btn_start_navi, this)
         ClickUtils.applySingleDebouncing(iv_navi_setting, this)
+        ClickUtils.applySingleDebouncing(iv_app_update, this)
 
         SearchManager.INSTANCE.listener = object : SearchManager.SearchManagerListener {
             override fun onDrivingRouteResultLines(routeLines: List<DrivingRouteLine>?) {
@@ -168,8 +173,8 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>(), View.On
     }
 
 
-    override fun initViewModel(): Class<BaseViewModel> {
-        return BaseViewModel::class.java
+    override fun initViewModel(): Class<HomeViewModel> {
+        return HomeViewModel::class.java
     }
 
     override fun getLayout(): Int {
@@ -177,9 +182,14 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>(), View.On
     }
 
     override fun initData() {
+        //检测是否有新版本
+        viewModel.checkAppUpdate()
     }
 
     override fun initObserver() {
+        viewModel.updateApp.observe(this) {
+            dataBinding.isUpdate = true
+        }
     }
 
     override fun onResume() {
@@ -396,6 +406,31 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>(), View.On
                 //导航设置
                 NaviPopupWindow(this).apply {
                     show(iv_navi_setting)
+                }
+            }
+
+            iv_app_update -> {
+                viewModel.updateApp.value?.let {
+                    val dialog: AlertDialog = AlertDialog.Builder(this)
+                        .setTitle("有新的版本")
+                        .setMessage(
+                            if (!TextUtils.isEmpty(it.buildUpdateDescription)) it.buildUpdateDescription else "修复已知问题"
+                        )
+                        .setPositiveButton(
+                            "确定"
+                        ) { _: DialogInterface?, _: Int ->
+                            Utils.openBrowser(
+                                this,
+                                it.downloadURL
+                            ) {
+                                viewModel.toast.value = "跳转失败,已将下载地址复制到剪切板!"
+                                ClipboardUtils.copyText(it.downloadURL)
+                            }
+                        }
+                        .setNegativeButton("取消", null)
+                        .create()
+                    dialog.setCanceledOnTouchOutside(false)
+                    dialog.show()
                 }
             }
 

@@ -50,7 +50,9 @@ dependencies {
     api rootProject.ext.dependencies.banner
     api rootProject.ext.dependencies.agentweb
     api rootProject.ext.dependencies.autosize
-    api rootProject.ext.dependencies.lottie
+    api(rootProject.ext.dependencies.lottie) {
+        exclude group: 'androidx.appcompat', module: 'appcompat'
+    }
     api rootProject.ext.dependencies.refresh_layout
     api rootProject.ext.dependencies.chips_layout
     api rootProject.ext.dependencies.utilcodex

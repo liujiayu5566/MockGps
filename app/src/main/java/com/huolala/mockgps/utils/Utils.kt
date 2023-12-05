@@ -2,11 +2,13 @@ package com.huolala.mockgps.utils
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.location.LocationProvider
 
 import android.location.Criteria
 
 import android.location.LocationManager
+import android.net.Uri
 
 import android.os.Build
 import android.provider.Settings
@@ -142,6 +144,20 @@ object Utils {
             }
         }
         return true
+    }
+
+    /**
+     * 跳转到浏览器
+     */
+    fun openBrowser(context: Context, url: String?, failure: () -> Unit) {
+        val intent = Intent()
+        intent.action = Intent.ACTION_VIEW
+        intent.data = Uri.parse(url)
+        if (intent.resolveActivity(context.packageManager) != null) {
+            context.startActivity(Intent.createChooser(intent, "选择浏览器"))
+        } else {
+            failure.invoke()
+        }
     }
 
 }

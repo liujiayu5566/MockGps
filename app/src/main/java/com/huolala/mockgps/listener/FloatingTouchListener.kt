@@ -94,7 +94,6 @@ class FloatingTouchListener(
         animator?.interpolator = LinearInterpolator()
         animator?.addUpdateListener {
             val animatedValue = it.animatedValue
-            println("animatedValue: $animatedValue")
             layoutParams.x = animatedValue as Int
             // 更新悬浮窗控件布局
             windowManager.updateViewLayout(view, layoutParams)

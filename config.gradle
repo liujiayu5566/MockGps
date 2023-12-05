@@ -35,7 +35,7 @@ ext {
             downloader             : 'com.download.library:Downloader:4.1.4',
             agentweb               : 'com.just.agentweb:agentweb:4.1.4',
             autosize               : 'com.github.JessYanCoding:AndroidAutoSize:v1.2.1',
-            lottie                 : 'com.airbnb.android:lottie:5.2.0',
+            lottie                 : 'com.airbnb.android:lottie:6.2.0',
             refresh_layout         : 'com.scwang.smart:refresh-layout-kernel:2.0.2',
             chips_layout           : 'com.beloo.widget:ChipsLayoutManager:0.3.7@aar',
             utilcodex              : 'com.blankj:utilcodex:1.30.5',

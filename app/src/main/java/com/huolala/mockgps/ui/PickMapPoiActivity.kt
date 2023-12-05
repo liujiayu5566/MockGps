@@ -158,13 +158,6 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
             isOverlookingGesturesEnabled = false
         }
 
-        mBaiduMap.setMyLocationConfiguration(
-            MyLocationConfiguration(
-                MyLocationConfiguration.LocationMode.NORMAL,
-                true, null
-            )
-        )
-
         mCoder = GeoCoder.newInstance()
         mCoder.setOnGetGeoCodeResultListener(object : OnGetGeoCoderResultListener {
             override fun onGetGeoCodeResult(geoCodeResult: GeoCodeResult?) {

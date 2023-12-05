@@ -83,13 +83,6 @@ class CalculateRouteActivity : BaseActivity<ActivityCalculateRouteBinding, BaseV
 
         mBaiduMap = dataBinding.mapview.map
 
-        mBaiduMap.setMyLocationConfiguration(
-            MyLocationConfiguration(
-                MyLocationConfiguration.LocationMode.NORMAL,
-                true, null
-            )
-        )
-
         mBaiduMap.setMapStatus(MapStatusUpdateFactory.zoomBy(16f))
 
         mapLocationManager = MapLocationManager(this, mBaiduMap, FollowMode.MODE_SINGLE)

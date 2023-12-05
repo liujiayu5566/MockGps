@@ -7,13 +7,10 @@ import com.baidu.location.BDLocation
 import com.baidu.location.LocationClient
 import com.baidu.location.LocationClientOption
 import com.baidu.mapapi.map.BaiduMap
-import com.baidu.mapapi.map.BitmapDescriptor
-import com.baidu.mapapi.map.BitmapDescriptorFactory
 import com.baidu.mapapi.map.MapStatusUpdateFactory
 import com.baidu.mapapi.map.MyLocationConfiguration
 import com.baidu.mapapi.map.MyLocationData
 import com.baidu.mapapi.model.LatLng
-import com.huolala.mockgps.R
 
 
 /**
@@ -94,17 +91,16 @@ class MapLocationManager(
     }
 
     init {
-        if (source == Source.FLOATING) {
-            MyLocationConfiguration(
-                MyLocationConfiguration.LocationMode.NORMAL,
-                false,
-                BitmapDescriptorFactory.fromResource(R.drawable.ic_cur_location_icon),
-                Color.TRANSPARENT,
-                Color.TRANSPARENT
-            ).apply {
-                baiduMap.setMyLocationConfiguration(this)
-            }
+        MyLocationConfiguration(
+            MyLocationConfiguration.LocationMode.NORMAL,
+            true,
+            null,
+            Color.TRANSPARENT,
+            Color.TRANSPARENT
+        ).apply {
+            baiduMap.setMyLocationConfiguration(this)
         }
+
         mLocationClient = LocationClient(context)
         baiduMap.isMyLocationEnabled = true
 

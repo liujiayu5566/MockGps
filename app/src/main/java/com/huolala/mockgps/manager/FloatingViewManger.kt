@@ -260,7 +260,6 @@ class FloatingViewManger private constructor() {
 
                 override fun angle(angle: Double) {
                     this@FloatingViewManger.angle = angle
-                    println("angle: $angle")
                     System.currentTimeMillis().let {
                         //限制触发间隔
                         if (it - currentTimeMillis <= interval) {
@@ -352,12 +351,13 @@ class FloatingViewManger private constructor() {
                 ToastUtils.showShort("计算经纬度失败,请重试！")
                 return
             }
-            listener?.changeLocation(location)
+            listener?.changeLocation(location, angle)
         }
     }
 
     private fun getLayoutParams(): WindowManager.LayoutParams {
         val params = WindowManager.LayoutParams()
+        // mock设置成功后，直接定位到当前的主包名下
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             params.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
         } else {
@@ -516,7 +516,7 @@ class FloatingViewManger private constructor() {
          * 更新当前定位点
          * 微调 仅支持模拟定位
          */
-        fun changeLocation(latLng: LatLng)
+        fun changeLocation(latLng: LatLng, angle: Double)
 
         /**
          * 更新导航信息

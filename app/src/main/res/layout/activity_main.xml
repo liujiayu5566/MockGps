@@ -5,6 +5,11 @@
 
     <data>
 
+        <variable
+            name="isUpdate"
+            type="Boolean" />
+
+        <import type="android.view.View" />
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -43,6 +48,7 @@
                     android:id="@+id/toolbar"
                     android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
+                    android:animateLayoutChanges="true"
                     app:contentInsetStart="0dp"
                     app:layout_collapseMode="pin">
 
@@ -50,18 +56,26 @@
                         android:id="@+id/iv_change"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
-                        android:layout_gravity="left|top"
-                        android:paddingHorizontal="15dp"
+                        android:layout_gravity="left"
+                        android:paddingHorizontal="10dp"
                         android:src="@drawable/ic_refresh" />
 
                     <androidx.appcompat.widget.AppCompatImageView
                         android:id="@+id/iv_expand"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
-                        android:layout_gravity="right|top"
-                        android:paddingHorizontal="15dp"
+                        android:layout_gravity="right"
+                        android:paddingHorizontal="10dp"
                         android:src="@drawable/ic_setting" />
 
+                    <androidx.appcompat.widget.AppCompatImageView
+                        android:id="@+id/iv_app_update"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="right"
+                        android:paddingHorizontal="10dp"
+                        android:src="@drawable/ic_app_update"
+                        android:visibility="@{isUpdate?View.VISIBLE:View.GONE}" />
 
                 </androidx.appcompat.widget.Toolbar>
 
