@@ -8,6 +8,7 @@ import android.os.Build
 import android.provider.Settings
 import android.text.TextUtils
 import android.view.Gravity
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -39,11 +40,26 @@ import com.huolala.mockgps.utils.WarnDialogUtils
 import com.huolala.mockgps.viewmodel.HomeViewModel
 import com.huolala.mockgps.widget.MapSelectDialog
 import com.huolala.mockgps.widget.NaviPopupWindow
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.layout_location_card.*
-import kotlinx.android.synthetic.main.layout_navi_card.*
+import kotlinx.android.synthetic.main.activity_main.appBarLayout
+import kotlinx.android.synthetic.main.activity_main.collapsingToolbar
+import kotlinx.android.synthetic.main.activity_main.iv_app_update
+import kotlinx.android.synthetic.main.activity_main.iv_change
+import kotlinx.android.synthetic.main.activity_main.iv_expand
+import kotlinx.android.synthetic.main.activity_main.ll_card
+import kotlinx.android.synthetic.main.activity_main.recycler
+import kotlinx.android.synthetic.main.layout_location_card.btn_start_location
+import kotlinx.android.synthetic.main.layout_location_card.ll_location_card
+import kotlinx.android.synthetic.main.layout_location_card.tv_location_latlng
+import kotlinx.android.synthetic.main.layout_location_card.tv_location_name
+import kotlinx.android.synthetic.main.layout_navi_card.btn_start_navi
+import kotlinx.android.synthetic.main.layout_navi_card.iv_navi_setting
+import kotlinx.android.synthetic.main.layout_navi_card.ll_navi_card
+import kotlinx.android.synthetic.main.layout_navi_card.radio_multi_route
+import kotlinx.android.synthetic.main.layout_navi_card.tv_navi_name_end
+import kotlinx.android.synthetic.main.layout_navi_card.tv_navi_name_start
 import kotlin.math.abs
 import kotlin.math.roundToInt
+
 
 /**
  * @author jiayu.liu
@@ -439,5 +455,15 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel>(), View.On
         }
     }
 
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            val intent = Intent(Intent.ACTION_MAIN)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            intent.addCategory(Intent.CATEGORY_HOME)
+            startActivity(intent)
+            return true
+        }
+        return super.onKeyDown(keyCode, event)
+    }
 
 }
