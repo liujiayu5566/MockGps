@@ -106,12 +106,12 @@ class RegulateView(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
                         count += 1
                         when (count) {
                             10 -> {
-                                useMultipleNum = count
-                                addView.setDelayMillis(500L)
+                                useMultipleNum = 2
+                                addView.setDelayMillis(300L)
                             }
 
                             else -> {
-                                if (count > 10 && count % 5 == 0) {
+                                if (count > 10 && count % 10 == 0) {
                                     useMultipleNum *= 2
                                 }
                             }
@@ -143,7 +143,7 @@ class RegulateView(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
                         when (count) {
                             10 -> {
                                 useMultipleNum = count
-                                subtractView.setDelayMillis(500L)
+                                subtractView.setDelayMillis(300L)
                             }
 
                             else -> {
