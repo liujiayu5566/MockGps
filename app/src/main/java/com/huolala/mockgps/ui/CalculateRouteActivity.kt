@@ -38,6 +38,39 @@ class CalculateRouteActivity : BaseActivity<ActivityCalculateRouteBinding, BaseV
      * 算路成功的路线
      */
     private var routeLines: ArrayList<DrivingRouteLine> = arrayListOf()
+    private val mSearchManagerListener  = object : SearchManager.SearchManagerListener {
+        override fun onDrivingRouteResultLines(routeLines: List<DrivingRouteLine>?) {
+            viewModel.loading.value = false
+            if (routeLines?.isEmpty() != false) {
+                ToastUtils.showShort("路线规划数据获取失败,请检测网络or数据是否正确!")
+                return
+            }
+            this@CalculateRouteActivity.routeLines = routeLines as ArrayList<DrivingRouteLine>
+            mBaiduMap.let {
+                (dataBinding.tvStart.tag as PoiInfoModel?)?.latLng?.let { start ->
+                    MapDrawUtils.drawMarkerToMap(it, start, "marker_start.png")
+                }
+                (dataBinding.tvEnd.tag as PoiInfoModel?)?.latLng?.let { end ->
+                    MapDrawUtils.drawMarkerToMap(it, end, "marker_end.png")
+                }
+
+                routeLines.mapIndexed { index, line ->
+                    MapDrawUtils.drawLineToMap(
+                        it,
+                        MapConvertUtils.convertLatLngList(line),
+                        Rect(
+                            mDefaultPadding,
+                            mDefaultPadding + dataBinding.clPanel.height,
+                            mDefaultPadding,
+                            mDefaultPadding
+                        ),
+                        index == mainIndex
+                    )
+                }
+            }
+            dataBinding.fileName = "${dataBinding.tvStart.text}-${dataBinding.tvEnd.text}"
+        }
+    }
 
     private var registerForActivityResultToStartPoi =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -86,40 +119,6 @@ class CalculateRouteActivity : BaseActivity<ActivityCalculateRouteBinding, BaseV
         mBaiduMap.setMapStatus(MapStatusUpdateFactory.zoomBy(16f))
 
         mapLocationManager = MapLocationManager(this, mBaiduMap, FollowMode.MODE_SINGLE)
-
-        SearchManager.INSTANCE.listener = object : SearchManager.SearchManagerListener {
-            override fun onDrivingRouteResultLines(routeLines: List<DrivingRouteLine>?) {
-                viewModel.loading.value = false
-                if (routeLines?.isEmpty() != false) {
-                    ToastUtils.showShort("路线规划数据获取失败,请检测网络or数据是否正确!")
-                    return
-                }
-                this@CalculateRouteActivity.routeLines = routeLines as ArrayList<DrivingRouteLine>
-                mBaiduMap.let {
-                    (dataBinding.tvStart.tag as PoiInfoModel?)?.latLng?.let { start ->
-                        MapDrawUtils.drawMarkerToMap(it, start, "marker_start.png")
-                    }
-                    (dataBinding.tvEnd.tag as PoiInfoModel?)?.latLng?.let { end ->
-                        MapDrawUtils.drawMarkerToMap(it, end, "marker_end.png")
-                    }
-
-                    routeLines.mapIndexed { index, line ->
-                        MapDrawUtils.drawLineToMap(
-                            it,
-                            MapConvertUtils.convertLatLngList(line),
-                            Rect(
-                                mDefaultPadding,
-                                mDefaultPadding + dataBinding.clPanel.height,
-                                mDefaultPadding,
-                                mDefaultPadding
-                            ),
-                            index == mainIndex
-                        )
-                    }
-                }
-                dataBinding.fileName = "${dataBinding.tvStart.text}-${dataBinding.tvEnd.text}"
-            }
-        }
     }
 
 
@@ -239,11 +238,13 @@ class CalculateRouteActivity : BaseActivity<ActivityCalculateRouteBinding, BaseV
 
     override fun onResume() {
         super.onResume()
+        SearchManager.INSTANCE.addSearchManagerListener(mSearchManagerListener)
         dataBinding.mapview.onResume()
     }
 
     override fun onPause() {
         super.onPause()
+        SearchManager.INSTANCE.removeSearchManagerListener(mSearchManagerListener)
         dataBinding.mapview.onPause()
         if (isFinishing) {
             destroy()

@@ -3,12 +3,17 @@ package com.huolala.mockgps
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.graphics.Rect
 import android.os.Bundle
 import android.text.TextUtils
 import android.widget.Toast
 import com.baidu.mapapi.model.LatLng
+import com.baidu.mapapi.search.route.DrivingRouteLine
 import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.ToastUtils
+import com.huolala.mockgps.manager.SearchManager
+import com.huolala.mockgps.manager.utils.MapConvertUtils
+import com.huolala.mockgps.manager.utils.MapDrawUtils
 import com.huolala.mockgps.model.MockMessageModel
 import com.huolala.mockgps.model.NaviType
 import com.huolala.mockgps.model.PoiInfoModel
@@ -17,6 +22,7 @@ import com.huolala.mockgps.server.GpsService
 import com.huolala.mockgps.utils.LocationUtils
 import com.huolala.mockgps.utils.MMKVUtils
 import com.huolala.mockgps.utils.Utils
+import kotlinx.android.synthetic.main.layout_navi_card.radio_multi_route
 
 /**
  * @author jiayu.liu
@@ -32,7 +38,9 @@ import com.huolala.mockgps.utils.Utils
  */
 class MockReceiver : BroadcastReceiver() {
 
-    var MOCK_ACTION = "com.huolala.mockgps.navi"
+    companion object {
+        var MOCK_ACTION = "com.huolala.mockgps.navi"
+    }
 
     override fun onReceive(context: Context?, intent: Intent) {
         if (context == null) {
@@ -121,7 +129,25 @@ class MockReceiver : BroadcastReceiver() {
                 speed = MMKVUtils.getSpeed(),
                 uid = ""
             )
-            startMockServer(context, model)
+
+            SearchManager.INSTANCE.addSearchManagerListener(object : SearchManager.SearchManagerListener {
+                override fun onDrivingRouteResultLines(routeLines: List<DrivingRouteLine>?) {
+                    if (routeLines?.isEmpty() != false) {
+                        ToastUtils.showShort("路线规划数据获取失败,请检测网络or数据是否正确!")
+                        return
+                    }
+                    //使用第一条路线
+                    SearchManager.INSTANCE.selectDriverLine(routeLines[0])
+                    startMockServer(context, model)
+                    SearchManager.INSTANCE.removeSearchManagerListener(this)
+                }
+            })
+
+            SearchManager.INSTANCE.driverSearch(
+                startLatLng,
+                endLatLng,
+                true
+            )
         }
     }
 

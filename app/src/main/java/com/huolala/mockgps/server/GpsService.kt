@@ -329,6 +329,7 @@ class GpsService : Service() {
         loc.speed = if (isSingle) 0F else mSpeed
         loc.longitude = gps84[0]
         loc.latitude = gps84[1]
+        loc.altitude = Math.random() * 10
         loc.time = System.currentTimeMillis()
         loc.elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos()
         //通知悬浮窗当前位置

@@ -13,7 +13,6 @@ import com.baidu.mapapi.search.route.RoutePlanSearch
 import com.baidu.mapapi.search.route.TransitRouteResult
 import com.baidu.mapapi.search.route.WalkingRouteResult
 import com.blankj.utilcode.util.ToastUtils
-import com.huolala.mockgps.utils.Utils
 
 /**
  * @author jiayu.liu
@@ -21,7 +20,7 @@ import com.huolala.mockgps.utils.Utils
 class SearchManager private constructor() {
     private var mSearch: RoutePlanSearch = RoutePlanSearch.newInstance()
     private var isSearchIng = false
-    var listener: SearchManagerListener? = null
+    private var listenerList: ArrayList<SearchManagerListener> = arrayListOf()
     var polylineList: ArrayList<LatLng> = arrayListOf()
 
 
@@ -44,8 +43,9 @@ class SearchManager private constructor() {
 
             override fun onGetDrivingRouteResult(drivingRouteResult: DrivingRouteResult?) {
                 isSearchIng = false
-                listener?.onDrivingRouteResultLines(drivingRouteResult?.routeLines)
-
+                listenerList.map {
+                    it.onDrivingRouteResultLines(drivingRouteResult?.routeLines)
+                }
             }
 
             override fun onGetIndoorRouteResult(indoorRouteResult: IndoorRouteResult?) {
@@ -56,7 +56,19 @@ class SearchManager private constructor() {
         })
     }
 
-    fun driverSearch(startLatLng: LatLng?, endLatLng: LatLng?, multiroute: Boolean) {
+    fun addSearchManagerListener(listener: SearchManagerListener) {
+        listenerList.add(listener)
+    }
+
+    fun removeSearchManagerListener(listener: SearchManagerListener) {
+        listenerList.remove(listener)
+    }
+
+    fun driverSearch(
+        startLatLng: LatLng?,
+        endLatLng: LatLng?,
+        multiRoute: Boolean,
+    ) {
         if (startLatLng == null || endLatLng == null) {
             return
         }
@@ -69,7 +81,7 @@ class SearchManager private constructor() {
             DrivingRoutePlanOption()
                 .from(PlanNode.withLocation(startLatLng))
                 .to(PlanNode.withLocation(endLatLng)).apply {
-                    if (!multiroute) {
+                    if (!multiRoute) {
                         this.policy(DrivingRoutePlanOption.DrivingPolicy.ECAR_DIS_FIRST)
                     }
                 }

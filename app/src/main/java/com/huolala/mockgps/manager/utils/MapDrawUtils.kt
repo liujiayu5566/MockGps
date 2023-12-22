@@ -37,7 +37,8 @@ object MapDrawUtils {
         baiduMap: BaiduMap,
         polylineList: List<LatLng>,
         rect: Rect,
-        isMainLine: Boolean = true
+        isMainLine: Boolean = true,
+        animateMapStatus: Boolean = true
     ): Overlay? {
         if (polylineList.isEmpty()) {
             return null
@@ -59,7 +60,7 @@ object MapDrawUtils {
             .points(polylineList)
             .zIndex(if (isMainLine) 1 else 0)
         val addOverlay = baiduMap.addOverlay(mOverlayOptions)
-        if (isMainLine) {
+        if (isMainLine && animateMapStatus) {
             baiduMap.animateMapStatus(
                 MapStatusUpdateFactory.newLatLngBounds(
                     LatLngBounds.Builder().include(polylineList).build(),

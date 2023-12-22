@@ -3,6 +3,7 @@ package com.huolala.mockgps.manager
 import android.annotation.SuppressLint
 import android.app.Service
 import android.graphics.PixelFormat
+import android.graphics.Rect
 import android.os.Build
 import android.provider.Settings
 import android.view.Gravity
@@ -19,6 +20,7 @@ import com.blankj.utilcode.util.ToastUtils
 import com.blankj.utilcode.util.Utils
 import com.huolala.mockgps.R
 import com.huolala.mockgps.listener.FloatingTouchListener
+import com.huolala.mockgps.manager.utils.MapDrawUtils
 import com.huolala.mockgps.model.NaviType
 import com.huolala.mockgps.utils.CalculationLogLatDistance
 import com.huolala.mockgps.utils.HandlerUtils
@@ -383,6 +385,7 @@ class FloatingViewManger private constructor() {
             //模拟模式未变&&当前状态是模拟状态  过滤
             return
         }
+        view?.mapview?.map?.clear()
         view?.startAndPause?.isSelected = true
         when (listener?.getNaviType()) {
             NaviType.LOCATION -> {
@@ -408,6 +411,20 @@ class FloatingViewManger private constructor() {
                 naviAdjust?.speed_nav_view?.clearLongClickWait()
                 naviAdjust?.speed_nav_view?.updateCurValue(MMKVUtils.getSpeed())
                 naviAdjust?.road_nav_view?.clearLongClickWait()
+                view?.mapview?.map?.let { map ->
+                    SearchManager.INSTANCE.polylineList.let {
+                        if (it.isEmpty()) {
+                            return
+                        }
+
+                        MapDrawUtils.drawLineToMap(
+                            map,
+                            it,
+                            Rect(0, 0, 0, 0),
+                            animateMapStatus = false
+                        )
+                    }
+                }
             }
 
             else -> {}

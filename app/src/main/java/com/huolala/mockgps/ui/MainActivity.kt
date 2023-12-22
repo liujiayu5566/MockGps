@@ -70,6 +70,43 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel>(), View.On
     private lateinit var adapter: HistoryAdapter
     private var mMapSelectDialog: MapSelectDialog? = null
     private var locationAlwaysView: View? = null
+    private val mSearchManagerListener = object : SearchManager.SearchManagerListener {
+        override fun onDrivingRouteResultLines(routeLines: List<DrivingRouteLine>?) {
+            viewModel.loading.value = false
+            if (routeLines?.isEmpty() != false) {
+                ToastUtils.showShort("路线规划数据获取失败,请检测网络or数据是否正确!")
+                return
+            }
+            val startNavi = tv_navi_name_start.tag as PoiInfoModel?
+            val endNavi = tv_navi_name_end.tag as PoiInfoModel?
+            val model = MockMessageModel(
+                startNavi = startNavi,
+                endNavi = endNavi,
+                naviType = NaviType.NAVI,
+                speed = MMKVUtils.getSpeed(),
+                uid = (startNavi?.uid ?: "") + (endNavi?.uid ?: "")
+            )
+            if (routeLines.size == 1) {
+                goToMockLocation(routeLines[0], model)
+            } else {
+                mMapSelectDialog = MapSelectDialog(
+                    this@MainActivity,
+                    routeLines,
+                    startNavi?.latLng,
+                    endNavi?.latLng
+                ).apply {
+                    listener = object : MapSelectDialog.MapSelectDialogListener {
+                        override fun onSelectLine(routeLine: DrivingRouteLine) {
+                            goToMockLocation(routeLine, model)
+                            mMapSelectDialog = null
+                        }
+                    }
+                    show()
+                }
+            }
+
+        }
+    }
 
     private var registerForActivityResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -136,44 +173,6 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel>(), View.On
         ClickUtils.applySingleDebouncing(btn_start_navi, this)
         ClickUtils.applySingleDebouncing(iv_navi_setting, this)
         ClickUtils.applySingleDebouncing(iv_app_update, this)
-
-        SearchManager.INSTANCE.listener = object : SearchManager.SearchManagerListener {
-            override fun onDrivingRouteResultLines(routeLines: List<DrivingRouteLine>?) {
-                viewModel.loading.value = false
-                if (routeLines?.isEmpty() != false) {
-                    ToastUtils.showShort("路线规划数据获取失败,请检测网络or数据是否正确!")
-                    return
-                }
-                val startNavi = tv_navi_name_start.tag as PoiInfoModel?
-                val endNavi = tv_navi_name_end.tag as PoiInfoModel?
-                val model = MockMessageModel(
-                    startNavi = startNavi,
-                    endNavi = endNavi,
-                    naviType = NaviType.NAVI,
-                    speed = MMKVUtils.getSpeed(),
-                    uid = (startNavi?.uid ?: "") + (endNavi?.uid ?: "")
-                )
-                if (routeLines.size == 1) {
-                    goToMockLocation(routeLines[0], model)
-                } else {
-                    mMapSelectDialog = MapSelectDialog(
-                        this@MainActivity,
-                        routeLines,
-                        startNavi?.latLng,
-                        endNavi?.latLng
-                    ).apply {
-                        listener = object : MapSelectDialog.MapSelectDialogListener {
-                            override fun onSelectLine(routeLine: DrivingRouteLine) {
-                                goToMockLocation(routeLine, model)
-                                mMapSelectDialog = null
-                            }
-                        }
-                        show()
-                    }
-                }
-
-            }
-        }
     }
 
     private fun goToMockLocation(
@@ -211,6 +210,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel>(), View.On
     override fun onResume() {
         super.onResume()
         //获取历史数据
+        SearchManager.INSTANCE.addSearchManagerListener(mSearchManagerListener)
         getHistoryData()
         mMapSelectDialog?.onResume()
         //后台定位提示
@@ -257,6 +257,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel>(), View.On
 
     override fun onPause() {
         super.onPause()
+        SearchManager.INSTANCE.removeSearchManagerListener(mSearchManagerListener)
         mMapSelectDialog?.onPause()
     }
 
@@ -444,6 +445,9 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel>(), View.On
                             }
                         }
                         .setNegativeButton("取消", null)
+                        .setNeutralButton(
+                            "复制下载地址"
+                        ) { _, _ -> ClipboardUtils.copyText(it.downloadURL) }
                         .create()
                     dialog.setCanceledOnTouchOutside(false)
                     dialog.show()
