@@ -10,16 +10,17 @@
 
 ![v2.0.jpeg](/img/v2.0.jpeg)<br>
 
+**功能截图**<br>
 <table border="1" >
-    <tr >
-        <td>
+    <tr valign="top">
+        <td width="40%">
         <img src="/img/home_location.jpeg">
         </td>
-        <td>
+        <td width="40%">
         <img src="/img/home_navi.jpeg"><br>
         <img src="/img/home_navi_multiple.png"><br>
         </td>
-        <td>
+        <td width="20%">
         <img src="/img/floating_window.jpeg"><br>
         <img src="/img/floating_window_location.png"><br>
         <img src="/img/location_control_panel.jpeg"><br>
