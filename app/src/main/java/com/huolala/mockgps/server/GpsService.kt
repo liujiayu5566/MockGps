@@ -92,7 +92,6 @@ class GpsService : Service() {
             }
         }
         initLocationManager()
-        initFloatingView()
     }
 
     private fun initLocationManager() {
@@ -102,6 +101,9 @@ class GpsService : Service() {
     private fun initFloatingView() {
         //浮动窗
         FloatingViewManger.INSTANCE.run {
+            if (isAddFloatingView) {
+                return
+            }
             addFloatViewToWindow()
             listener = object : FloatingViewManger.FloatingViewListener {
                 override fun pause() {
@@ -243,6 +245,7 @@ class GpsService : Service() {
                 }
             }
         }
+        initFloatingView()
         mockLocation()
         return super.onStartCommand(intent, flags, startId)
     }
