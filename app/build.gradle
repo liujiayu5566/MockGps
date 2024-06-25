@@ -64,8 +64,8 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
     implementation project(':common')
-    implementation 'com.baidu.lbsyun:BaiduMapSDK_Location:9.3.7'
-    implementation 'com.baidu.lbsyun:BaiduMapSDK_Map:7.5.4'
-    implementation 'com.baidu.lbsyun:BaiduMapSDK_Search:7.5.4'
+    implementation 'com.baidu.lbsyun:BaiduMapSDK_Location:9.6.0'
+    implementation 'com.baidu.lbsyun:BaiduMapSDK_Map:7.6.1'
+    implementation 'com.baidu.lbsyun:BaiduMapSDK_Search:7.6.1'
     implementation 'com.github.tiann:FreeReflection:3.1.0'
 }

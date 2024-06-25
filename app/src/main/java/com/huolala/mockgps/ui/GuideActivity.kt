@@ -27,11 +27,11 @@ import java.lang.Exception
 class GuideActivity : BaseActivity<ActivityGuideBinding, BaseViewModel>(), View.OnClickListener {
     companion object {
         private const val PERMISSION_REQUEST = 1001
+        private const val PERMISSION_BACKGROUND_REQUEST = 1002
     }
 
     private val permissions: Array<String> = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.ACCESS_COARSE_LOCATION,
     )
 
 
@@ -45,10 +45,6 @@ class GuideActivity : BaseActivity<ActivityGuideBinding, BaseViewModel>(), View.
 
     override fun initView() {
         ClickUtils.applySingleDebouncing(btn_go, this)
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            initPermission()
-        }
     }
 
     override fun initData() {
@@ -61,7 +57,7 @@ class GuideActivity : BaseActivity<ActivityGuideBinding, BaseViewModel>(), View.
     }
 
     @RequiresApi(Build.VERSION_CODES.M)
-    private fun initPermission(): Boolean {
+    private fun checkPermission(): Boolean {
         val needPermissions = arrayListOf<String>()
         permissions.map {
             if (ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED) {
@@ -93,13 +89,35 @@ class GuideActivity : BaseActivity<ActivityGuideBinding, BaseViewModel>(), View.
                 }
             }
         }
+        when (requestCode) {
+            PERMISSION_REQUEST -> {
+                grantResults.map {
+                    if (it != PackageManager.PERMISSION_GRANTED) {
+                        Toast.makeText(this, "需要定位权限", Toast.LENGTH_SHORT).show()
+                        return
+                    }
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    //申请后台定位权限
+                    if (checkSelfPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        Toast.makeText(this, "推荐始终允许定位，方便后台定位功能正常", Toast.LENGTH_LONG).show()
+                        requestPermissions(
+                            arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),
+                            PERMISSION_BACKGROUND_REQUEST
+                        )
+                    }
+                }
+            }
+
+            else -> {}
+        }
     }
 
     override fun onClick(v: View?) {
         when (v) {
             btn_go -> {
                 //权限
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !initPermission()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !checkPermission()) {
                     return
                 }
                 //模拟导航设置

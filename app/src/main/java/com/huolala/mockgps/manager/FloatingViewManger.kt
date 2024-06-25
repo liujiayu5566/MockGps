@@ -60,7 +60,7 @@ class FloatingViewManger private constructor() {
     /**
      * 是否已增加悬浮窗
      */
-    private var isAddFloatingView = false
+    var isAddFloatingView = false
 
     /**
      * 是否已添加调整悬浮窗

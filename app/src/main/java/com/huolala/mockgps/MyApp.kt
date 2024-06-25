@@ -8,6 +8,7 @@ import android.os.Build
 import com.baidu.location.LocationClient
 import com.baidu.mapapi.CoordType
 import com.baidu.mapapi.SDKInitializer
+import com.baidu.mapapi.map.OverlayUtil
 import com.blankj.utilcode.util.ClickUtils
 import com.blankj.utilcode.util.Utils
 import com.castiel.common.BaseApp
@@ -50,6 +51,7 @@ class MyApp : BaseApp() {
         LocationClient.setAgreePrivacy(true);
         try {
             SDKInitializer.initialize(this)
+            OverlayUtil.setOverlayUpgrade(false)
         } catch (e: Exception) {
             e.printStackTrace()
         }
