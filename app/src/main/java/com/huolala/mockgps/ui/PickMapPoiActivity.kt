@@ -8,6 +8,7 @@ import android.os.Message
 import android.text.Editable
 import android.text.TextUtils
 import android.text.TextWatcher
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -52,6 +53,7 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
     private var mSuggestionSearch: SuggestionSearch = SuggestionSearch.newInstance()
     private var mHandler: PickMapPoiHandler? = null
     private var mapLocationManager: MapLocationManager? = null
+    private var mIndex = -1
 
     @PoiInfoType
     private var poiInfoType: Int = PoiInfoType.DEFAULT
@@ -87,6 +89,9 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
     }
 
     override fun initView() {
+        dataBinding.clicklistener = this
+        dataBinding.isShowSearch = false
+        
         mHandler = PickMapPoiHandler(this)
         poiInfoType =
             intent?.run { getIntExtra("from_tag", PoiInfoType.DEFAULT) } ?: PoiInfoType.DEFAULT
@@ -115,10 +120,6 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
             }
         })
 
-        ClickUtils.applySingleDebouncing(iv_search, this)
-        ClickUtils.applySingleDebouncing(confirm_location, this)
-        ClickUtils.applySingleDebouncing(iv_cur_location, this)
-
         et_search.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
             }
@@ -145,6 +146,7 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
     }
 
     override fun initData() {
+        mIndex = intent.getIntExtra("index", -1)
     }
 
     override fun initObserver() {
@@ -216,15 +218,16 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
             override fun onMapStatusChangeStart(mapStatus: MapStatus?) {
             }
 
-            override fun onMapStatusChangeStart(mapStatus: MapStatus?, p1: Int) {
+            override fun onMapStatusChangeStart(mapStatus: MapStatus?, reason: Int) {
+                mHandler?.removeMessages(REVERSE_GEO_CODE)
             }
 
             override fun onMapStatusChange(mapStatus: MapStatus?) {
             }
 
             override fun onMapStatusChangeFinish(mapStatus: MapStatus?) {
-                val latLng = mapStatus?.target;
-                mBaiduMap.clear();
+                val latLng = mapStatus?.target
+                mBaiduMap.clear()
                 mHandler?.removeMessages(REVERSE_GEO_CODE)
                 mHandler?.sendMessageDelayed(Message.obtain().apply {
                     what = REVERSE_GEO_CODE
@@ -289,6 +292,9 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
                         "poiInfo",
                         it
                     )
+                    if (mIndex != -1) {
+                        bundle.putInt("index", mIndex)
+                    }
                     intent.putExtras(bundle)
                     setResult(RESULT_OK, intent)
                     finish()
@@ -297,13 +303,12 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
 
             R.id.iv_cur_location -> {
                 mBaiduMap.locationData?.run {
-                    mHandler?.removeMessages(REVERSE_GEO_CODE)
-                    mHandler?.sendMessageDelayed(Message.obtain().apply {
-                        what = REVERSE_GEO_CODE
-                        obj = LatLng(latitude, longitude)
-                    }, DEFAULT_DELAYED)
                     changeCenterLatLng(latitude, longitude)
                 }
+            }
+
+            R.id.iv_back -> {
+                finish()
             }
 
             else -> {
@@ -312,6 +317,7 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
     }
 
     private fun editViewShow(isShow: Boolean) {
+        dataBinding.isShowSearch = isShow
         val layoutParams = ll_search.layoutParams
         layoutParams?.run {
             width =

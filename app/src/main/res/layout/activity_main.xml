@@ -6,10 +6,24 @@
     <data>
 
         <variable
+            name="title"
+            type="String" />
+
+        <variable
+            name="clickListener"
+            type="OnClickListener" />
+
+        <variable
             name="isUpdate"
             type="Boolean" />
 
+        <variable
+            name="isNavi"
+            type="Boolean" />
+
         <import type="android.view.View" />
+
+        <import type="android.view.View.OnClickListener" />
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -28,17 +42,17 @@
             <com.google.android.material.appbar.CollapsingToolbarLayout
                 android:id="@+id/collapsingToolbar"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="200dp"
                 app:collapsedTitleTextColor="@color/white"
                 app:expandedTitleMarginBottom="70dp"
                 app:expandedTitleMarginStart="25dp"
                 app:expandedTitleTextColor="@color/white"
                 app:layout_scrollFlags="scroll|exitUntilCollapsed"
-                app:title="模拟定位">
+                app:title="@{title,default=模拟定位}">
 
                 <View
                     android:layout_width="match_parent"
-                    android:layout_height="200dp"
+                    android:layout_height="match_parent"
                     android:background="@color/master_color"
                     android:scaleType="centerCrop"
                     app:layout_collapseMode="parallax"
@@ -54,6 +68,7 @@
 
                     <androidx.appcompat.widget.AppCompatImageView
                         android:id="@+id/iv_change"
+                        clickListener="@{clickListener}"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:layout_gravity="left"
@@ -62,6 +77,7 @@
 
                     <androidx.appcompat.widget.AppCompatImageView
                         android:id="@+id/iv_expand"
+                        clickListener="@{clickListener}"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:layout_gravity="right"
@@ -70,6 +86,7 @@
 
                     <androidx.appcompat.widget.AppCompatImageView
                         android:id="@+id/iv_app_update"
+                        clickListener="@{clickListener}"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:layout_gravity="right"
@@ -77,58 +94,29 @@
                         android:src="@drawable/ic_app_update"
                         android:visibility="@{isUpdate?View.VISIBLE:View.GONE}" />
 
+                    <androidx.appcompat.widget.AppCompatImageView
+                        android:id="@+id/iv_navi_add"
+                        clickListener="@{clickListener}"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="right"
+                        android:paddingHorizontal="10dp"
+                        android:src="@drawable/ic_add"
+                        android:visibility="@{isNavi?View.VISIBLE:View.GONE}" />
+
                 </androidx.appcompat.widget.Toolbar>
 
 
             </com.google.android.material.appbar.CollapsingToolbarLayout>
         </com.google.android.material.appbar.AppBarLayout>
 
-
-        <com.scwang.smart.refresh.layout.SmartRefreshLayout
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:clipChildren="false"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            app:srlEnableLoadMore="false"
-            app:srlEnableRefresh="false">
-
-            <androidx.appcompat.widget.LinearLayoutCompat
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
-
-                <FrameLayout
-                    android:id="@+id/ll_card"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="-50dp">
-
-                    <include layout="@layout/layout_location_card" />
-
-                    <include
-                        layout="@layout/layout_navi_card"
-                        android:visibility="gone" />
-
-                </FrameLayout>
-
-                <androidx.appcompat.widget.AppCompatTextView
-                    style="@style/title_style"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingHorizontal="15dp"
-                    android:paddingVertical="10dp"
-                    android:text="历史数据（最多显示10条）"
-                    android:textSize="15sp" />
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recycler"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:overScrollMode="never" />
-
-            </androidx.appcompat.widget.LinearLayoutCompat>
-
-        </com.scwang.smart.refresh.layout.SmartRefreshLayout>
+            android:layout_marginTop="-50dp"
+            android:overScrollMode="never"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

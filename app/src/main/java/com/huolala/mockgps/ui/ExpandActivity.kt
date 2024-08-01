@@ -12,7 +12,7 @@ import com.blankj.utilcode.util.ConvertUtils
 import com.castiel.common.base.BaseActivity
 import com.castiel.common.base.BaseListAdapter
 import com.castiel.common.base.BaseViewModel
-import com.castiel.common.decoration.VerticalItemDecoration
+import com.castiel.common.recycler.decoration.VerticalItemDecoration
 import com.huolala.mockgps.R
 import com.huolala.mockgps.adaper.ExpandAdapter
 import com.huolala.mockgps.databinding.ActivityExpandBinding
@@ -29,11 +29,15 @@ class ExpandActivity : BaseActivity<ActivityExpandBinding, BaseViewModel>() {
     private val titles = arrayOf(
         "外部app启动模拟导航",
         "模拟导航数据导入"
-    );
+    )
     private val describes = arrayOf(
         "通过广播形式发送起终点信息",
         "路径：/storage/emulated/0/Android/data/com.huolala.mockgps/files/nav_path",
-    );
+    )
+    private val navigation = arrayOf(
+        null,
+        FileMockActivity::class.java,
+    )
     private val mExpandData: ArrayList<ExpandModel> = arrayListOf()
 
     override fun initViewModel(): Class<BaseViewModel> {
@@ -58,18 +62,17 @@ class ExpandActivity : BaseActivity<ActivityExpandBinding, BaseViewModel>() {
         )
         mExpandAdapter.clickListener = object : BaseListAdapter.OnItemClickListener<ExpandModel> {
             override fun onItemClick(view: View?, t: ExpandModel, position: Int) {
-                when (t.title) {
-                    titles[0] -> {
-                        HintDialog(
-                            this@ExpandActivity,
-                            "外部广播",
-                            getString(R.string.receiver_hint)
-                        ).show()
-                    }
-                    titles[1] -> {//模拟导航文件导入
-                        startActivity(Intent(this@ExpandActivity, FileMockActivity::class.java))
-                    }
-                    else -> {
+                navigation[position]?.let {
+                    startActivity(Intent(this@ExpandActivity, navigation[position]))
+                } ?: run {
+                    when (t.title) {
+                        titles[0] -> {
+                            HintDialog(
+                                this@ExpandActivity,
+                                "外部广播",
+                                getString(R.string.receiver_hint)
+                            ).show()
+                        }
                     }
                 }
             }

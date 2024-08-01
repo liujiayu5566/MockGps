@@ -7,6 +7,7 @@ import com.baidu.location.BDLocation
 import com.baidu.location.LocationClient
 import com.baidu.location.LocationClientOption
 import com.baidu.mapapi.map.BaiduMap
+import com.baidu.mapapi.map.MapStatus
 import com.baidu.mapapi.map.MapStatusUpdateFactory
 import com.baidu.mapapi.map.MyLocationConfiguration
 import com.baidu.mapapi.map.MyLocationData
@@ -90,16 +91,27 @@ class MapLocationManager(
         )
     }
 
-    init {
+    fun setLocationMode(mode: MyLocationConfiguration.LocationMode = MyLocationConfiguration.LocationMode.NORMAL) {
         MyLocationConfiguration(
-            MyLocationConfiguration.LocationMode.NORMAL,
+            mode,
             true,
             null,
             Color.TRANSPARENT,
             Color.TRANSPARENT
         ).apply {
+            if (mode == MyLocationConfiguration.LocationMode.NORMAL) {
+                baiduMap.setMapStatus(
+                    MapStatusUpdateFactory.newMapStatus(
+                        MapStatus.Builder().overlook(0f).rotate(0f).build()
+                    )
+                )
+            }
             baiduMap.setMyLocationConfiguration(this)
         }
+    }
+
+    init {
+        setLocationMode(MyLocationConfiguration.LocationMode.NORMAL)
 
         mLocationClient = LocationClient(context)
         baiduMap.isMyLocationEnabled = true

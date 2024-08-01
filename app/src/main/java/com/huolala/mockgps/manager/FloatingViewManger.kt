@@ -11,6 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import androidx.constraintlayout.widget.ConstraintLayout
+import com.baidu.mapapi.map.MyLocationConfiguration
 import com.baidu.mapapi.model.LatLng
 import com.blankj.utilcode.util.AppUtils
 import com.blankj.utilcode.util.ClickUtils
@@ -69,6 +70,7 @@ class FloatingViewManger private constructor() {
     private var curNaviType: Int = NaviType.NONE
     private var infoViewCurVisibility: Int = View.VISIBLE
     var listener: FloatingViewListener? = null
+    private var mapLocationManager: MapLocationManager? = null
 
     /**
      * 隐藏设置按钮
@@ -106,8 +108,9 @@ class FloatingViewManger private constructor() {
         view?.mapview?.map?.let {
             it.uiSettings?.isCompassEnabled = false
             it.uiSettings?.setAllGesturesEnabled(false)
+            it.uiSettings?.isOverlookingGesturesEnabled = false
             it.setOnMapLoadedCallback {
-                MapLocationManager(
+                mapLocationManager = MapLocationManager(
                     Utils.getApp(),
                     it,
                     FollowMode.MODE_PERSISTENT,
@@ -396,6 +399,7 @@ class FloatingViewManger private constructor() {
                     }
                     addAdjustLocationToWindow()
                 }
+                mapLocationManager?.setLocationMode(MyLocationConfiguration.LocationMode.NORMAL)
             }
 
             NaviType.NAVI, NaviType.NAVI_FILE -> {
@@ -407,6 +411,7 @@ class FloatingViewManger private constructor() {
                     addAdjustNaviToWindow()
                     naviAdjust?.btn_change_location?.visibility = View.INVISIBLE
                 }
+                mapLocationManager?.setLocationMode(MyLocationConfiguration.LocationMode.COMPASS)
                 //清空等待  更新当前速度信息
                 naviAdjust?.speed_nav_view?.clearLongClickWait()
                 naviAdjust?.speed_nav_view?.updateCurValue(MMKVUtils.getSpeed())
@@ -438,6 +443,10 @@ class FloatingViewManger private constructor() {
     fun stopMock() {
         view?.startAndPause?.isSelected = false
         view?.iv_adjust?.visibility = View.GONE
+    }
+
+    fun stopMockFromReceiver() {
+        view?.startAndPause?.callOnClick()
     }
 
     /**

@@ -11,6 +11,7 @@ import com.baidu.mapapi.model.LatLng
 import com.baidu.mapapi.search.route.DrivingRouteLine
 import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.ToastUtils
+import com.huolala.mockgps.manager.FloatingViewManger
 import com.huolala.mockgps.manager.SearchManager
 import com.huolala.mockgps.manager.utils.MapConvertUtils
 import com.huolala.mockgps.manager.utils.MapDrawUtils
@@ -49,6 +50,14 @@ class MockReceiver : BroadcastReceiver() {
         val action = intent.action
         if (MOCK_ACTION != action) {
             return
+        }
+        val event = intent.getStringExtra("event")
+        when (event) {
+            "stopNavi" -> {
+                FloatingViewManger.INSTANCE.stopMockFromReceiver()
+                return
+            }
+            else -> {}
         }
         val start = intent.getStringExtra("start")
         val end = intent.getStringExtra("end")

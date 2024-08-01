@@ -23,6 +23,7 @@ annotation class NaviType {
 data class MockMessageModel(
     var locationModel: PoiInfoModel? = null,
     var startNavi: PoiInfoModel? = null,
+    var wayNaviList: List<PoiInfoModel>? = null,
     var endNavi: PoiInfoModel? = null,
     /**
      * 0.模拟定位  1.模拟导航  2.文件数据导航
@@ -39,17 +40,18 @@ data class MockMessageModel(
     constructor(parcel: Parcel) : this(
         parcel.readParcelable(PoiInfoModel::class.java.classLoader),
         parcel.readParcelable(PoiInfoModel::class.java.classLoader),
+        parcel.createTypedArrayList(PoiInfoModel),
         parcel.readParcelable(PoiInfoModel::class.java.classLoader),
         parcel.readInt(),
         parcel.readInt(),
         parcel.readString(),
         parcel.readString()
-    ) {
-    }
+    )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeParcelable(locationModel, flags)
         parcel.writeParcelable(startNavi, flags)
+        parcel.writeTypedList(wayNaviList)
         parcel.writeParcelable(endNavi, flags)
         parcel.writeInt(naviType)
         parcel.writeInt(speed)

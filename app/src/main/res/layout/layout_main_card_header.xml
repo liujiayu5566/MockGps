@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="clickListener"
+            type="OnClickListener" />
+
+        <import type="android.view.View.OnClickListener" />
+    </data>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <FrameLayout
+            android:id="@+id/ll_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <include
+                android:id="@+id/include_location_card"
+                layout="@layout/layout_location_card"
+                tools:clickListener="@{clickListener}" />
+
+            <include
+                android:id="@+id/include_navi_card"
+                layout="@layout/layout_navi_card"
+                android:visibility="gone"
+                tools:clickListener="@{clickListener}" />
+
+        </FrameLayout>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/title_style"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="15dp"
+            android:paddingVertical="10dp"
+            android:text="@string/poi_list_history_hint"
+            android:textSize="15sp" />
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+</layout>

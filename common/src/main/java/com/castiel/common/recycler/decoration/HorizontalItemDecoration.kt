@@ -1,4 +1,4 @@
-package com.castiel.common.decoration
+package com.castiel.common.recycler.decoration
 
 import android.content.Context
 import android.graphics.Canvas
