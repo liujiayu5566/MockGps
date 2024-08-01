@@ -1,120 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/ll_navi_card"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginHorizontal="15dp"
-    android:layout_marginTop="1dp"
-    android:layout_marginBottom="3dp"
-    android:background="@drawable/shape_round_5_color_white"
-    android:elevation="3dp"
-    android:orientation="vertical"
-    android:padding="10dp"
-    android:visibility="visible">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <data>
+        <variable
+            name="clickListener"
+            type="OnClickListener" />
+
+        <import type="android.view.View.OnClickListener" />
+    </data>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/ll_navi_card"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="15dp"
+        android:layout_marginTop="1dp"
+        android:layout_marginBottom="5dp"
+        android:background="@drawable/shape_round_5_color_white"
+        android:elevation="3dp"
+        android:orientation="vertical"
+        android:padding="10dp"
+        android:visibility="visible">
 
-        <androidx.appcompat.widget.AppCompatTextView
-            android:id="@+id/tv_navi_hint"
-            style="@style/hint_style"
-            android:layout_width="wrap_content"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_card"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="模拟导航"
-            app:layout_constraintHorizontal_bias="0"
+            android:background="@drawable/shape_round_5_color_white"
+            android:orientation="vertical"
             app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toLeftOf="@id/iv_navi_start_arrow"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <androidx.appcompat.widget.AppCompatTextView
-            android:id="@+id/tv_navi_name_start"
-            style="@style/title_style"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:paddingVertical="15dp"
-            android:text="起点："
-            app:layout_constraintHorizontal_bias="0"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toLeftOf="@id/iv_navi_start_arrow"
-            app:layout_constraintTop_toBottomOf="@id/tv_navi_hint" />
-
-        <androidx.appcompat.widget.AppCompatTextView
-            android:id="@+id/tv_navi_name_end"
-            style="@style/title_style"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:paddingVertical="15dp"
-            android:text="终点："
-            app:layout_constraintHorizontal_bias="0"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toLeftOf="@id/iv_navi_end_arrow"
-            app:layout_constraintTop_toBottomOf="@id/tv_navi_name_start" />
-
-
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btn_start_navi"
-            style="@style/hint_style"
-            android:layout_width="wrap_content"
-            android:layout_height="30dp"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/shape_round_30_color_master"
-            android:paddingVertical="0dp"
-            android:text="开始模拟"
-            android:textColor="@color/white"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintHorizontal_bias="0"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_navi_name_end" />
-
-        <CheckBox
-            android:id="@+id/radio_multi_route"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="10dp"
-            android:includeFontPadding="false"
-            android:text="多路线"
-            app:layout_constraintBottom_toBottomOf="@id/iv_navi_setting"
-            app:layout_constraintHorizontal_bias="1"
-            app:layout_constraintLeft_toRightOf="@id/btn_start_navi"
-            app:layout_constraintRight_toLeftOf="@id/iv_navi_setting"
-            app:layout_constraintTop_toTopOf="@id/iv_navi_setting" />
-
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/iv_navi_setting"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="5dp"
-            android:src="@drawable/ic_navi_setting"
-            app:layout_constraintBottom_toBottomOf="@id/btn_start_navi"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="@id/btn_start_navi" />
+            app:layout_constraintTop_toBottomOf="@id/toolbar">
 
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_navi"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/iv_navi_start_arrow"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="5dp"
-            android:src="@drawable/ic_select_arrow"
-            app:layout_constraintBottom_toBottomOf="@id/tv_navi_name_start"
-            app:layout_constraintLeft_toRightOf="@id/tv_navi_name_start"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="@id/tv_navi_name_start" />
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_start_navi"
+                style="@style/hint_style"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/shape_round_30_color_master"
+                android:paddingVertical="0dp"
+                android:text="开始模拟"
+                clickListener="@{clickListener}"
+                android:textColor="@color/white"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintHorizontal_bias="0"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/recycler_navi" />
 
+            <CheckBox
+                android:id="@+id/radio_multi_route"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:includeFontPadding="false"
+                android:text="多路线"
+                app:layout_constraintBottom_toBottomOf="@id/iv_navi_setting"
+                app:layout_constraintHorizontal_bias="1"
+                app:layout_constraintLeft_toRightOf="@id/btn_start_navi"
+                app:layout_constraintRight_toLeftOf="@id/iv_navi_setting"
+                app:layout_constraintTop_toTopOf="@id/iv_navi_setting" />
 
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/iv_navi_end_arrow"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="5dp"
-            android:src="@drawable/ic_select_arrow"
-            app:layout_constraintBottom_toBottomOf="@id/tv_navi_name_end"
-            app:layout_constraintLeft_toRightOf="@id/tv_navi_name_end"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="@id/tv_navi_name_end" />
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/iv_navi_setting"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                clickListener="@{clickListener}"
+                android:src="@drawable/ic_navi_setting"
+                app:layout_constraintBottom_toBottomOf="@id/btn_start_navi"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="@id/btn_start_navi" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</androidx.appcompat.widget.LinearLayoutCompat>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.appcompat.widget.LinearLayoutCompat>
+</layout>
 

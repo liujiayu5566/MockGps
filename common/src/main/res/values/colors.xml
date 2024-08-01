@@ -15,9 +15,9 @@
     <color name="black_10">#1A000000</color>
     <color name="black_50">#80000000</color>
     <color name="black_80">#CC000000</color>
-    <color name="black33">#333333</color>
-    <color name="black66">#666666</color>
-    <color name="black99">#999999</color>
+    <color name="black_33">#333333</color>
+    <color name="black_66">#666666</color>
+    <color name="black_99">#999999</color>
     <color name="transparent">#00000000</color>
     <color name="green">#00FF00</color>
     <color name="green_50">#8000FF00</color>

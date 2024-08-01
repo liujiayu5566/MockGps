@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="poiName"
+            type="String" />
+
+        <variable
+            name="isWay"
+            type="Boolean" />
+
+    </data>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tv_navi_name_end"
+            style="@style/title_style"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingVertical="15dp"
+            android:text="@{poiName}"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintLeft_toLeftOf="parent"
+            tools:text="终点：" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/iv_move"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:paddingHorizontal="10dp"
+            android:src="@drawable/ic_adjust_order" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/iv_remove"
+            android:layout_width="32dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
+            android:paddingHorizontal="10dp"
+            android:src="@{isWay?@drawable/ic_navi_remove:@drawable/ic_select_arrow}"
+            tools:src="@drawable/ic_select_arrow" />
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+</layout>

@@ -17,4 +17,7 @@
        坐标类型：gcj02\n
        数据格式：116.123123,40.123123;116.123123,40.123123;116.123123,40.123123;116.123123,40.123123;116.123123,40.123123;116.123123,40.123123…
     </string>
+    <string name="guide_hint">扩展功能在此处</string>
+    <string name="guide_affirm">知道了</string>
+    <string name="poi_list_history_hint">历史数据（最多显示10条）</string>
 </resources>

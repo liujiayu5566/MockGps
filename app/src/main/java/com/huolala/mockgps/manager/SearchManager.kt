@@ -68,6 +68,7 @@ class SearchManager private constructor() {
         startLatLng: LatLng?,
         endLatLng: LatLng?,
         multiRoute: Boolean,
+        wayList: MutableList<LatLng>? = null,
     ) {
         if (startLatLng == null || endLatLng == null) {
             return
@@ -81,6 +82,15 @@ class SearchManager private constructor() {
             DrivingRoutePlanOption()
                 .from(PlanNode.withLocation(startLatLng))
                 .to(PlanNode.withLocation(endLatLng)).apply {
+                    wayList?.let {
+                        val passByList = arrayListOf<PlanNode>()
+                        for (latLng in it) {
+                            passByList.add(PlanNode.withLocation(latLng))
+                        }
+                        if (passByList.isNotEmpty()) {
+                            passBy(passByList)
+                        }
+                    }
                     if (!multiRoute) {
                         this.policy(DrivingRoutePlanOption.DrivingPolicy.ECAR_DIS_FIRST)
                     }

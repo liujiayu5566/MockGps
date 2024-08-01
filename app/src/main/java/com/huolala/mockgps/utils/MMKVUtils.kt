@@ -13,41 +13,33 @@ import java.util.concurrent.CopyOnWriteArrayList
  */
 object MMKVUtils {
     private var defaultMMKV: MMKV = MMKV.defaultMMKV()
-    val LOCATION_LIST_KEY: String = "LOCATION_LIST_KEY"
-    val NAVI_LIST_KEY: String = "NAVI_LIST_KEY"
-    val NAVI_SPEED_KEY: String = "NAVI_SPEED_KEY"
-    private val MAX_SIZE: Int = 10
+    const val LOCATION_LIST_KEY: String = "LOCATION_LIST_KEY"
+    const val MULTIPLE_NAVI_LIST_KEY: String = "Multiple_NAVI_LIST_KEY"
+    const val NAVI_SPEED_KEY: String = "NAVI_SPEED_KEY"
+    private const val MAX_SIZE: Int = 10
 
     fun saveLocationData(data: MockMessageModel) {
-        getDataList(LOCATION_LIST_KEY)?.run {
-            checkMockMessageModelIsExist(this, data)
-            add(0, data)
-            defaultMMKV.putString(
-                LOCATION_LIST_KEY, Gson().toJson(
-                    if (size > MAX_SIZE) {
-                        subList(0, MAX_SIZE)
-                    } else this
-                )
-            )
-        } ?: kotlin.run {
-            defaultMMKV.putString(LOCATION_LIST_KEY, Gson().toJson(arrayListOf(data)))
-        }
+        saveDataList(LOCATION_LIST_KEY, data)
     }
 
     fun saveNaviData(data: MockMessageModel) {
-        getDataList(NAVI_LIST_KEY)?.run {
+        saveDataList(MULTIPLE_NAVI_LIST_KEY, data)
+    }
+
+    private fun saveDataList(key: String, data: MockMessageModel) {
+        getDataList(key)?.run {
             checkMockMessageModelIsExist(this, data)
             add(0, data)
 
             defaultMMKV.putString(
-                NAVI_LIST_KEY, Gson().toJson(
+                key, Gson().toJson(
                     if (size > MAX_SIZE) {
                         subList(0, MAX_SIZE)
                     } else this
                 )
             )
         } ?: kotlin.run {
-            defaultMMKV.putString(NAVI_LIST_KEY, Gson().toJson(arrayListOf(data)))
+            defaultMMKV.putString(key, Gson().toJson(arrayListOf(data)))
         }
     }
 
@@ -78,6 +70,14 @@ object MMKVUtils {
 
     fun getSpeed(): Int {
         return defaultMMKV.getInt(NAVI_SPEED_KEY, 60)
+    }
+
+    fun setGuideVisible(visible: Boolean) {
+        defaultMMKV.putBoolean("isGuideVisible", visible)
+    }
+
+    fun isGuideVisible(): Boolean {
+        return defaultMMKV.getBoolean("isGuideVisible", false)
     }
 
 

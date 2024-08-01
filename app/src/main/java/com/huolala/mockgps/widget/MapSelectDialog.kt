@@ -17,6 +17,7 @@ import com.castiel.common.dialog.BaseDialog
 import com.huolala.mockgps.R
 import com.huolala.mockgps.manager.utils.MapConvertUtils
 import com.huolala.mockgps.manager.utils.MapDrawUtils
+import com.huolala.mockgps.model.PoiInfoModel
 import kotlinx.android.synthetic.main.dialog_select_navi_map.*
 
 /**
@@ -26,7 +27,8 @@ class MapSelectDialog(
     context: Context,
     private var routeLines: List<DrivingRouteLine>,
     private var start: LatLng?,
-    private var end: LatLng?
+    private var end: LatLng?,
+    wayList: MutableList<PoiInfoModel>?
 ) : BaseDialog(context) {
 
     private val mHorizontalPadding = ConvertUtils.dp2px(20f)
@@ -54,6 +56,11 @@ class MapSelectDialog(
             it.setOnMapLoadedCallback {
                 start?.let { start ->
                     MapDrawUtils.drawMarkerToMap(it, start, "marker_start.png")
+                }
+                wayList?.map { model ->
+                    model.latLng?.let { latLng ->
+                        MapDrawUtils.drawMarkerToMap(it, latLng, "marker_way.png")
+                    }
                 }
                 end?.let { end ->
                     MapDrawUtils.drawMarkerToMap(it, end, "marker_end.png")
