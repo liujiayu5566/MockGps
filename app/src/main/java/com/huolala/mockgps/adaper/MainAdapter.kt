@@ -18,6 +18,7 @@ import com.huolala.mockgps.model.PoiInfoModel
 import com.huolala.mockgps.model.PoiInfoType
 import kotlinx.android.synthetic.main.item_history.view.tv_info
 import kotlinx.android.synthetic.main.item_history.view.tv_poi_name
+import java.util.ArrayList
 import java.util.Collections
 
 
@@ -26,23 +27,9 @@ import java.util.Collections
  */
 @Suppress("UNREACHABLE_CODE")
 class MainAdapter(val headerAdapter: MultiplePoiAdapter) :
-    ListAdapter<MockMessageModel, RecyclerView.ViewHolder>(object :
-        DiffUtil.ItemCallback<MockMessageModel>() {
-        override fun areItemsTheSame(
-            oldItem: MockMessageModel,
-            newItem: MockMessageModel
-        ): Boolean {
-            return oldItem == newItem
-        }
-
-        override fun areContentsTheSame(
-            oldItem: MockMessageModel,
-            newItem: MockMessageModel
-        ): Boolean {
-            return oldItem.uid == newItem.uid
-        }
-    }) {
+    RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     lateinit var dataBinding: LayoutMainCardHeaderBinding
+    private var list: ArrayList<MockMessageModel?> = arrayListOf()
     private var headerItemMove = false
     private val HEADER_VIEW_TYPE = 0
     private val ITEM_VIEW_TYPE = 1
@@ -139,12 +126,16 @@ class MainAdapter(val headerAdapter: MultiplePoiAdapter) :
         }
     }
 
+    override fun getItemCount(): Int {
+        return list.size
+    }
+
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if (holder is HeaderViewHolder) {
             holder.dataBinding.clickListener = mOnItemClickListener
         } else {
-            val model = getItem(position)
-            when (model.naviType) {
+            val model = list[position]
+            when (model!!.naviType) {
                 NaviType.LOCATION -> {
                     holder.itemView.tv_poi_name.text = model.locationModel?.name ?: ""
                     holder.itemView.tv_info.text = String.format(
@@ -187,6 +178,12 @@ class MainAdapter(val headerAdapter: MultiplePoiAdapter) :
 
     fun onItemMove() {
         headerItemMove = true
+    }
+
+    fun submitList(list: List<MockMessageModel?>) {
+        this.list.clear()
+        this.list.addAll(list)
+        notifyDataSetChanged()
     }
 
     interface OnItemClickListener : View.OnClickListener {

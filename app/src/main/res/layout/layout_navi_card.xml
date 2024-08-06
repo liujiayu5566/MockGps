@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="15dp"
         android:layout_marginTop="1dp"
-        android:layout_marginBottom="5dp"
+        android:layout_marginBottom="10dp"
         android:background="@drawable/shape_round_5_color_white"
         android:elevation="3dp"
         android:orientation="vertical"

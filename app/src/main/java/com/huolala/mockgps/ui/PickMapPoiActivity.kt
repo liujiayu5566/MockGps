@@ -45,7 +45,7 @@ import java.lang.ref.WeakReference
 class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
     View.OnClickListener {
     private val REVERSE_GEO_CODE = 0
-    private val DEFAULT_DELAYED: Long = 300
+    private val DEFAULT_DELAYED: Long = 100
     private lateinit var mBaiduMap: BaiduMap
     private lateinit var mCoder: GeoCoder
     private var poiListAdapter: PoiListAdapter = PoiListAdapter()
@@ -91,7 +91,7 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
     override fun initView() {
         dataBinding.clicklistener = this
         dataBinding.isShowSearch = false
-        
+
         mHandler = PickMapPoiHandler(this)
         poiInfoType =
             intent?.run { getIntExtra("from_tag", PoiInfoType.DEFAULT) } ?: PoiInfoType.DEFAULT
