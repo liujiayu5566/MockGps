@@ -8,7 +8,9 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.blankj.utilcode.util.ClickUtils
+import com.blankj.utilcode.util.ClipboardUtils
 import com.blankj.utilcode.util.ConvertUtils
+import com.blankj.utilcode.util.ToastUtils
 import com.castiel.common.base.BaseActivity
 import com.castiel.common.base.BaseListAdapter
 import com.castiel.common.base.BaseViewModel
@@ -28,15 +30,21 @@ class ExpandActivity : BaseActivity<ActivityExpandBinding, BaseViewModel>() {
     private var mExpandAdapter = ExpandAdapter()
     private val titles = arrayOf(
         "外部app启动模拟导航",
-        "模拟导航数据导入"
+        "模拟导航数据导入",
+        "github地址",
+        "免责声明",
     )
     private val describes = arrayOf(
         "通过广播形式发送起终点信息",
         "路径：/storage/emulated/0/Android/data/com.huolala.mockgps/files/nav_path",
+        "https://github.com/liujiayu5566/MockGps",
+        "此应用仅限开发学习和开发使用，软件的发布和使用均不收取任何费用。拒绝任何人或任何实体进行出售、重新修改后分发，严禁用于商业谋利用途。项目维护者对软件的滥用不承担任何责任。",
     )
     private val navigation = arrayOf(
         null,
         FileMockActivity::class.java,
+        null,
+        null,
     )
     private val mExpandData: ArrayList<ExpandModel> = arrayListOf()
 
@@ -66,12 +74,17 @@ class ExpandActivity : BaseActivity<ActivityExpandBinding, BaseViewModel>() {
                     startActivity(Intent(this@ExpandActivity, navigation[position]))
                 } ?: run {
                     when (t.title) {
-                        titles[0] -> {
+                        "外部app启动模拟导航" -> {
                             HintDialog(
                                 this@ExpandActivity,
                                 "外部广播",
                                 getString(R.string.receiver_hint)
                             ).show()
+                        }
+
+                        "github地址" -> {
+                            ClipboardUtils.copyText("https://github.com/liujiayu5566/MockGps")
+                            ToastUtils.showShort("复制成功")
                         }
                     }
                 }
