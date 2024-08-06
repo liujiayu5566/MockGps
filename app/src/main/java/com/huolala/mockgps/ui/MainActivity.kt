@@ -121,7 +121,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel>(), View.On
         topMargin = ConvertUtils.dp2px(15f)
 
         poiAdapter = MultiplePoiAdapter().apply {
-            setData(
+            submitList(
                 arrayListOf(
                     PoiInfoModel(),
                     PoiInfoModel(),
@@ -166,7 +166,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel>(), View.On
                                 list.addAll(it)
                             }
                             list.add(model.endNavi ?: PoiInfoModel())
-                            poiAdapter.setData(list)
+                            poiAdapter.submitList(list)
 
                             with(this@MainActivity.dataBinding) {
                                 appBarLayout.setExpanded(true,true)
@@ -322,6 +322,8 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel>(), View.On
         )?.let {
             it.add(0, null)
             adapter.submitList(it)
+        } ?: run {
+            adapter.submitList(arrayListOf(null))
         }
     }
 
@@ -341,8 +343,8 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel>(), View.On
                 }
 
                 else -> {
-                    poiAdapter.setData(
-                        poiAdapter.currentList().apply {
+                    poiAdapter.submitList(
+                        poiAdapter.currentList().toMutableList().apply {
                             set(index, it)
                         }
                     )
@@ -419,13 +421,13 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel>(), View.On
             }
 
             dataBinding.ivNaviAdd -> {
-                poiAdapter.currentList().apply {
+                poiAdapter.currentList().toMutableList().apply {
                     if (size >= 5) {
                         ToastUtils.showShort("最多只能添加5个")
                         return
                     }
                     this.add(size - 1, PoiInfoModel())
-                    poiAdapter.setData(this)
+                    poiAdapter.submitList(this)
                 }
 
             }

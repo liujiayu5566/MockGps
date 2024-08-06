@@ -6,14 +6,10 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.huolala.mockgps.R
 import com.huolala.mockgps.databinding.ItemNaviPoiCardBinding
 import com.huolala.mockgps.model.PoiInfoModel
-import com.huolala.mockgps.model.PoiInfoType
-import okhttp3.internal.notifyAll
 
 /**
  * @author jiayu.liu
@@ -47,7 +43,7 @@ class MultiplePoiAdapter : RecyclerView.Adapter<MultiplePoiAdapter.ViewHolder>()
                 "途经点"
             }
         }
-        
+
         viewHolder.binding.ivRemove.setOnClickListener {
             if (viewHolder.binding.getIsWay() == true) {
                 list.removeAt(position)
@@ -76,8 +72,9 @@ class MultiplePoiAdapter : RecyclerView.Adapter<MultiplePoiAdapter.ViewHolder>()
         }
     }
 
-    fun setData(list: MutableList<PoiInfoModel>) {
-        this.list = list.toMutableList()
+    fun submitList(list: List<PoiInfoModel>) {
+        this.list.clear()
+        this.list.addAll(list)
         notifyDataSetChanged()
     }
 
