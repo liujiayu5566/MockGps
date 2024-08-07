@@ -72,6 +72,7 @@
             android:name=".ui.PickMapPoiActivity"
             android:exported="false"
             android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustPan"
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.MainActivity"

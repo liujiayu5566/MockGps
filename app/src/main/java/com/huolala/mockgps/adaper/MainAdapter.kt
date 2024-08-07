@@ -127,14 +127,14 @@ class MainAdapter(val headerAdapter: MultiplePoiAdapter) :
     }
 
     override fun getItemCount(): Int {
-        return list.size
+        return list.size + 1
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if (holder is HeaderViewHolder) {
             holder.dataBinding.clickListener = mOnItemClickListener
         } else {
-            val model = list[position]
+            val model = list[position - 1]
             when (model!!.naviType) {
                 NaviType.LOCATION -> {
                     holder.itemView.tv_poi_name.text = model.locationModel?.name ?: ""

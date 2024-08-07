@@ -186,9 +186,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel>(), View.On
 
             })
         }
-        dataBinding.recycler.adapter = adapter.apply {
-            adapter.submitList(arrayListOf<MockMessageModel?>(null))
-        }
+        dataBinding.recycler.adapter = adapter
         dataBinding.recycler.itemAnimator = null
         dataBinding.recycler.layoutManager = LinearLayoutManager(this)
         dataBinding.recycler.addItemDecoration(
@@ -320,10 +318,9 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel>(), View.On
             if (adapter.dataBinding.includeLocationCard.llLocationCard.visibility == View.VISIBLE) MMKVUtils.LOCATION_LIST_KEY
             else MMKVUtils.MULTIPLE_NAVI_LIST_KEY
         )?.let {
-            it.add(0, null)
             adapter.submitList(it)
         } ?: run {
-            adapter.submitList(arrayListOf(null))
+            adapter.submitList(arrayListOf())
         }
     }
 

@@ -112,6 +112,7 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
                         key,
                         poiInfoType
                     )
+                    mHandler = null
                     tv_poi_name.text = key
                     tv_lonlat.text = pt?.toString()
                     editViewShow(false)
@@ -158,6 +159,7 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
         mBaiduMap.uiSettings?.run {
             isRotateGesturesEnabled = false
             isOverlookingGesturesEnabled = false
+            setEnlargeCenterWithDoubleClickEnable(true)
         }
 
         mCoder = GeoCoder.newInstance()
@@ -233,8 +235,11 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
                     what = REVERSE_GEO_CODE
                     obj = latLng
                 }, DEFAULT_DELAYED)
+                //处理搜索选址还原拖图选址功能
+                if (mHandler == null) {
+                    mHandler = PickMapPoiHandler(this@PickMapPoiActivity)
+                }
             }
-
         })
     }
 

@@ -10,7 +10,9 @@
        intentBroadcast.putExtra(\"start\", \"116.419431,40.028795\");\n
        intentBroadcast.putExtra(\"end\", \"116.409816,40.05139\");\n
        //bd09   gps84   gcj02\n
-       intentBroadcast.putExtra(\"type\", \"gcj02\");\n
+       intentBroadcast.putExtra(\"type\", \"gcj02\");\n//
+       //startNavi  stopNavi\n
+       intentBroadcast.putExtra(\"event\", \"startNavi\");\n
        sendBroadcast(intentBroadcast);
     </string>
     <string name="file_navi_hint">
