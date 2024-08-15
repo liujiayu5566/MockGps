@@ -30,18 +30,21 @@ class ExpandActivity : BaseActivity<ActivityExpandBinding, BaseViewModel>() {
     private var mExpandAdapter = ExpandAdapter()
     private val titles = arrayOf(
         "外部app启动模拟导航",
+        "模拟功能设置",
         "模拟导航数据导入",
         "github地址",
         "免责声明",
     )
     private val describes = arrayOf(
         "通过广播形式发送起终点信息",
+        "模拟功能设置，扩展功能",
         "路径：/storage/emulated/0/Android/data/com.huolala.mockgps/files/nav_path",
         "https://github.com/liujiayu5566/MockGps",
         "此应用仅限开发学习和开发使用，软件的发布和使用均不收取任何费用。拒绝任何人或任何实体进行出售、重新修改后分发，严禁用于商业谋利用途。项目维护者对软件的滥用不承担任何责任。",
     )
     private val navigation = arrayOf(
         null,
+        SettingActivity::class.java,
         FileMockActivity::class.java,
         null,
         null,

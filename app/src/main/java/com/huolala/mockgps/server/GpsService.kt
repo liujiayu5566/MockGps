@@ -8,6 +8,7 @@ import android.location.LocationManager
 import android.location.provider.ProviderProperties
 import android.os.*
 import com.baidu.mapapi.model.LatLng
+import com.blankj.utilcode.util.ToastUtils
 import com.huolala.mockgps.manager.FloatingViewManger
 import com.huolala.mockgps.manager.SearchManager
 import com.huolala.mockgps.model.MockMessageModel
@@ -18,6 +19,7 @@ import com.huolala.mockgps.utils.CalculationLogLatDistance
 import com.huolala.mockgps.utils.LocationUtils
 import com.huolala.mockgps.utils.MMKVUtils
 import com.huolala.mockgps.utils.Utils
+import kotlin.random.Random
 
 /**
  * @author jiayu.liu
@@ -42,8 +44,9 @@ class GpsService : Service() {
      * 米/S
      */
     private var mSpeed: Float = 60 / 3.6f
-    private lateinit var mCurrentLocation: LatLng
+    private var mCurrentLocation: LatLng? = null
     private var naviType: Int = NaviType.NONE
+    private var isLocationAdjust = false
 
     /**
      * 模拟导航点更新间隔  单位：ms  小于等于1000ms
@@ -58,9 +61,26 @@ class GpsService : Service() {
                     START_MOCK_LOCATION -> {
                         if (isStart) {
                             (msg.obj as PoiInfoModel?)?.latLng?.let {
-//                                view.tv_progress.text = String.format("%d / %d", 0, 0)
-                                mCurrentLocation = it
-                                startSimulateLocation(it, true)
+                                if (mCurrentLocation == it && isLocationQuiver()) {
+                                    LatLng(
+                                        if (Random.nextDouble(
+                                                0.0,
+                                                1.0
+                                            ) < 0.5
+                                        ) it.latitude + Math.random() / 100000 else it.latitude - Math.random() / 100000,
+                                        if (Random.nextDouble(
+                                                0.0,
+                                                1.0
+                                            ) < 0.5
+                                        ) it.longitude - Math.random() / 100000 else it.longitude + Math.random() / 100000
+                                    ).apply {
+                                        (msg.obj as PoiInfoModel).latLng = this
+                                        startSimulateLocation(this, true)
+                                    }
+                                } else {
+                                    mCurrentLocation = it
+                                    startSimulateLocation(it, true)
+                                }
                                 handle.sendMessageDelayed(Message.obtain(msg), mNaviUpdateValue)
                             }
                         }
@@ -79,7 +99,7 @@ class GpsService : Service() {
                                     mCurrentLocation = getLatLngNext(it)
                                 }
                                 FloatingViewManger.INSTANCE.updateNaviInfo(index, it.size)
-                                startSimulateLocation(mCurrentLocation, false)
+                                startSimulateLocation(mCurrentLocation!!, false)
                                 handle.sendMessageDelayed(Message.obtain(msg), mNaviUpdateValue)
                             }
                         }
@@ -141,8 +161,13 @@ class GpsService : Service() {
                     if (model == null) {
                         return
                     }
+                    isLocationAdjust = true
                     bearing = angle.toFloat()
                     sendMockLocation(latLng)
+                }
+
+                override fun locationAdjustFinish() {
+                    isLocationAdjust = false
                 }
 
                 override fun changeNaviInfo(index: Int, speed: Int) {
@@ -174,7 +199,11 @@ class GpsService : Service() {
                 /**
                  * 发送模拟定位Handler
                  */
-                private fun sendMockLocation(location: LatLng) {
+                private fun sendMockLocation(location: LatLng?) {
+                    if (location == null) {
+                        ToastUtils.showShort("mock数据异常，此次模拟触发失败！")
+                        return
+                    }
                     PoiInfoModel(
                         latLng = location,
                         poiInfoType = PoiInfoType.LOCATION,
@@ -328,7 +357,10 @@ class GpsService : Service() {
         val loc = Location(providerStr)
 
         loc.accuracy = 1.0f
-        loc.bearing = bearing
+        loc.bearing =
+            if (isSingle && isLocationQuiver())
+                Random.nextInt(0, 360).toFloat()
+            else bearing
         loc.speed = if (isSingle) 0F else mSpeed
         loc.longitude = gps84[0]
         loc.latitude = gps84[1]
@@ -372,6 +404,13 @@ class GpsService : Service() {
                 e.printStackTrace()
             }
         }
+    }
+
+    /**
+     * 是否处于定位震动状态
+     */
+    private fun isLocationQuiver(): Boolean {
+        return MMKVUtils.isLocationQuiver() && !isLocationAdjust
     }
 
     private fun addTestProvider() {

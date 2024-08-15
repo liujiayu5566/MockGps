@@ -280,6 +280,7 @@ class FloatingViewManger private constructor() {
 
                 override fun onFinish() {
                     HandlerUtils.INSTANCE.removeCallbacks(rockerRunnable)
+                    listener?.locationAdjustFinish()
                 }
 
             })
@@ -543,6 +544,12 @@ class FloatingViewManger private constructor() {
          * 微调 仅支持模拟定位
          */
         fun changeLocation(latLng: LatLng, angle: Double)
+
+
+        /**
+         * 模拟定位微调完成
+         */
+        fun locationAdjustFinish()
 
         /**
          * 更新导航信息

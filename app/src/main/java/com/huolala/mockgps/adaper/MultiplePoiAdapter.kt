@@ -40,7 +40,7 @@ class MultiplePoiAdapter : RecyclerView.Adapter<MultiplePoiAdapter.ViewHolder>()
 
             else -> {
                 viewHolder.binding.isWay = true
-                "途经点"
+                "途经"
             }
         }
 

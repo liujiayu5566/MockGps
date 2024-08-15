@@ -14,9 +14,9 @@ typealias Error = (e: String) -> Unit
 typealias Complete = () -> Unit
 
 open class BaseViewModel : ViewModel() {
-    var loading: MediatorLiveData<Boolean> = MediatorLiveData()
-    var toast: MediatorLiveData<String> = MediatorLiveData()
-    var state: MediatorLiveData<MultiStateView.ViewState> = MediatorLiveData()
+    var loading: MutableLiveData<Boolean> = MutableLiveData()
+    var toast: MutableLiveData<String> = MutableLiveData()
+    var state: MutableLiveData<MultiStateView.ViewState> = MutableLiveData()
 
     protected fun <T> lauch(
         block: Block<T>,

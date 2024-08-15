@@ -12,6 +12,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import com.blankj.utilcode.util.ClickUtils
+import com.blankj.utilcode.util.ToastUtils
 import com.castiel.common.base.BaseActivity
 import com.castiel.common.base.BaseViewModel
 import com.huolala.mockgps.R
@@ -134,6 +135,7 @@ class GuideActivity : BaseActivity<ActivityGuideBinding, BaseViewModel>(), View.
                                 })
                             } catch (e: Exception) {
                                 e.printStackTrace()
+                                ToastUtils.showShort("跳转开发者选项页面失败，请开启开发者模式！")
                             }
                         }.setNegativeButton(
                             "取消"

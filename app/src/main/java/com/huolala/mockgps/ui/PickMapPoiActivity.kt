@@ -112,10 +112,10 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
                         key,
                         poiInfoType
                     )
-                    mHandler = null
                     tv_poi_name.text = key
                     tv_lonlat.text = pt?.toString()
                     editViewShow(false)
+                    mHandler = null
                     changeCenterLatLng(pt.latitude, pt.longitude)
                 }
             }
@@ -207,6 +207,7 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
                 tv_poi_name.text = this@model.name
                 tv_lonlat.text = this@model.latLng.toString()
                 editViewShow(false)
+                mHandler = null
                 changeCenterLatLng(latitude, longitude)
                 follow = FollowMode.MODE_NONE
             }
