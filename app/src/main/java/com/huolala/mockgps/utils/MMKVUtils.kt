@@ -18,8 +18,17 @@ object MMKVUtils {
     const val LOCATION_LIST_KEY: String = "LOCATION_LIST_KEY"
     const val MULTIPLE_NAVI_LIST_KEY: String = "Multiple_NAVI_LIST_KEY"
     const val NAVI_SPEED_KEY: String = "NAVI_SPEED_KEY"
-    const val LOCATION_QUIVER_KEY: String = "LOCATION_QUIVER_KEY"
     private const val MAX_SIZE: Int = 10
+
+    //设置配置
+    const val KEY_SETTING: String = "KEY_SETTING"
+
+    //模拟定位震动功能开关
+    const val KEY_LOCATION_VIBRATION: String = "KEY_LOCATION_VIBRATION"
+
+    //模拟导航绑路开关
+    const val KEY_NAVI_ROUTE_BINDING: String = "KEY_NAVI_ROUTE_BINDING"
+
 
     fun saveLocationData(data: MockMessageModel) {
         saveDataList(LOCATION_LIST_KEY, data)
@@ -96,41 +105,52 @@ object MMKVUtils {
     }
 
     fun getSettingModel(): SettingModel {
-        val json = defaultMMKV.getString(LOCATION_QUIVER_KEY, "")
+        val json = defaultMMKV.getString(KEY_SETTING, "")
         if (json?.isNotEmpty() == true) {
             return GsonUtils.fromJson(json, SettingModel::class.java)
         }
         return SettingModel()
     }
 
-
-    /**
-     * 设置定位震动模式开关
-     */
-    fun setLocationQuiver(switch: Boolean) {
+    fun saveSettingConfig(key: String, switch: Boolean) {
         try {
-            val settingModel = SettingModel(isLocationQuiver = switch)
-            defaultMMKV.putString(LOCATION_QUIVER_KEY, GsonUtils.toJson(settingModel))
+            val settingModel = getSettingModel()
+            when (key) {
+                KEY_LOCATION_VIBRATION -> settingModel.isLocationQuiver = switch
+                KEY_NAVI_ROUTE_BINDING -> settingModel.isNaviRouteBinding = switch
+                else -> {}
+            }
+            defaultMMKV.putString(KEY_SETTING, GsonUtils.toJson(settingModel))
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }
 
+
     /**
-     * 获取定位震动模式
+     * 获取模拟定位震动模式开关
      */
-    fun isLocationQuiver(): Boolean {
-        val json = defaultMMKV.getString(LOCATION_QUIVER_KEY, "")
-        if (json?.isNotEmpty() == true) {
-            return try {
-                val settingModel = GsonUtils.fromJson(json, SettingModel::class.java)
-                settingModel.isLocationQuiver
-            } catch (e: Exception) {
-                e.printStackTrace()
-                false
-            }
+    fun isLocationVibrationSwitch(): Boolean {
+        return try {
+            val settingModel = getSettingModel()
+            settingModel.isLocationQuiver
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
         }
-        return false
+    }
+
+    /**
+     * 获取模拟导航绑路优化开关
+     */
+    fun isNaviRouteBindingSwitch(): Boolean {
+        return try {
+            val settingModel = getSettingModel()
+            settingModel.isNaviRouteBinding
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
     }
 
 }

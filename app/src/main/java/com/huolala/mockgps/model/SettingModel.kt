@@ -5,7 +5,8 @@ package com.huolala.mockgps.model
  * @author jiayu.liu
  */
 data class SettingModel(
-    var isLocationQuiver: Boolean = false
+    var isLocationQuiver: Boolean = false,
+    var isNaviRouteBinding: Boolean = true
 )
 
 /**

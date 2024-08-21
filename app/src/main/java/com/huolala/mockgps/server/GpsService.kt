@@ -18,6 +18,7 @@ import com.huolala.mockgps.model.PoiInfoType
 import com.huolala.mockgps.utils.CalculationLogLatDistance
 import com.huolala.mockgps.utils.LocationUtils
 import com.huolala.mockgps.utils.MMKVUtils
+import com.huolala.mockgps.utils.RouteBindingUtils
 import com.huolala.mockgps.utils.Utils
 import kotlin.random.Random
 
@@ -238,6 +239,17 @@ class GpsService : Service() {
         if (dis > mSpeed) {
             //距离大于speed 计算经纬度
             var location = CalculationLogLatDistance.getNextLonLat(mCurrentLocation, yaw, mSpeed)
+            //绑路逻辑 优化计算经纬度的误差
+            if (MMKVUtils.isNaviRouteBindingSwitch()) {
+                SearchManager.INSTANCE.polylineList.let {
+                    if (it.isEmpty()) {
+                        return@let
+                    }
+                    location =
+                        RouteBindingUtils.snapToPath(location, SearchManager.INSTANCE.polylineList)
+                }
+            }
+
             //计算经纬度为非法值则直接取下一阶段经纬度更新
             if (CalculationLogLatDistance.isCheckNaN(location)) {
                 location = polyline[index] as LatLng
@@ -410,7 +422,7 @@ class GpsService : Service() {
      * 是否处于定位震动状态
      */
     private fun isLocationQuiver(): Boolean {
-        return MMKVUtils.isLocationQuiver() && !isLocationAdjust
+        return MMKVUtils.isLocationVibrationSwitch() && !isLocationAdjust
     }
 
     private fun addTestProvider() {

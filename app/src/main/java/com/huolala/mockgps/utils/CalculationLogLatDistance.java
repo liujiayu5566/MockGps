@@ -16,152 +16,171 @@ import com.baidu.mapapi.model.LatLng;
  */
 public class CalculationLogLatDistance {
 
-    private static double M_F = (1 / 298.2572236);
-    private static double EARTH_RADIUS = 6371000;
-    private static double WGS84_L_RADIUS = 6378137;
-    private static double WGS84_S_RADIUS = 6356752.3142;
-
+    /**
+     * 计算两点距离
+     */
     public static synchronized double getDistance(LatLng coor1, LatLng coor2) {
-        double radLat1 = A2R(coor1.latitude);
-        double radLat2 = A2R(coor2.latitude);
-        double a = radLat1 - radLat2;
-        double b = A2R(coor1.longitude) - A2R(coor2.longitude);
-        double s = 2 * asin(sqrt(pow(sin(a / 2), 2) + cos(radLat1) * cos(radLat2) * pow(sin(b / 2), 2)));
-        s = s * EARTH_RADIUS;
+        // WGS84椭球参数
+        // 长半轴（赤道半径），单位：米
+        double a = 6378137.0;
+        // 扁率
+        double f = 1 / 298.257223563;
+        // 短半轴（极半径）
+        double b = (1 - f) * a;
+
+        double lat1 = Math.toRadians(coor1.latitude);
+        double lon1 = Math.toRadians(coor1.longitude);
+        double lat2 = Math.toRadians(coor2.latitude);
+        double lon2 = Math.toRadians(coor2.longitude);
+
+        double L = lon2 - lon1;
+        double U1 = Math.atan((1 - f) * Math.tan(lat1));
+        double U2 = Math.atan((1 - f) * Math.tan(lat2));
+        double sinU1 = Math.sin(U1), cosU1 = Math.cos(U1);
+        double sinU2 = Math.sin(U2), cosU2 = Math.cos(U2);
+
+        double lambda = L, lambdaP, iterLimit = 100;
+        double sinSigma, cosSigma, sigma, sinAlpha, cos2Alpha, cos2SigmaM, C;
+
+        do {
+            double sinLambda = Math.sin(lambda), cosLambda = Math.cos(lambda);
+            sinSigma = Math.sqrt((cosU2 * sinLambda) * (cosU2 * sinLambda) +
+                    (cosU1 * sinU2 - sinU1 * cosU2 * cosLambda) * (cosU1 * sinU2 - sinU1 * cosU2 * cosLambda));
+
+            // co-incident points
+            if (sinSigma == 0) {
+                return 0;
+            }
+
+            cosSigma = sinU1 * sinU2 + cosU1 * cosU2 * cosLambda;
+            sigma = Math.atan2(sinSigma, cosSigma);
+            sinAlpha = cosU1 * cosU2 * sinLambda / sinSigma;
+            cos2Alpha = 1 - sinAlpha * sinAlpha;
+            cos2SigmaM = cosSigma - 2 * sinU1 * sinU2 / cos2Alpha;
+
+            // equatorial line
+            if (Double.isNaN(cos2SigmaM)) {
+                cos2SigmaM = 0;
+            }
+
+            C = f / 16 * cos2Alpha * (4 + f * (4 - 3 * cos2Alpha));
+            lambdaP = lambda;
+            lambda = L + (1 - C) * f * sinAlpha *
+                    (sigma + C * sinSigma * (cos2SigmaM + C * cosSigma *
+                            (-1 + 2 * cos2SigmaM * cos2SigmaM)));
+
+        } while (Math.abs(lambda - lambdaP) > 1e-12 && --iterLimit > 0);
+
+        // formula failed to converge
+        if (iterLimit == 0) {
+            return Double.NaN;
+        }
+
+        double uSq = cos2Alpha * (a * a - b * b) / (b * b);
+        double A = 1 + uSq / 16384 * (4096 + uSq * (-768 + uSq * (320 - 175 * uSq)));
+        double B = uSq / 1024 * (256 + uSq * (-128 + uSq * (74 - 47 * uSq)));
+        double deltaSigma = B * sinSigma * (cos2SigmaM + B / 4 *
+                (cosSigma * (-1 + 2 * cos2SigmaM * cos2SigmaM) -
+                        B / 6 * cos2SigmaM * (-3 + 4 * sinSigma * sinSigma) *
+                                (-3 + 4 * cos2SigmaM * cos2SigmaM)));
+
+        double s = b * A * (sigma - deltaSigma);
+        // 距离，单位：米
         return s;
     }
 
+    /**
+     * 计算 coor1->coor2 的方位角
+     */
     public static synchronized double getYaw(LatLng coor1, LatLng coor2) {
-        double result = 0.0;
+        double lat1 = Math.toRadians(coor1.latitude);
+        double lon1 = Math.toRadians(coor1.longitude);
+        double lat2 = Math.toRadians(coor2.latitude);
+        double lon2 = Math.toRadians(coor2.longitude);
 
-        int ilat1 = (int) (0.50 + coor1.latitude * 360000.0);
-        int ilat2 = (int) (0.50 + coor2.latitude * 360000.0);
-        int ilon1 = (int) (0.50 + coor1.longitude * 360000.0);
-        int ilon2 = (int) (0.50 + coor2.longitude * 360000.0);
+        // 计算经度差
+        double dLon = lon2 - lon1;
 
-        double latitude1 = A2R(coor1.latitude);
-        double longitude1 = A2R(coor1.longitude);
-        double latitude2 = A2R(coor2.latitude);
-        double longitude2 = A2R(coor2.longitude);
+        // 计算 y 和 x
+        double y = Math.sin(dLon) * Math.cos(lat2);
+        double x = Math.cos(lat1) * Math.sin(lat2) -
+                Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
 
-        if ((ilat1 == ilat2) && (ilon1 == ilon2)) {
-            return result;
-        } else if (ilon1 == ilon2) {
-            if (ilat1 > ilat2) {
-                result = 180.0;
-            }
-        } else {
-            double c =
-                    Math.acos(sin(latitude2) * sin(latitude1)
-                            + cos(latitude2) * cos(latitude1) * cos((longitude2 - longitude1)));
-            double A = asin(cos(latitude2) * sin((longitude2 - longitude1)) / sin(c));
+        // 计算方位角
+        double bearing = Math.atan2(y, x);
 
-            result = R2A(A);
+        // 将方位角转换为 [0, 360) 范围
+        bearing = Math.toDegrees(bearing);
+        bearing = (bearing + 360) % 360;
 
-            if ((ilat2 <= ilat1) || (ilon2 <= ilon1)) {
-                if ((ilat2 < ilat1) && (ilon2 < ilon1)) {
-                    result = 180.0 - result;
-                } else if (ilat2 < ilat1) {
-                    result = 180.0 - result;
-                } else if (ilat2 > ilat1) {
-                    result += 360.0;
-                }
-            }
-        }
-
-        if (result < 0) {
-            result += 360.0;
-        }
-        if (result > 360) {
-            result -= 360.0;
-        }
-
-        return result;
+        return bearing;
     }
 
     /**
      * 3、已知经纬度A,并知道A到B经纬度的距离、方位角(偏北角)。计算B经纬度)
      */
     public static synchronized LatLng getNextLonLat(LatLng coor, double yaw, double dist) {
+        // WGS84椭球参数
+        // 长半轴（赤道半径），单位：米
+        double a = 6378137.0;
+        // 扁率
+        double f = 1 / 298.257223563;
+        // 短半轴（极半径）
+        double b = (1 - f) * a;
 
-        double alpha1 = A2R(yaw);
-        double sinAlpha1 = sin(alpha1);
-        double cosAlpha1 = cos(alpha1);
+        double lat1 = Math.toRadians(coor.latitude);
+        double lon1 = Math.toRadians(coor.longitude);
+        double alpha1 = Math.toRadians(yaw);
 
-        double tanU1 = (1.0 - M_F) * tan(A2R(coor.latitude));
-        double cosU1 = 1.0 / sqrt((1.0 + tanU1 * tanU1));
+        double sinAlpha1 = Math.sin(alpha1);
+        double cosAlpha1 = Math.cos(alpha1);
+
+        double tanU1 = (1 - f) * Math.tan(lat1);
+        double cosU1 = 1 / Math.sqrt(1 + tanU1 * tanU1);
         double sinU1 = tanU1 * cosU1;
-        double sigma1 = atan2(tanU1, cosAlpha1);
-        double sinAlpha = cosU1 * sinAlpha1;
-        double cosSqAlpha = 1.0 - sinAlpha * sinAlpha;
-        double uSq = cosSqAlpha * (WGS84_L_RADIUS * WGS84_L_RADIUS - WGS84_S_RADIUS * WGS84_S_RADIUS)
-                / (WGS84_S_RADIUS * WGS84_S_RADIUS);
-        double A = 1.0 + uSq / 16384.0 * (4096.0 + uSq * (-768.0 + uSq * (320 - 175.0 * uSq)));
-        double B = uSq / 1024.0 * (256.0 + uSq * (-128 + uSq * (74.0 - 47.0 * uSq)));
 
-        double cos2SigmaM = 0;
-        double sinSigma = 0;
-        double cosSigma = 0;
-        double sigma = dist / (WGS84_S_RADIUS * A), sigmaP = 2.0 * Math.PI;
-        while (abs(sigma - sigmaP) > 1e-12) {
-            cos2SigmaM = cos(2.0 * sigma1 + sigma);
-            sinSigma = sin(sigma);
-            cosSigma = cos(sigma);
-            double deltaSigma = B * sinSigma
-                    * (cos2SigmaM
-                    + B / 4.0
-                    * (cosSigma * (-1 + 2.0 * cos2SigmaM * cos2SigmaM)
-                    - B / 6.0 * cos2SigmaM * (-3 + 4.0 * sinSigma * sinSigma)
-                    * (-3 + 4.0 * cos2SigmaM * cos2SigmaM)));
+        double sigma1 = Math.atan2(tanU1, cosAlpha1);
+        double sinAlpha = cosU1 * sinAlpha1;
+        double cos2Alpha = 1 - sinAlpha * sinAlpha;
+        double uSq = cos2Alpha * (a * a - b * b) / (b * b);
+        double A = 1 + uSq / 16384 * (4096 + uSq * (-768 + uSq * (320 - 175 * uSq)));
+        double B = uSq / 1024 * (256 + uSq * (-128 + uSq * (74 - 47 * uSq)));
+
+        double sigma = dist / (b * A);
+        double sigmaP = 2 * Math.PI;
+
+        double cos2SigmaM = 0, sinSigma = 0, cosSigma = 0, deltaSigma = 0;
+
+        while (Math.abs(sigma - sigmaP) > 1e-12) {
+            cos2SigmaM = Math.cos(2 * sigma1 + sigma);
+            sinSigma = Math.sin(sigma);
+            cosSigma = Math.cos(sigma);
+            deltaSigma = B * sinSigma * (cos2SigmaM + B / 4 * (cosSigma * (-1 + 2 * cos2SigmaM * cos2SigmaM)
+                    - B / 6 * cos2SigmaM * (-3 + 4 * sinSigma * sinSigma) * (-3 + 4 * cos2SigmaM * cos2SigmaM)));
             sigmaP = sigma;
-            sigma = dist / (WGS84_S_RADIUS * A) + deltaSigma;
+            sigma = dist / (b * A) + deltaSigma;
         }
 
         double tmp = sinU1 * sinSigma - cosU1 * cosSigma * cosAlpha1;
-        double lat2 = atan2(sinU1 * cosSigma + cosU1 * sinSigma * cosAlpha1,
-                (1 - M_F) * sqrt(sinAlpha * sinAlpha + tmp * tmp));
-        double lambda = atan2(sinSigma * sinAlpha1, cosU1 * cosSigma - sinU1 * sinSigma * cosAlpha1);
-        double C = M_F / 16.0 * cosSqAlpha * (4 + M_F * (4 - 3.0 * cosSqAlpha));
-        double L =
-                lambda
-                        - (1 - C) * M_F * sinAlpha
-                        * (sigma + C * sinSigma * (cos2SigmaM + C * cosSigma * (-1 + 2.0 * cos2SigmaM * cos2SigmaM)));
+        double lat2 = Math.atan2(sinU1 * cosSigma + cosU1 * sinSigma * cosAlpha1,
+                (1 - f) * Math.sqrt(sinAlpha * sinAlpha + tmp * tmp));
+        double lambda = Math.atan2(sinSigma * sinAlpha1,
+                cosU1 * cosSigma - sinU1 * sinSigma * cosAlpha1);
+        double C = f / 16 * cos2Alpha * (4 + f * (4 - 3 * cos2Alpha));
+        double L = lambda - (1 - C) * f * sinAlpha *
+                (sigma + C * sinSigma * (cos2SigmaM + C * cosSigma * (-1 + 2 * cos2SigmaM * cos2SigmaM)));
 
-//        double revAz = atan2(sinAlpha, -tmp);
-        // 输出经纬度
-        return new LatLng(R2A(lat2), coor.longitude + R2A(L));
-    }
+        double lon2 = lon1 + L;
 
-    public static synchronized LatLng longLatOffset(LatLng coor, double yaw, double dist) {
-        double lon = coor.longitude;
-        double lat = coor.latitude;
+        // 将结果转换为十进制度数
+        double newLat = Math.toDegrees(lat2);
+        double newLon = Math.toDegrees(lon2);
 
-        yaw = A2R(yaw);
-        double arc = 6371.393 * 1000;
-        lon += dist * sin(yaw) / (arc * cos(lat) * 2 * Math.PI / 360);
-        lat += dist * cos(yaw) / (arc * 2 * Math.PI / 360);
+        return new LatLng(newLat, newLon);
 
-        return new LatLng(lat, lon);
     }
 
     public static boolean isCheckNaN(LatLng location) {
         return location.latitude <= 0.0 || location.longitude <= 0.0 || Double.isNaN(location.latitude) || Double.isNaN(location.longitude);
     }
-
-
-    /**
-     * 角度转弧度
-     */
-    public static double A2R(double d) {
-        return d * Math.PI / 180.0;
-    }
-
-    /**
-     * 弧度转角度
-     */
-    public static double R2A(double d) {
-        return d / Math.PI * 180.0;
-    }
-
-
 }

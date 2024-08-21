@@ -17,10 +17,12 @@ import com.huolala.mockgps.utils.MMKVUtils
 class SettingActivity : BaseActivity<ActivitySettingBinding, BaseViewModel>() {
     private var mAdapter: SettingAdapter? = null
     private val mTitle = arrayOf(
-        "模拟定位震动功能"
+        "模拟定位震动功能",
+        "模拟导航经纬度绑路功能",
     )
     private val mMsg = arrayOf(
-        "定位开启后，自动微调参数(方向、经纬度等)"
+        "定位开启后，自动微调参数(方向、经纬度等)",
+        "模拟导航计算增加绑路功能，提高精度。注意：性能有所降低！",
     )
 
     override fun initViewModel(): Class<BaseViewModel> {
@@ -47,7 +49,14 @@ class SettingActivity : BaseActivity<ActivitySettingBinding, BaseViewModel>() {
         mAdapter?.listener = object : SettingAdapter.OnItemListener {
             override fun onItemSwitch(view: View?, model: SettingMsgModel, isChecked: Boolean) {
                 when (model.title) {
-                    mTitle[0] -> MMKVUtils.setLocationQuiver(isChecked)
+                    mTitle[0] -> MMKVUtils.saveSettingConfig(
+                        MMKVUtils.KEY_LOCATION_VIBRATION,
+                        isChecked
+                    )
+                    mTitle[1] -> MMKVUtils.saveSettingConfig(
+                        MMKVUtils.KEY_NAVI_ROUTE_BINDING,
+                        isChecked
+                    )
                     else -> {}
                 }
             }
@@ -63,6 +72,11 @@ class SettingActivity : BaseActivity<ActivitySettingBinding, BaseViewModel>() {
                     title = mTitle[0],
                     msg = mMsg[0],
                     isSwitch = settingModel.isLocationQuiver
+                ),
+                SettingMsgModel(
+                    title = mTitle[1],
+                    msg = mMsg[1],
+                    isSwitch = settingModel.isNaviRouteBinding
                 )
             )
         )
