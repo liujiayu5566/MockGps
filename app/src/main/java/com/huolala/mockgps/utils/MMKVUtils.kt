@@ -149,7 +149,7 @@ object MMKVUtils {
             settingModel.isNaviRouteBinding
         } catch (e: Exception) {
             e.printStackTrace()
-            false
+            true
         }
     }
 
