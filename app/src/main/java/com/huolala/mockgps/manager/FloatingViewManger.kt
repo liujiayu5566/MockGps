@@ -294,7 +294,14 @@ class FloatingViewManger private constructor() {
             layoutParams.x = 0
             addToWindow(locationAdjust, layoutParams)
             layoutParams.let {
-                locationAdjust?.setOnTouchListener(FloatingTouchListener(windowManager, it))
+                locationAdjust?.setOnTouchListener(
+                    FloatingTouchListener(
+                        windowManager,
+                        it,
+                        false,
+                        locationAdjust
+                    )
+                )
             }
         }
     }
@@ -339,7 +346,14 @@ class FloatingViewManger private constructor() {
             layoutParams.x = 0
             addToWindow(naviAdjust, layoutParams)
             layoutParams.let {
-                naviAdjust?.setOnTouchListener(FloatingTouchListener(windowManager, it))
+                naviAdjust?.setOnTouchListener(
+                    FloatingTouchListener(
+                        windowManager,
+                        it,
+                        false,
+                        naviAdjust
+                    )
+                )
             }
         }
 
@@ -373,8 +387,8 @@ class FloatingViewManger private constructor() {
         params.width = WindowManager.LayoutParams.WRAP_CONTENT
         params.height = WindowManager.LayoutParams.WRAP_CONTENT
         params.gravity = Gravity.LEFT or Gravity.TOP
-        params.x = mScreenWidth - (view?.width ?: 0)
-        params.y = mScreenHeight / 2 + ConvertUtils.dp2px(100f)
+        params.x = 0
+        params.y = mScreenHeight / 2
         //焦点问题  透明度
         params.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
         params.format = PixelFormat.TRANSPARENT

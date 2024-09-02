@@ -6,6 +6,7 @@ import android.view.View
 import android.view.WindowManager
 import android.view.animation.LinearInterpolator
 import com.blankj.utilcode.util.ScreenUtils
+import kotlin.math.min
 
 
 /**
@@ -18,87 +19,60 @@ class FloatingTouchListener(
     private var isAutoMove: Boolean = false,
     private var touchView: View? = null //悬浮窗根布局  解决touch的View与悬浮窗根布局不一致的情况
 ) : View.OnTouchListener {
-    private var x: Int = 0
-    private var y: Int = 0
     private val mScreenWidth = ScreenUtils.getScreenWidth()
     private val mScreenHeight = ScreenUtils.getScreenHeight()
-    private var animator: ValueAnimator? = null
     var callBack: FloatingTouchCallBack? = null
+
+    private var initialX = 0f
+    private var initialY = 0f
+    private var dX = 0f
+    private var dY = 0f
 
 
     override fun onTouch(view: View?, event: MotionEvent?): Boolean {
-        var curTouchView = view
-        if (touchView != null) {
-            curTouchView = touchView
+        if (touchView == null) {
+            return false
         }
-        when (event?.action) {
+        return when (event!!.action) {
             MotionEvent.ACTION_DOWN -> {
-                animator?.cancel()
-                x = event.rawX.toInt()
-                y = event.rawY.toInt()
+                initialX = layoutParams.x.toFloat()
+                initialY = layoutParams.y.toFloat()
+                dX = event.rawX - initialX
+                dY = event.rawY - initialY
                 callBack?.onActionDown()
+                true
             }
 
             MotionEvent.ACTION_MOVE -> {
-                val nowX = event.rawX.toInt()
-                val nowY = event.rawY.toInt()
-                if (nowX == 0 && nowY == 0) {
-                    return true
-                }
-                val movedX = nowX - x
-                val movedY = nowY - y
-                x = nowX
-                y = nowY
-                val viewWidth = curTouchView?.width ?: 0
-                layoutParams.run {
-                    x += movedX
-                    y += movedY
-                    x = if (x <= 0) 0 else x
-                    x = if (x >= mScreenWidth - viewWidth)
-                        mScreenWidth - viewWidth else x
-                    y = if (y <= 0) 0 else y
-                    y = if (y >= mScreenHeight) mScreenHeight else y
-                }
-                // 更新悬浮窗控件布局
-                windowManager.updateViewLayout(curTouchView, layoutParams)
+                val x: Int = (event.rawX - dX).toInt()
+                val y: Int = (event.rawY - dY).toInt()
+                layoutParams.x = if (x <= 0) 0 else min(
+                    x.toDouble(),
+                    (mScreenWidth - (touchView?.width ?: 0)).toDouble()
+                ).toInt()
+                layoutParams.y = if (y <= 0) 0 else min(
+                    y.toDouble(),
+                    (mScreenHeight - (touchView?.height ?: 0)).toDouble()
+                ).toInt()
+
+                windowManager.updateViewLayout(touchView, layoutParams)
+                true
             }
 
             MotionEvent.ACTION_UP -> {
                 if (!isAutoMove) {
-                    return true
+                    return false
                 }
-                val viewWidth = curTouchView?.width ?: 0
-                var nowX = event.rawX.toInt()
-                val movedToX: Int
-                if (nowX <= mScreenWidth / 2) {
-                    nowX -= viewWidth
-                    movedToX = 0
-                } else {
-                    movedToX = mScreenWidth - viewWidth
-                }
-                callBack?.onActionUp(movedToX == 0)
-                animMoveView(
-                    nowX,
-                    movedToX,
-                    curTouchView
-                )
-
+                // 在手指抬起时，将View移动到屏幕边缘
+                val isLeft = layoutParams.x + touchView!!.width / 2 <= mScreenWidth / 2
+                layoutParams.x = if (isLeft) 0 else mScreenWidth - touchView!!.width
+                windowManager.updateViewLayout(touchView, layoutParams)
+                callBack?.onActionUp(isLeft)
+                true
             }
-        }
-        return true
-    }
 
-    private fun animMoveView(nowX: Int, x: Int, view: View?) {
-        animator = ValueAnimator.ofInt(nowX, x)
-        animator?.duration = 200
-        animator?.interpolator = LinearInterpolator()
-        animator?.addUpdateListener {
-            val animatedValue = it.animatedValue
-            layoutParams.x = animatedValue as Int
-            // 更新悬浮窗控件布局
-            windowManager.updateViewLayout(view, layoutParams)
+            else -> false
         }
-        animator?.start()
     }
 
     interface FloatingTouchCallBack {
