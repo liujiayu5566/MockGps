@@ -47,13 +47,13 @@ class FloatingTouchListener(
                 val x: Int = (event.rawX - dX).toInt()
                 val y: Int = (event.rawY - dY).toInt()
                 layoutParams.x = if (x <= 0) 0 else min(
-                    x.toDouble(),
-                    (mScreenWidth - (touchView?.width ?: 0)).toDouble()
-                ).toInt()
+                    x,
+                    (mScreenWidth - (touchView?.width ?: 0))
+                )
                 layoutParams.y = if (y <= 0) 0 else min(
-                    y.toDouble(),
-                    (mScreenHeight - (touchView?.height ?: 0)).toDouble()
-                ).toInt()
+                    y,
+                    (mScreenHeight - (touchView?.height ?: 0))
+                )
 
                 windowManager.updateViewLayout(touchView, layoutParams)
                 true
