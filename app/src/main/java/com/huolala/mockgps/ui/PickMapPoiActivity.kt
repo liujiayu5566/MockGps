@@ -35,6 +35,7 @@ import com.huolala.mockgps.databinding.ActivityPickBinding
 import com.huolala.mockgps.manager.FollowMode
 import com.huolala.mockgps.manager.MapLocationManager
 import com.huolala.mockgps.model.PoiInfoType
+import com.huolala.mockgps.widget.InputLatLngDialog
 import kotlinx.android.synthetic.main.activity_pick.*
 import java.lang.ref.WeakReference
 
@@ -48,6 +49,7 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
     private val DEFAULT_DELAYED: Long = 100
     private lateinit var mBaiduMap: BaiduMap
     private lateinit var mCoder: GeoCoder
+    private var mInputLatLngDialog: InputLatLngDialog? = null
     private var poiListAdapter: PoiListAdapter = PoiListAdapter()
     private var mPoiInfoModel: PoiInfoModel? = null
     private var mSuggestionSearch: SuggestionSearch = SuggestionSearch.newInstance()
@@ -175,25 +177,29 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
                             this@PickMapPoiActivity,
                             "逆地理编码失败",
                             Toast.LENGTH_SHORT
-                        )
-                            .show()
+                        ).show()
                         return
                     }
+                    var name: String? = null
 
-                    //详细地址
-                    reverseGeoCodeResult.poiList?.run {
-                        if (!isEmpty()) {
-                            val poiInfo = get(0)
-                            mPoiInfoModel = PoiInfoModel(
-                                location,
-                                poiInfo?.uid,
-                                poiInfo?.name,
-                                poiInfoType
-                            )
-                            tv_poi_name.text = poiInfo?.name
-                            tv_lonlat.text = poiInfo?.location?.toString()
-                        }
+                    poiRegionsInfoList?.get(0)?.run {
+                        name = regionName
                     }
+
+                    if (TextUtils.isEmpty(name)) {
+                        name =
+                            if (!TextUtils.isEmpty(sematicDescription)) sematicDescription
+                            else if (!TextUtils.isEmpty(address)) address else "未知地址"
+                    }
+
+                    mPoiInfoModel = PoiInfoModel(
+                        location,
+                        location.toString(),
+                        name,
+                        poiInfoType
+                    )
+                    tv_poi_name.text = name
+                    tv_lonlat.text = location?.toString()
                 }
             }
         })
@@ -315,6 +321,16 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
 
             R.id.iv_back -> {
                 finish()
+            }
+
+            R.id.tv_input -> {
+                mInputLatLngDialog?.dismiss()
+                mInputLatLngDialog =
+                    InputLatLngDialog(this, object : InputLatLngDialog.InputLatLngDialogListener {
+                        override fun onConfirm(latLng: LatLng) {
+                            changeCenterLatLng(latLng.latitude, latLng.longitude)
+                        }
+                    }).apply { show() }
             }
 
             else -> {

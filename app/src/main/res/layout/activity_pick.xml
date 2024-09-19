@@ -58,6 +58,21 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <TextView
+            android:id="@+id/tv_input"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/shape_round_5_color_black_30"
+            android:padding="10dp"
+            clickListener="@{clicklistener}"
+            android:text="手动\n输入"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:round="3dp" />
+
         <androidx.appcompat.widget.LinearLayoutCompat
             android:id="@+id/ll_search"
             android:layout_width="wrap_content"

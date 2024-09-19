@@ -40,6 +40,7 @@ import com.huolala.mockgps.utils.Utils
 import com.huolala.mockgps.utils.WarnDialogUtils
 import com.huolala.mockgps.viewmodel.HomeViewModel
 import com.huolala.mockgps.widget.GuideView
+import com.huolala.mockgps.widget.InputLatLngDialog
 import com.huolala.mockgps.widget.MapSelectDialog
 import com.huolala.mockgps.widget.NaviPopupWindow
 import kotlin.math.abs
@@ -154,7 +155,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel>(), View.On
                         NaviType.LOCATION -> {
                             setDataToView(model = model.locationModel)
                             with(this@MainActivity.dataBinding) {
-                                appBarLayout.setExpanded(true,true)
+                                appBarLayout.setExpanded(true, true)
                                 recycler.scrollToPosition(0)
                             }
                         }
@@ -169,7 +170,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel>(), View.On
                             poiAdapter.submitList(list)
 
                             with(this@MainActivity.dataBinding) {
-                                appBarLayout.setExpanded(true,true)
+                                appBarLayout.setExpanded(true, true)
                                 recycler.scrollToPosition(0)
                             }
 
@@ -412,7 +413,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel>(), View.On
                     dataBinding.title = "模拟定位"
                     dataBinding.isNavi = false
                 }
-                dataBinding.appBarLayout.setExpanded(true,true)
+                dataBinding.appBarLayout.setExpanded(true, true)
                 dataBinding.recycler.scrollToPosition(0)
                 getHistoryData()
             }
