@@ -231,6 +231,7 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
 
             override fun onMapStatusChangeStart(mapStatus: MapStatus?, reason: Int) {
                 mHandler?.removeMessages(REVERSE_GEO_CODE)
+                editViewShow(false)
             }
 
             override fun onMapStatusChange(mapStatus: MapStatus?) {
