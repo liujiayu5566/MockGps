@@ -28,11 +28,13 @@ data class PoiInfoModel(
      * -1.默认选址模式  0.模拟定位  1.模拟导航起点  2.模拟导航终点
      */
     @PoiInfoType
-    var poiInfoType: Int = PoiInfoType.LOCATION
+    var poiInfoType: Int = PoiInfoType.LOCATION,
+    var city: String? = "北京市"
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readParcelable(LatLng::class.java.classLoader),
-        parcel.readString(), parcel.readString(), parcel.readInt()
+        parcel.readString(), parcel.readString(), parcel.readInt(),
+        parcel.readString()
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -40,6 +42,7 @@ data class PoiInfoModel(
         parcel.writeString(uid)
         parcel.writeString(name)
         parcel.writeInt(poiInfoType)
+        parcel.writeString(city)
     }
 
     override fun describeContents(): Int {

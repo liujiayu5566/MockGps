@@ -262,8 +262,8 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel>(), View.On
 
     override fun onResume() {
         super.onResume()
-        //获取历史数据
         SearchManager.INSTANCE.addSearchManagerListener(mSearchManagerListener)
+        //获取历史数据
         dataBinding.recycler.post { getHistoryData() }
         mMapSelectDialog?.onResume()
         //后台定位提示
@@ -323,6 +323,14 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel>(), View.On
         } ?: run {
             adapter.submitList(arrayListOf())
         }
+    }
+
+    private fun clearHistoryData() {
+        adapter.submitList(arrayListOf())
+        MMKVUtils.clearDataList(
+            if (adapter.dataBinding.includeLocationCard.llLocationCard.visibility == View.VISIBLE) MMKVUtils.LOCATION_LIST_KEY
+            else MMKVUtils.MULTIPLE_NAVI_LIST_KEY
+        )
     }
 
     private fun setDataToView(index: Int = -1, model: PoiInfoModel?) {
@@ -497,6 +505,11 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel>(), View.On
                     dialog.setCanceledOnTouchOutside(false)
                     dialog.show()
                 }
+            }
+
+            adapter.dataBinding.tvCleanCache -> {
+                //清除缓存
+                clearHistoryData()
             }
 
             else -> {

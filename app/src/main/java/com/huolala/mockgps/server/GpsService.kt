@@ -63,19 +63,10 @@ class GpsService : Service() {
                         if (isStart) {
                             (msg.obj as PoiInfoModel?)?.latLng?.let {
                                 if (mCurrentLocation == it && isLocationQuiver()) {
-                                    LatLng(
-                                        if (Random.nextDouble(
-                                                0.0,
-                                                1.0
-                                            ) < 0.5
-                                        ) it.latitude + Math.random() / 100000 else it.latitude - Math.random() / 100000,
-                                        if (Random.nextDouble(
-                                                0.0,
-                                                1.0
-                                            ) < 0.5
-                                        ) it.longitude - Math.random() / 100000 else it.longitude + Math.random() / 100000
+                                    CalculationLogLatDistance.getRandomLatLng(
+                                        it,
+                                        MMKVUtils.getLocationVibrationValue().toDouble()
                                     ).apply {
-                                        (msg.obj as PoiInfoModel).latLng = this
                                         startSimulateLocation(this, true)
                                     }
                                 } else {

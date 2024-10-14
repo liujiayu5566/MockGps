@@ -13,6 +13,10 @@
             name="isShowSearch"
             type="Boolean" />
 
+        <variable
+            name="city"
+            type="String" />
+
         <import type="android.view.View" />
 
         <import type="android.view.View.OnClickListener" />
@@ -60,11 +64,11 @@
 
         <TextView
             android:id="@+id/tv_input"
+            clickListener="@{clicklistener}"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/shape_round_5_color_black_30"
             android:padding="10dp"
-            clickListener="@{clicklistener}"
             android:text="手动\n输入"
             android:textColor="@color/white"
             android:textSize="12sp"
@@ -101,7 +105,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="10dp"
                     android:background="@color/grey_50"
-                    android:text="北京"
+                    android:text="@{city,default=北京}"
                     android:visibility="gone" />
 
                 <androidx.appcompat.widget.AppCompatEditText

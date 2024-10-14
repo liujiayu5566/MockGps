@@ -11,6 +11,8 @@ import static java.lang.Math.tan;
 
 import com.baidu.mapapi.model.LatLng;
 
+import java.util.Random;
+
 /**
  * @author jiayu.liu
  */
@@ -178,6 +180,35 @@ public class CalculationLogLatDistance {
 
         return new LatLng(newLat, newLon);
 
+    }
+
+    /**
+     * 随机经纬度
+     * @param center 中心点
+     * @param radiusInMeters 随机的半径
+     */
+    public static LatLng getRandomLatLng(LatLng center, double radiusInMeters) {
+        // 地球半径，单位为米
+        double earthRadius = 6371000;
+        Random random = new Random();
+
+        // 随机生成一个距离（0到radiusInMeters之间）
+        double radius = random.nextDouble() * radiusInMeters;
+
+        // 随机生成一个方位角（0到360度之间）
+        double angle = random.nextDouble() * 360;
+
+        // 将角度转换为弧度
+        double angleRad = Math.toRadians(angle);
+
+        // 计算新的经纬度
+        double deltaLat = radius * Math.cos(angleRad) / earthRadius;
+        double deltaLng = radius * Math.sin(angleRad) / (earthRadius * Math.cos(Math.toRadians(center.latitude)));
+
+        double newLat = center.latitude + Math.toDegrees(deltaLat);
+        double newLng = center.longitude + Math.toDegrees(deltaLng);
+
+        return new LatLng(newLat, newLng);
     }
 
     public static boolean isCheckNaN(LatLng location) {

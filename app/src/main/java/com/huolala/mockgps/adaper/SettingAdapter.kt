@@ -3,7 +3,6 @@ package com.huolala.mockgps.adaper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.CompoundButton
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.huolala.mockgps.R
@@ -36,11 +35,12 @@ class SettingAdapter : RecyclerView.Adapter<SettingAdapter.ViewHolder>() {
         viewHolder.dataBinding.isSwitch = model.isSwitch
         viewHolder.dataBinding.title = model.title
         viewHolder.dataBinding.msg = model.msg
+        viewHolder.dataBinding.listener = View.OnClickListener { listener?.onSettingClick(model) }
 
         viewHolder.dataBinding.swSwitch.setOnCheckedChangeListener { _, isChecked ->
             model.isSwitch = isChecked
             listener?.onItemSwitch(
-                viewHolder.dataBinding.root,
+                viewHolder.dataBinding,
                 model,
                 isChecked
             )
@@ -57,6 +57,12 @@ class SettingAdapter : RecyclerView.Adapter<SettingAdapter.ViewHolder>() {
         RecyclerView.ViewHolder(dataBinding.root)
 
     interface OnItemListener {
-        fun onItemSwitch(view: View?, model: SettingMsgModel, isChecked: Boolean)
+        fun onItemSwitch(
+            dataBinding: ItemSettingBinding?,
+            model: SettingMsgModel,
+            isChecked: Boolean
+        )
+
+        fun onSettingClick(model: SettingMsgModel)
     }
 }

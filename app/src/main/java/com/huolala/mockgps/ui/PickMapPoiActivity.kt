@@ -8,7 +8,6 @@ import android.os.Message
 import android.text.Editable
 import android.text.TextUtils
 import android.text.TextWatcher
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -23,7 +22,6 @@ import com.baidu.mapapi.search.sug.OnGetSuggestionResultListener
 import com.baidu.mapapi.search.sug.SuggestionResult
 import com.baidu.mapapi.search.sug.SuggestionSearch
 import com.baidu.mapapi.search.sug.SuggestionSearchOption
-import com.blankj.utilcode.util.ClickUtils
 import com.blankj.utilcode.util.KeyboardUtils
 import com.blankj.utilcode.util.ToastUtils
 import com.castiel.common.base.BaseActivity
@@ -112,13 +110,15 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
                         pt,
                         poiInfo.uid,
                         key,
-                        poiInfoType
+                        poiInfoType,
+                        city
                     )
                     tv_poi_name.text = key
                     tv_lonlat.text = pt?.toString()
                     editViewShow(false)
                     mHandler = null
                     changeCenterLatLng(pt.latitude, pt.longitude)
+                    dataBinding.city = city
                 }
             }
         })
@@ -191,12 +191,13 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
                             if (!TextUtils.isEmpty(sematicDescription)) sematicDescription
                             else if (!TextUtils.isEmpty(address)) address else "未知地址"
                     }
-
+                    dataBinding.city = addressDetail?.city ?: "北京市"
                     mPoiInfoModel = PoiInfoModel(
                         location,
                         location.toString(),
                         name,
-                        poiInfoType
+                        poiInfoType,
+                        addressDetail?.city ?: "北京市"
                     )
                     tv_poi_name.text = name
                     tv_lonlat.text = location?.toString()
@@ -216,6 +217,7 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
                 mHandler = null
                 changeCenterLatLng(latitude, longitude)
                 follow = FollowMode.MODE_NONE
+                dataBinding.city = this@model.city
             }
         }
 

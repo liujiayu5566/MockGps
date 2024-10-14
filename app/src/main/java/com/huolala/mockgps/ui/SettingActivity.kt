@@ -1,6 +1,5 @@
 package com.huolala.mockgps.ui
 
-import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.castiel.common.base.BaseActivity
 import com.castiel.common.base.BaseViewModel
@@ -8,8 +7,10 @@ import com.castiel.common.recycler.decoration.VerticalItemDecoration
 import com.huolala.mockgps.R
 import com.huolala.mockgps.adaper.SettingAdapter
 import com.huolala.mockgps.databinding.ActivitySettingBinding
+import com.huolala.mockgps.databinding.ItemSettingBinding
 import com.huolala.mockgps.model.SettingMsgModel
 import com.huolala.mockgps.utils.MMKVUtils
+import com.huolala.mockgps.widget.InputLocationVibrationDialog
 
 /**
  * @author jiayu.liu
@@ -21,7 +22,7 @@ class SettingActivity : BaseActivity<ActivitySettingBinding, BaseViewModel>() {
         "模拟导航经纬度绑路功能",
     )
     private val mMsg = arrayOf(
-        "定位开启后，自动微调参数(方向、经纬度等)",
+        "定位开启后，自动微调参数(方向、经纬度等)，当前随机半径范围为:",
         "模拟导航计算增加绑路功能，提高精度。注意：性能有所降低！",
     )
 
@@ -47,30 +48,58 @@ class SettingActivity : BaseActivity<ActivitySettingBinding, BaseViewModel>() {
         )
 
         mAdapter?.listener = object : SettingAdapter.OnItemListener {
-            override fun onItemSwitch(view: View?, model: SettingMsgModel, isChecked: Boolean) {
+            override fun onItemSwitch(
+                dataBinding: ItemSettingBinding?,
+                model: SettingMsgModel,
+                isChecked: Boolean
+            ) {
                 when (model.title) {
-                    mTitle[0] -> MMKVUtils.saveSettingConfig(
-                        MMKVUtils.KEY_LOCATION_VIBRATION,
-                        isChecked
-                    )
+                    mTitle[0] -> {
+                        MMKVUtils.saveSettingConfig(
+                            MMKVUtils.KEY_LOCATION_VIBRATION,
+                            isChecked
+                        )
+                        dataBinding?.isShowSetting = isChecked
+                    }
+
                     mTitle[1] -> MMKVUtils.saveSettingConfig(
                         MMKVUtils.KEY_NAVI_ROUTE_BINDING,
                         isChecked
                     )
+
                     else -> {}
                 }
             }
 
+            override fun onSettingClick(model: SettingMsgModel) {
+                when (model.title) {
+                    mTitle[0] -> {
+                        InputLocationVibrationDialog(
+                            this@SettingActivity,
+                            MMKVUtils.getLocationVibrationValue()
+                        ).apply {
+                            setOnDismissListener { updateData() }
+                            show()
+                        }
+                    }
+
+                    else -> {}
+                }
+            }
         }
     }
 
     override fun initData() {
+        updateData()
+    }
+
+    private fun updateData() {
         val settingModel = MMKVUtils.getSettingModel()
         mAdapter?.submitList(
             mutableListOf(
                 SettingMsgModel(
                     title = mTitle[0],
-                    msg = mMsg[0],
+                    msg = "${mMsg[0]}${MMKVUtils.getLocationVibrationValue()}m",
                     isSwitch = settingModel.isLocationQuiver
                 ),
                 SettingMsgModel(

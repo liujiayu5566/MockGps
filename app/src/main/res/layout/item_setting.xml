@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
@@ -15,6 +16,14 @@
             name="isSwitch"
             type="Boolean" />
 
+        <variable
+            name="isShowSetting"
+            type="Boolean" />
+
+        <variable
+            name="listener"
+            type="View.OnClickListener" />
+
         <import type="android.text.TextUtils" />
 
         <import type="android.view.View" />
@@ -23,43 +32,69 @@
     <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:padding="10dp">
 
         <androidx.appcompat.widget.LinearLayoutCompat
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-
-            <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/tv_title"
-                android:layout_width="match_parent"
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="@{title}"
-                android:textColor="@color/black_80"
-                android:textSize="15sp"
-                android:visibility="@{TextUtils.isEmpty(title)?View.GONE:View.VISIBLE}" />
+                android:layout_weight="1"
+                android:orientation="vertical">
 
-            <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/tv_msg"
-                android:layout_width="match_parent"
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/tv_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@{title}"
+                    android:textColor="@color/black_80"
+                    android:textSize="15sp"
+                    android:visibility="@{TextUtils.isEmpty(title)?View.GONE:View.VISIBLE}"
+                    tools:text="标题" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/tv_msg"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@{msg}"
+                    android:textColor="@color/black_50"
+                    android:textSize="12sp"
+                    android:visibility="@{TextUtils.isEmpty(msg)?View.GONE:View.VISIBLE}"
+                    tools:text="描述" />
+
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/sw_switch"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@{msg}"
-                android:textColor="@color/black_50"
-                android:textSize="12sp"
-                android:visibility="@{TextUtils.isEmpty(msg)?View.GONE:View.VISIBLE}" />
-
-
+                android:checked="@{isSwitch}" />
         </androidx.appcompat.widget.LinearLayoutCompat>
 
-        <com.google.android.material.switchmaterial.SwitchMaterial
-            android:id="@+id/sw_switch"
+
+        <androidx.appcompat.widget.AppCompatButton
+            clickListener="@{listener}"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:checked="@{isSwitch}" />
+            android:layout_gravity="right"
+            android:layout_marginTop="5dp"
+            android:background="@drawable/shape_round_30_color_master"
+            android:includeFontPadding="false"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="2dp"
+            android:text="参数调整"
+            android:textColor="@color/white"
+            android:visibility="@{isShowSetting?View.VISIBLE:View.GONE}" />
+
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 </layout>

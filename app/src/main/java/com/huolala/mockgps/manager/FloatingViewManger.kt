@@ -15,7 +15,6 @@ import com.baidu.mapapi.map.MyLocationConfiguration
 import com.baidu.mapapi.model.LatLng
 import com.blankj.utilcode.util.AppUtils
 import com.blankj.utilcode.util.ClickUtils
-import com.blankj.utilcode.util.ConvertUtils
 import com.blankj.utilcode.util.ScreenUtils
 import com.blankj.utilcode.util.ToastUtils
 import com.blankj.utilcode.util.Utils
