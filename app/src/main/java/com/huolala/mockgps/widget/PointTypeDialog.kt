@@ -36,7 +36,6 @@ class PointTypeDialog(context: Context) : Dialog(context) {
                 val lp = attributes;
                 lp.width = ScreenUtils.getScreenWidth() - ConvertUtils.dp2px(20f)
                 lp.height = ViewGroup.LayoutParams.WRAP_CONTENT
-                lp.y = -ConvertUtils.px2dp(50f)
                 attributes = lp
             }
             ClickUtils.applySingleDebouncing(it.btnConfirm) {
