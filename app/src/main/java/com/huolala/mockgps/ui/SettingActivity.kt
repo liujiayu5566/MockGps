@@ -76,7 +76,8 @@ class SettingActivity : BaseActivity<ActivitySettingBinding, BaseViewModel>() {
                     mTitle[0] -> {
                         InputLocationVibrationDialog(
                             this@SettingActivity,
-                            MMKVUtils.getLocationVibrationValue()
+                            MMKVUtils.getLocationVibrationValue(),
+                            MMKVUtils.getLocationFrequencyValue()
                         ).apply {
                             setOnDismissListener { updateData() }
                             show()

@@ -28,6 +28,8 @@ object MMKVUtils {
 
     //模拟定位震动功能范围，默认：10m
     const val KEY_LOCATION_VIBRATION_VALUE: String = "KEY_LOCATION_VIBRATION_VALUE"
+    //模拟定位震动功能频率，默认：10s
+    const val KEY_LOCATION_FREQUENCY_VALUE: String = "key_location_frequency_value"
 
     //模拟导航绑路开关
     const val KEY_NAVI_ROUTE_BINDING: String = "KEY_NAVI_ROUTE_BINDING"
@@ -159,6 +161,14 @@ object MMKVUtils {
      */
     fun getLocationVibrationValue(): Int {
         return defaultMMKV.getInt(KEY_LOCATION_VIBRATION_VALUE, 10)
+    }
+
+    fun setLocationFrequencyValue(value: Int) {
+        defaultMMKV.putInt(KEY_LOCATION_FREQUENCY_VALUE, value)
+    }
+
+    fun getLocationFrequencyValue(): Int {
+        return defaultMMKV.getInt(KEY_LOCATION_FREQUENCY_VALUE, 1)
     }
 
     /**

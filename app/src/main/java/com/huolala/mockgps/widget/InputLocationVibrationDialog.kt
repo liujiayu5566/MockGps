@@ -2,6 +2,7 @@ package com.huolala.mockgps.widget
 
 import android.app.Dialog
 import android.content.Context
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,7 +16,11 @@ import com.huolala.mockgps.utils.MMKVUtils
 /**
  * @author jiayu.liu
  */
-class InputLocationVibrationDialog(context: Context, val locationVibrationValue: Int) :
+class InputLocationVibrationDialog(
+    context: Context,
+    val locationVibrationValue: Int,
+    val locationFrequencyValue: Int
+) :
     Dialog(context) {
 
     init {
@@ -29,13 +34,15 @@ class InputLocationVibrationDialog(context: Context, val locationVibrationValue:
                 val lp = attributes
                 lp.width = ScreenUtils.getScreenWidth() - ConvertUtils.dp2px(20f)
                 lp.height = ViewGroup.LayoutParams.WRAP_CONTENT
-                lp.y = -ConvertUtils.px2dp(50f)
+                lp.gravity = Gravity.CENTER
                 attributes = lp
             }
             dataBinding.seekbar.setProgress(locationVibrationValue.toFloat())
+            dataBinding.seekbarFrequency.setProgress(locationFrequencyValue.toFloat())
 
             dataBinding.clickListener = View.OnClickListener {
                 MMKVUtils.setLocationVibrationValue(dataBinding.seekbar.progress)
+                MMKVUtils.setLocationFrequencyValue(dataBinding.seekbarFrequency.progress)
                 dismiss()
             }
         }

@@ -52,12 +52,14 @@ class GpsService : Service() {
     /**
      * 模拟导航点更新间隔  单位：ms  小于等于1000ms
      */
-    private val mNaviUpdateValue = 1000L
+    private var mNaviUpdateValue = 1000L
 
     override fun onCreate() {
         super.onCreate()
         handle = object : Handler(Looper.getMainLooper()) {
             override fun handleMessage(msg: Message) {
+                //重置为默认值
+                mNaviUpdateValue = 1000L
                 when (msg.what) {
                     START_MOCK_LOCATION -> {
                         if (isStart) {
@@ -67,6 +69,9 @@ class GpsService : Service() {
                                         it,
                                         MMKVUtils.getLocationVibrationValue().toDouble()
                                     ).apply {
+                                        //仅震动模式时，可以配置震动的频率
+                                        mNaviUpdateValue =
+                                            MMKVUtils.getLocationFrequencyValue() * 1000L
                                         startSimulateLocation(this, true)
                                     }
                                 } else {
