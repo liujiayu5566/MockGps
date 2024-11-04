@@ -40,7 +40,7 @@ class HomeViewModel : BaseViewModel() {
                 model?.buildVersionNo?.let { buildVersionNo ->
                     //云端版本号大于当前版本
                     if (buildVersionNo.toInt() > appVersionCode) {
-                        model.downloadURL?.let {
+                        model.appURl?.let {
                             //下载接口不未null  传递到view层
                             this._updateApp.value = model
                         }

@@ -10,6 +10,8 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
+import android.widget.SeekBar
+import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.baidu.mapapi.map.MyLocationConfiguration
 import com.baidu.mapapi.model.LatLng
@@ -30,6 +32,7 @@ import kotlinx.android.synthetic.main.layout_floating.view.*
 import kotlinx.android.synthetic.main.layout_floating_location_adjust.view.*
 import kotlinx.android.synthetic.main.layout_floating_navi_adjust.view.*
 import okhttp3.internal.format
+import java.util.Locale
 
 /**
  * @author jiayu.liu
@@ -317,16 +320,31 @@ class FloatingViewManger private constructor() {
 
             naviAdjust?.speed_nav_view!!.updateCurValue(MMKVUtils.getSpeed())
 
+            naviAdjust?.road_nav_seekbar?.setOnSeekBarChangeListener(object :
+                OnSeekBarChangeListener {
+
+                override fun onProgressChanged(
+                    seekBar: SeekBar?,
+                    progress: Int,
+                    fromUser: Boolean
+                ) {
+                }
+
+                override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                }
+
+                override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                    val speed = naviAdjust?.speed_nav_view!!.getCurValue()
+                    changeNaviInfo(seekBar!!.progress, speed)
+                }
+
+            })
             //修改参数
             ClickUtils.applySingleDebouncing(naviAdjust?.btn_nav_change!!) {
                 ToastUtils.showShort("修改成功")
-
-                val index = naviAdjust?.road_nav_view!!.let {
-                    if (it.isLongClickWait) it.getCurValue() else -1
-                }
+                val index = naviAdjust?.road_nav_seekbar!!.progress
                 val speed = naviAdjust?.speed_nav_view!!.getCurValue()
-                listener?.changeNaviInfo(index, speed)
-                naviAdjust?.road_nav_view!!.clearLongClickWait()
+                changeNaviInfo(index, speed)
             }
 
             //关闭微调悬浮窗
@@ -356,6 +374,13 @@ class FloatingViewManger private constructor() {
             }
         }
 
+    }
+
+    private fun changeNaviInfo(index: Int = -1, speed: Int = 0) {
+        if (index == -1 || speed == 0) {
+            return
+        }
+        listener?.changeNaviInfo(index, speed)
     }
 
     private fun changeLocation(angle: Double) {
@@ -429,7 +454,6 @@ class FloatingViewManger private constructor() {
                 //清空等待  更新当前速度信息
                 naviAdjust?.speed_nav_view?.clearLongClickWait()
                 naviAdjust?.speed_nav_view?.updateCurValue(MMKVUtils.getSpeed())
-                naviAdjust?.road_nav_view?.clearLongClickWait()
                 view?.mapview?.map?.let { map ->
                     SearchManager.INSTANCE.polylineList.let {
                         if (it.isEmpty()) {
@@ -489,18 +513,27 @@ class FloatingViewManger private constructor() {
         //已加载到window中
         naviAdjust?.parent?.run {
             naviAdjust?.tv_nav_info!!.text = String.format(
+                Locale.getDefault(),
                 "当前进度(道路)：%d/%d",
                 index,
                 size
             )
+            naviAdjust?.road_nav_seekbar?.let {
+                if (it.max.toInt() != size - 1) {
+//                    GlobalScope.launch(Dispatchers.IO) {
+//                        ReflectionUtil.setPrivateField(it, "mMax", size - 1)
+//                        ReflectionUtil.callPrivateMethod(it, "initConfigByPriority")
+//                    }
+                    it.max = size - 1
+                }
+                it.progress = index
+            }
         }
         if (index == size) {
             arriveDestination()
         } else {
             naviAdjust?.btn_change_location?.visibility = View.INVISIBLE
         }
-        naviAdjust?.road_nav_view?.updateCurValue(index)
-        naviAdjust?.road_nav_view?.maxValue = size - 1
     }
 
     fun onDestroy() {

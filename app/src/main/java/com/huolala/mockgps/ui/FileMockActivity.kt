@@ -112,10 +112,32 @@ class FileMockActivity : BaseActivity<ActivityFileBinding, BaseViewModel>(), Vie
                                 map {
                                     it.split(",").run {
                                         if (size == 2) {
+                                            val lat = get(1).toDouble()
+                                            val lng = get(0).toDouble()
+
+                                            var gcj02 = doubleArrayOf(lng, lat)
+                                            //将路线转换成gcj02
+                                            when (mPointType) {
+                                                LocationUtils.gps84 -> {
+                                                    gcj02 = LocationUtils.wgs84ToGcj02(
+                                                        lng,
+                                                        lat
+                                                    )
+                                                }
+
+                                                LocationUtils.bd09 -> {
+                                                    gcj02 = LocationUtils.bd09ToGcj02(
+                                                        lng,
+                                                        lat
+                                                    )
+                                                }
+
+                                                else -> {}
+                                            }
                                             polylineList.add(
                                                 LatLng(
-                                                    get(1).toDouble(),
-                                                    get(0).toDouble()
+                                                    gcj02[1],
+                                                    gcj02[0]
                                                 )
                                             )
                                         }
@@ -133,7 +155,6 @@ class FileMockActivity : BaseActivity<ActivityFileBinding, BaseViewModel>(), Vie
                     val model = MockMessageModel(
                         naviType = NaviType.NAVI_FILE,
                         speed = MMKVUtils.getSpeed(),
-                        pointType = mPointType,
                     )
                     val intent = Intent(this, MockLocationActivity::class.java)
                     intent.putExtra("model", model)

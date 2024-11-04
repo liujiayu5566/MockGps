@@ -59,6 +59,7 @@ dependencies {
     api rootProject.ext.dependencies.mmkv
     api rootProject.ext.dependencies.bugly
     api rootProject.ext.dependencies.bubbleseekbar
+    api rootProject.ext.dependencies.kotlin_reflect
 
     api rootProject.ext.dependencies.glide
     kapt rootProject.ext.dependencies.glide_compiler
