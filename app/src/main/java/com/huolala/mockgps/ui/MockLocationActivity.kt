@@ -88,6 +88,8 @@ class MockLocationActivity : BaseActivity<ActivityNaviBinding, BaseViewModel>(),
                         mBaiduMap.clear()
                         startNavi?.latLng?.let { start ->
                             MapDrawUtils.drawMarkerToMap(mBaiduMap, start, "marker_start.png")
+                        } ?: run {
+                            MapDrawUtils.drawMarkerToMap(mBaiduMap, it[0], "marker_start.png")
                         }
                         wayNaviList?.map {
                             it.latLng?.let { latLng ->
@@ -96,6 +98,12 @@ class MockLocationActivity : BaseActivity<ActivityNaviBinding, BaseViewModel>(),
                         }
                         endNavi?.latLng?.let { end ->
                             MapDrawUtils.drawMarkerToMap(mBaiduMap, end, "marker_end.png")
+                        } ?: run {
+                            MapDrawUtils.drawMarkerToMap(
+                                mBaiduMap,
+                                it[it.size - 1],
+                                "marker_end.png"
+                            )
                         }
                         MapDrawUtils.drawLineToMap(
                             mBaiduMap,

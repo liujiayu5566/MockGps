@@ -491,16 +491,16 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel>(), View.On
                         ) { _: DialogInterface?, _: Int ->
                             Utils.openBrowser(
                                 this,
-                                it.downloadURL
+                                it.appURl
                             ) {
                                 viewModel.toast.value = "跳转失败,已将下载地址复制到剪切板!"
-                                ClipboardUtils.copyText(it.downloadURL)
+                                ClipboardUtils.copyText(it.appURl)
                             }
                         }
                         .setNegativeButton("取消", null)
                         .setNeutralButton(
                             "复制下载地址"
-                        ) { _, _ -> ClipboardUtils.copyText(it.downloadURL) }
+                        ) { _, _ -> ClipboardUtils.copyText(it.appURl) }
                         .create()
                     dialog.setCanceledOnTouchOutside(false)
                     dialog.show()

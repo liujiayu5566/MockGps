@@ -40,27 +40,24 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="5dp"
         android:gravity="center"
-        android:text="道路："
+        android:text="进度："
         android:textColor="@color/white"
         android:textSize="10sp"
         app:layout_constraintBottom_toTopOf="@id/tv_speed_title"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_nav_info" />
 
-    <com.huolala.mockgps.widget.RegulateView
-        android:id="@+id/road_nav_view"
+    <androidx.appcompat.widget.AppCompatSeekBar
+        android:id="@+id/road_nav_seekbar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:defaultValue="0"
-        app:isColorWarn="true"
+        android:layout_marginEnd="5dp"
+        android:paddingVertical="5dp"
+        android:progressDrawable="@drawable/floating_seek_bar_bg"
         app:layout_constraintBottom_toBottomOf="@id/tv_road"
         app:layout_constraintLeft_toRightOf="@id/tv_road"
         app:layout_constraintRight_toLeftOf="@id/btn_change_location"
-        app:layout_constraintTop_toTopOf="@id/tv_road"
-        app:minThreshold="1"
-        app:minValue="0"
-        app:unit=""
-        app:useMultiple="true" />
+        app:layout_constraintTop_toTopOf="@id/tv_road" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/tv_speed_title"

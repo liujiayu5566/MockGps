@@ -5,6 +5,15 @@
     <data>
 
         <variable
+            name="radiusValue"
+            type="String" />
+
+
+        <variable
+            name="freqValue"
+            type="String" />
+
+        <variable
             name="clickListener"
             type="View.OnClickListener" />
 
@@ -22,7 +31,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:text="设置半径范围(1m~20m)，默认: 10s"
+            android:text="@{radiusValue}"
             android:textColor="@color/black"
             android:textSize="15sp"
             app:layout_constraintLeft_toLeftOf="parent"
@@ -36,7 +45,6 @@
             android:layout_marginVertical="20sp"
             android:progressDrawable="@drawable/seek_bar_bg"
             android:thumb="@drawable/shape_circle_color_master"
-            app:bsb_auto_adjust_section_mark="true"
             app:bsb_hide_bubble="true"
             app:bsb_max="20"
             app:bsb_min="1"
@@ -45,7 +53,6 @@
             app:bsb_section_text_color="@color/master_color"
             app:bsb_section_text_position="bottom_sides"
             app:bsb_show_section_text="true"
-            app:bsb_show_thumb_text="true"
             app:layout_constraintBottom_toTopOf="@id/tv_frequency"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
@@ -58,7 +65,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:gravity="center_vertical"
-            android:text="设置频率(1s~60s)，默认: 1s"
+            android:text="@{freqValue}"
             android:textColor="@color/black"
             android:textSize="15sp"
             app:layout_constraintLeft_toLeftOf="parent"
@@ -70,7 +77,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginVertical="20sp"
-            app:bsb_auto_adjust_section_mark="true"
             app:bsb_hide_bubble="true"
             app:bsb_max="60"
             app:bsb_min="1"
@@ -78,7 +84,6 @@
             app:bsb_section_text_color="@color/master_color"
             app:bsb_section_text_position="bottom_sides"
             app:bsb_show_section_text="true"
-            app:bsb_show_thumb_text="true"
             app:layout_constraintBottom_toTopOf="@id/btn_confirm"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"

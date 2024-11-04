@@ -10,5 +10,7 @@
     <color name="black_30">#4D000000</color>
     <color name="grey">#FFbfbfbf</color>
     <color name="grey_50">#80bfbfbf</color>
+    <color name="yellow">#FFFFFF00</color>
+    <color name="orange">#FFFFA400</color>
 
 </resources>

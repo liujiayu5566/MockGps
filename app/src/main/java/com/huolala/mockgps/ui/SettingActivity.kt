@@ -1,5 +1,6 @@
 package com.huolala.mockgps.ui
 
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.castiel.common.base.BaseActivity
 import com.castiel.common.base.BaseViewModel
@@ -79,7 +80,17 @@ class SettingActivity : BaseActivity<ActivitySettingBinding, BaseViewModel>() {
                             MMKVUtils.getLocationVibrationValue(),
                             MMKVUtils.getLocationFrequencyValue()
                         ).apply {
-                            setOnDismissListener { updateData() }
+                            mDismissListener = object :
+                                InputLocationVibrationDialog.LocationVibrationDismissListener {
+                                override fun onDismiss() {
+                                    Toast.makeText(
+                                        this@SettingActivity,
+                                        "频率设置需要等待上次频率触发后生效",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                    updateData()
+                                }
+                            }
                             show()
                         }
                     }
@@ -100,7 +111,7 @@ class SettingActivity : BaseActivity<ActivitySettingBinding, BaseViewModel>() {
             mutableListOf(
                 SettingMsgModel(
                     title = mTitle[0],
-                    msg = "${mMsg[0]}${MMKVUtils.getLocationVibrationValue()}m",
+                    msg = "${mMsg[0]}${MMKVUtils.getLocationVibrationValue()}m，当前震动频率:${MMKVUtils.getLocationFrequencyValue()}s",
                     isSwitch = settingModel.isLocationQuiver
                 ),
                 SettingMsgModel(
