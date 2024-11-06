@@ -334,17 +334,20 @@ class FloatingViewManger private constructor() {
                 }
 
                 override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                    val speed = naviAdjust?.speed_nav_view!!.getCurValue()
-                    changeNaviInfo(seekBar!!.progress, speed)
+                    seekBar?.let {
+                        changeNaviInfo(
+                            it.progress,
+                            naviAdjust?.speed_nav_view!!.getCurValue()
+                        )
+                    }
                 }
-
             })
+
             //修改参数
             ClickUtils.applySingleDebouncing(naviAdjust?.btn_nav_change!!) {
                 ToastUtils.showShort("修改成功")
-                val index = naviAdjust?.road_nav_seekbar!!.progress
                 val speed = naviAdjust?.speed_nav_view!!.getCurValue()
-                changeNaviInfo(index, speed)
+                changeNaviInfo(speed = speed)
             }
 
             //关闭微调悬浮窗
@@ -377,9 +380,6 @@ class FloatingViewManger private constructor() {
     }
 
     private fun changeNaviInfo(index: Int = -1, speed: Int = 0) {
-        if (index == -1 || speed == 0) {
-            return
-        }
         listener?.changeNaviInfo(index, speed)
     }
 
