@@ -31,7 +31,7 @@
             android:layout_height="wrap_content"
             android:onClick="@{OnClickListener}"
             android:paddingHorizontal="5dp"
-            android:src="@drawable/ic_back"
+            android:src="@drawable/common_ic_appbar_back"
             android:visibility="@{isGoneBack?View.GONE:View.VISIBLE}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
