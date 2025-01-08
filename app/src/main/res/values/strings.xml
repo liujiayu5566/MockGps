@@ -13,6 +13,8 @@
        intentBroadcast.putExtra(\"type\", \"gcj02\");\n//
        //startNavi  stopNavi\n
        intentBroadcast.putExtra(\"event\", \"startNavi\");\n
+       //car  bicycle  electricBicycle\n
+       intentBroadcast.putExtra(\"planType\", \"car\");\n
        sendBroadcast(intentBroadcast);
     </string>
     <string name="file_navi_hint">

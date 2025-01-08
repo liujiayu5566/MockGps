@@ -42,6 +42,9 @@ class MockReceiver : BroadcastReceiver() {
 
     companion object {
         var MOCK_ACTION = "com.huolala.mockgps.navi"
+        const val CAR = "car"
+        const val BICYCLE = "bicycle"
+        const val ELECTRIC_BICYCLE = "electricBicycle"
     }
 
     override fun onReceive(context: Context?, intent: Intent) {
@@ -58,11 +61,13 @@ class MockReceiver : BroadcastReceiver() {
                 FloatingViewManger.INSTANCE.stopMockFromReceiver()
                 return
             }
+
             else -> {}
         }
         val start = intent.getStringExtra("start")
         val end = intent.getStringExtra("end")
         val type = intent.getStringExtra("type") ?: LocationUtils.gcj02
+        val routeType = intent.getStringExtra("planType") ?: CAR
         LogUtils.dTag("mock", "mockGps接收到模拟定位广播-> start=$start , end=$end , type=$type")
         Utils.checkFloatWindow(context).let {
             if (!it) {
@@ -140,7 +145,8 @@ class MockReceiver : BroadcastReceiver() {
                 uid = ""
             )
 
-            SearchManager.INSTANCE.addSearchManagerListener(object : SearchManager.SearchManagerListener {
+            SearchManager.INSTANCE.addSearchManagerListener(object :
+                SearchManager.SearchManagerListener {
                 override fun onRouteResultLines(routeLines: List<RouteLines>?) {
                     if (routeLines?.isEmpty() != false) {
                         ToastUtils.showShort("路线规划数据获取失败,请检测网络or数据是否正确!")
@@ -153,11 +159,33 @@ class MockReceiver : BroadcastReceiver() {
                 }
             })
 
-            SearchManager.INSTANCE.driverSearch(
-                startLatLng,
-                endLatLng,
-                true
-            )
+            when (routeType) {
+                BICYCLE -> {
+                    SearchManager.INSTANCE.bikingSearch(
+                        startLatLng,
+                        endLatLng,
+                        wayList = null,
+                        ridingType = 0
+                    )
+                }
+
+                ELECTRIC_BICYCLE -> {
+                    SearchManager.INSTANCE.bikingSearch(
+                        startLatLng,
+                        endLatLng,
+                        wayList = null,
+                        ridingType = 1
+                    )
+                }
+
+                else -> {
+                    SearchManager.INSTANCE.driverSearch(
+                        startLatLng,
+                        endLatLng,
+                        true
+                    )
+                }
+            }
         }
     }
 
