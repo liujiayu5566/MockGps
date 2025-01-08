@@ -20,6 +20,7 @@ import com.huolala.mockgps.manager.utils.MapConvertUtils
 import com.huolala.mockgps.manager.utils.MapDrawUtils
 import com.huolala.mockgps.model.PoiInfoModel
 import com.huolala.mockgps.model.PoiInfoType
+import com.huolala.mockgps.model.RouteLines
 import java.io.File
 import kotlin.collections.ArrayList
 
@@ -37,15 +38,15 @@ class CalculateRouteActivity : BaseActivity<ActivityCalculateRouteBinding, BaseV
     /**
      * 算路成功的路线
      */
-    private var routeLines: ArrayList<DrivingRouteLine> = arrayListOf()
-    private val mSearchManagerListener  = object : SearchManager.SearchManagerListener {
-        override fun onDrivingRouteResultLines(routeLines: List<DrivingRouteLine>?) {
+    private var routeLines: ArrayList<RouteLines> = arrayListOf()
+    private val mSearchManagerListener = object : SearchManager.SearchManagerListener {
+        override fun onRouteResultLines(routeLines: List<RouteLines>?) {
             viewModel.loading.value = false
             if (routeLines?.isEmpty() != false) {
                 ToastUtils.showShort("路线规划数据获取失败,请检测网络or数据是否正确!")
                 return
             }
-            this@CalculateRouteActivity.routeLines = routeLines as ArrayList<DrivingRouteLine>
+            this@CalculateRouteActivity.routeLines = routeLines as ArrayList<RouteLines>
             mBaiduMap.let {
                 (dataBinding.tvStart.tag as PoiInfoModel?)?.latLng?.let { start ->
                     MapDrawUtils.drawMarkerToMap(it, start, "marker_start.png")
@@ -57,7 +58,7 @@ class CalculateRouteActivity : BaseActivity<ActivityCalculateRouteBinding, BaseV
                 routeLines.mapIndexed { index, line ->
                     MapDrawUtils.drawLineToMap(
                         it,
-                        MapConvertUtils.convertLatLngList(line),
+                        line.route,
                         Rect(
                             mDefaultPadding,
                             mDefaultPadding + dataBinding.clPanel.height,
@@ -187,9 +188,15 @@ class CalculateRouteActivity : BaseActivity<ActivityCalculateRouteBinding, BaseV
                 mainIndex = ++mainIndex % routeLines.size
                 mBaiduMap.let {
                     routeLines.mapIndexed { index, line ->
+                        (dataBinding.tvStart.tag as PoiInfoModel?)?.latLng?.let { start ->
+                            MapDrawUtils.drawMarkerToMap(it, start, "marker_start.png")
+                        }
+                        (dataBinding.tvEnd.tag as PoiInfoModel?)?.latLng?.let { end ->
+                            MapDrawUtils.drawMarkerToMap(it, end, "marker_end.png")
+                        }
                         MapDrawUtils.drawLineToMap(
                             it,
-                            MapConvertUtils.convertLatLngList(line),
+                            line.route,
                             Rect(
                                 mDefaultPadding,
                                 mDefaultPadding + dataBinding.clPanel.height,
@@ -208,7 +215,7 @@ class CalculateRouteActivity : BaseActivity<ActivityCalculateRouteBinding, BaseV
                     ToastUtils.showShort("数据列表为null！，无法保存")
                     return
                 }
-                val convertLatLngList = MapConvertUtils.convertLatLngList(routeLines[mainIndex])
+                val convertLatLngList = routeLines[mainIndex].route
                 val builder = StringBuilder()
                 convertLatLngList.map {
                     builder.append(it.longitude).append(",").append(it.latitude).append(";")

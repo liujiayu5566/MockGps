@@ -8,7 +8,17 @@
             name="clickListener"
             type="OnClickListener" />
 
+        <variable
+            name="longClickListener"
+            type="OnLongClickListener" />
+
+        <variable
+            name="navStr"
+            type="String" />
+
         <import type="android.view.View.OnClickListener" />
+
+        <import type="android.view.View.OnLongClickListener" />
     </data>
 
     <androidx.appcompat.widget.LinearLayoutCompat
@@ -30,7 +40,9 @@
                 android:id="@+id/include_navi_card"
                 layout="@layout/layout_navi_card"
                 android:visibility="gone"
-                tools:clickListener="@{clickListener}" />
+                tools:clickListener="@{clickListener}"
+                tools:longClickListener="@{longClickListener}"
+                tools:navStr="@{navStr}" />
 
         </FrameLayout>
 

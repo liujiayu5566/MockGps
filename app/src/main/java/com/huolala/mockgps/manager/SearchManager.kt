@@ -1,6 +1,7 @@
 package com.huolala.mockgps.manager
 
 import com.baidu.mapapi.model.LatLng
+import com.baidu.mapapi.search.route.BikingRoutePlanOption
 import com.baidu.mapapi.search.route.BikingRouteResult
 import com.baidu.mapapi.search.route.DrivingRouteLine
 import com.baidu.mapapi.search.route.DrivingRoutePlanOption
@@ -13,6 +14,7 @@ import com.baidu.mapapi.search.route.RoutePlanSearch
 import com.baidu.mapapi.search.route.TransitRouteResult
 import com.baidu.mapapi.search.route.WalkingRouteResult
 import com.blankj.utilcode.util.ToastUtils
+import com.huolala.mockgps.model.RouteLines
 
 /**
  * @author jiayu.liu
@@ -43,8 +45,18 @@ class SearchManager private constructor() {
 
             override fun onGetDrivingRouteResult(drivingRouteResult: DrivingRouteResult?) {
                 isSearchIng = false
+                val routeLines = arrayListOf<RouteLines>()
+                drivingRouteResult?.routeLines?.map {
+                    val route = arrayListOf<LatLng>()
+                    it.allStep.map { step ->
+                        route.addAll(step.wayPoints)
+                    }
+                    if (route.size > 0) {
+                        routeLines.add(RouteLines(route))
+                    }
+                }
                 listenerList.map {
-                    it.onDrivingRouteResultLines(drivingRouteResult?.routeLines)
+                    it.onRouteResultLines(routeLines)
                 }
             }
 
@@ -52,6 +64,20 @@ class SearchManager private constructor() {
             }
 
             override fun onGetBikingRouteResult(bikingRouteResult: BikingRouteResult?) {
+                isSearchIng = false
+                val routeLines = arrayListOf<RouteLines>()
+                bikingRouteResult?.routeLines?.map {
+                    val route = arrayListOf<LatLng>()
+                    it.allStep.map { step ->
+                        route.addAll(step.wayPoints)
+                    }
+                    if (route.size > 0) {
+                        routeLines.add(RouteLines(route))
+                    }
+                }
+                listenerList.map {
+                    it.onRouteResultLines(routeLines)
+                }
             }
         })
     }
@@ -64,6 +90,13 @@ class SearchManager private constructor() {
         listenerList.remove(listener)
     }
 
+    /**
+     * 驾车导航
+     * @param startLatLng 起点
+     * @param endLatLng 终点
+     * @param multiRoute 是否多路径
+     * @param wayList 途经点
+     */
     fun driverSearch(
         startLatLng: LatLng?,
         endLatLng: LatLng?,
@@ -98,22 +131,56 @@ class SearchManager private constructor() {
         )
     }
 
-    fun selectDriverLine(routeLine: DrivingRouteLine?) {
-        routeLine?.let {
-            val polylineList = arrayListOf<LatLng>()
-            for (step in it.allStep) {
-                if (step.wayPoints != null && step.wayPoints.isNotEmpty()) {
-                    polylineList.addAll(step.wayPoints)
+    /**
+     * 骑行导航
+     * @param startLatLng 起点
+     * @param endLatLng 终点
+     * @param wayList 途经点
+     * @param ridingType 骑行类型（0：普通骑行模式，1：电动车模式）
+     */
+    fun bikingSearch(
+        startLatLng: LatLng?,
+        endLatLng: LatLng?,
+        wayList: MutableList<LatLng>? = null,
+        ridingType: Int = 0
+    ) {
+        if (startLatLng == null || endLatLng == null) {
+            return
+        }
+        if (isSearchIng) {
+            ToastUtils.showShort("路线规划中,请稍后.")
+            return
+        }
+        isSearchIng = true
+        mSearch.bikingSearch(
+            BikingRoutePlanOption()
+                .from(PlanNode.withLocation(startLatLng))
+                .to(PlanNode.withLocation(endLatLng)).apply {
+                    wayList?.let {
+                        val passByList = arrayListOf<PlanNode>()
+                        for (latLng in it) {
+                            passByList.add(PlanNode.withLocation(latLng))
+                        }
+                        if (passByList.isNotEmpty()) {
+                            passBy(passByList)
+                        }
+                    }
+                    //默认普通骑行
+                    ridingType(ridingType)
                 }
-            }
+        )
+    }
+
+    fun selectDriverLine(routeLine: RouteLines?) {
+        routeLine?.let {
             this@SearchManager.polylineList.run {
                 clear()
-                addAll(polylineList)
+                addAll(routeLine.route)
             }
         }
     }
 
     interface SearchManagerListener {
-        fun onDrivingRouteResultLines(routeLines: List<DrivingRouteLine>?)
+        fun onRouteResultLines(routeLines: List<RouteLines>?)
     }
 }

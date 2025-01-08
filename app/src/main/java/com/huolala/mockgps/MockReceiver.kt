@@ -19,6 +19,7 @@ import com.huolala.mockgps.model.MockMessageModel
 import com.huolala.mockgps.model.NaviType
 import com.huolala.mockgps.model.PoiInfoModel
 import com.huolala.mockgps.model.PoiInfoType
+import com.huolala.mockgps.model.RouteLines
 import com.huolala.mockgps.server.GpsService
 import com.huolala.mockgps.utils.LocationUtils
 import com.huolala.mockgps.utils.MMKVUtils
@@ -140,7 +141,7 @@ class MockReceiver : BroadcastReceiver() {
             )
 
             SearchManager.INSTANCE.addSearchManagerListener(object : SearchManager.SearchManagerListener {
-                override fun onDrivingRouteResultLines(routeLines: List<DrivingRouteLine>?) {
+                override fun onRouteResultLines(routeLines: List<RouteLines>?) {
                     if (routeLines?.isEmpty() != false) {
                         ToastUtils.showShort("路线规划数据获取失败,请检测网络or数据是否正确!")
                         return

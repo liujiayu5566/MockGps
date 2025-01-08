@@ -28,6 +28,7 @@ object MMKVUtils {
 
     //模拟定位震动功能范围，默认：10m
     const val KEY_LOCATION_VIBRATION_VALUE: String = "KEY_LOCATION_VIBRATION_VALUE"
+
     //模拟定位震动功能频率，默认：10s
     const val KEY_LOCATION_FREQUENCY_VALUE: String = "key_location_frequency_value"
 
@@ -111,6 +112,21 @@ object MMKVUtils {
      */
     fun isGuideVisible(): Boolean {
         return defaultMMKV.getBoolean("isGuideVisible", false)
+    }
+
+
+    /**
+     * 导航按钮引导展示标识
+     */
+    fun setNaviGuideVisible(visible: Boolean) {
+        defaultMMKV.putBoolean("isNaviGuideVisible", visible)
+    }
+
+    /**
+     * 获取导航按钮引导展示标识
+     */
+    fun isNaviGuideVisible(): Boolean {
+        return defaultMMKV.getBoolean("isNaviGuideVisible", false)
     }
 
     fun getSettingModel(): SettingModel {

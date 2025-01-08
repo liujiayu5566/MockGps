@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="vertical">
+
+    <!-- 第一个按钮 -->
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn_drive"
+        style="@style/hint_style"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:background="@drawable/shape_round_30_color_orange"
+        android:elevation="3dp"
+        android:minWidth="70dp"
+        android:text="驾车导航"
+        android:textColor="@color/white"
+        android:textSize="10sp" />
+
+    <!-- 第二个按钮 -->
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn_riding"
+        style="@style/hint_style"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/shape_round_30_color_orange"
+        android:elevation="3dp"
+        android:minWidth="70dp"
+        android:text="骑行导航"
+        android:textColor="@color/white"
+        android:textSize="10sp" />
+
+    <!-- 第三个按钮 -->
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn_power_riding"
+        style="@style/hint_style"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/shape_round_30_color_orange"
+        android:elevation="3dp"
+        android:minWidth="70dp"
+        android:text="电动车导航"
+        android:textColor="@color/white"
+        android:textSize="10sp" />
+</LinearLayout>

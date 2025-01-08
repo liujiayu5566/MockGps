@@ -1,13 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
         <variable
             name="clickListener"
             type="OnClickListener" />
 
+        <variable
+            name="longClickListener"
+            type="OnLongClickListener" />
+
+        <variable
+            name="navStr"
+            type="String" />
+
         <import type="android.view.View.OnClickListener" />
+
+        <import type="android.view.View.OnLongClickListener" />
     </data>
 
     <androidx.appcompat.widget.LinearLayoutCompat
@@ -44,18 +56,20 @@
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btn_start_navi"
                 style="@style/hint_style"
+                clickListener="@{clickListener}"
+                longClickListener="@{longClickListener}"
                 android:layout_width="wrap_content"
                 android:layout_height="30dp"
                 android:layout_marginTop="10dp"
                 android:background="@drawable/shape_round_30_color_master"
                 android:paddingVertical="0dp"
-                android:text="开始模拟"
-                clickListener="@{clickListener}"
+                android:text='@{navStr != null ? navStr:"驾车导航"}'
                 android:textColor="@color/white"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintHorizontal_bias="0"
                 app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/recycler_navi" />
+                app:layout_constraintTop_toBottomOf="@id/recycler_navi"
+                tools:text="驾车导航" />
 
             <CheckBox
                 android:id="@+id/radio_multi_route"
@@ -72,10 +86,10 @@
 
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/iv_navi_setting"
+                clickListener="@{clickListener}"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:padding="5dp"
-                clickListener="@{clickListener}"
                 android:src="@drawable/ic_navi_setting"
                 app:layout_constraintBottom_toBottomOf="@id/btn_start_navi"
                 app:layout_constraintRight_toRightOf="parent"

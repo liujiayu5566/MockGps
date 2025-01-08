@@ -133,6 +133,7 @@ class MainAdapter(val headerAdapter: MultiplePoiAdapter) :
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if (holder is HeaderViewHolder) {
             holder.dataBinding.clickListener = mOnItemClickListener
+            holder.dataBinding.longClickListener = mOnItemClickListener
         } else {
             val model = list[position - 1]
             when (model!!.naviType) {
@@ -186,7 +187,7 @@ class MainAdapter(val headerAdapter: MultiplePoiAdapter) :
         notifyDataSetChanged()
     }
 
-    interface OnItemClickListener : View.OnClickListener {
+    interface OnItemClickListener : View.OnClickListener, View.OnLongClickListener {
         fun onItemClick(view: View?, model: MockMessageModel)
     }
 }

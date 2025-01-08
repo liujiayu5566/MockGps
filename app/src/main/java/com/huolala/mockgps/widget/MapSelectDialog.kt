@@ -18,6 +18,7 @@ import com.huolala.mockgps.R
 import com.huolala.mockgps.manager.utils.MapConvertUtils
 import com.huolala.mockgps.manager.utils.MapDrawUtils
 import com.huolala.mockgps.model.PoiInfoModel
+import com.huolala.mockgps.model.RouteLines
 import kotlinx.android.synthetic.main.dialog_select_navi_map.*
 
 /**
@@ -25,7 +26,7 @@ import kotlinx.android.synthetic.main.dialog_select_navi_map.*
  */
 class MapSelectDialog(
     context: Context,
-    private var routeLines: List<DrivingRouteLine>,
+    private var routeLines: List<RouteLines>,
     private var start: LatLng?,
     private var end: LatLng?,
     wayList: MutableList<PoiInfoModel>?
@@ -100,7 +101,7 @@ class MapSelectDialog(
         routeLines.mapIndexed { index, line ->
             MapDrawUtils.drawLineToMap(
                 baiduMap,
-                MapConvertUtils.convertLatLngList(line),
+                line.route,
                 Rect(mMapPadding, mMapPadding, mMapPadding, mMapPadding),
                 index == mainIndex
             )?.let { overlay ->
@@ -123,6 +124,6 @@ class MapSelectDialog(
     }
 
     interface MapSelectDialogListener {
-        fun onSelectLine(routeLine: DrivingRouteLine)
+        fun onSelectLine(routeLine: RouteLines)
     }
 }

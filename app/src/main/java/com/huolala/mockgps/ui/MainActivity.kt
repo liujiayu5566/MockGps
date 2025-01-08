@@ -12,16 +12,22 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
 import android.widget.FrameLayout
+import android.widget.LinearLayout
+import android.widget.PopupWindow
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.AppCompatButton
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.baidu.mapapi.model.LatLng
 import com.baidu.mapapi.search.route.DrivingRouteLine
+import com.blankj.utilcode.util.ClickUtils
 import com.blankj.utilcode.util.ClipboardUtils
 import com.blankj.utilcode.util.ConvertUtils
 import com.blankj.utilcode.util.PermissionUtils
+import com.blankj.utilcode.util.SizeUtils
 import com.blankj.utilcode.util.ToastUtils
 import com.castiel.common.base.BaseActivity
 import com.google.android.material.appbar.AppBarLayout
@@ -35,12 +41,13 @@ import com.huolala.mockgps.model.MockMessageModel
 import com.huolala.mockgps.model.NaviType
 import com.huolala.mockgps.model.PoiInfoModel
 import com.huolala.mockgps.model.PoiInfoType
+import com.huolala.mockgps.model.RouteLines
 import com.huolala.mockgps.utils.MMKVUtils
 import com.huolala.mockgps.utils.Utils
 import com.huolala.mockgps.utils.WarnDialogUtils
 import com.huolala.mockgps.viewmodel.HomeViewModel
 import com.huolala.mockgps.widget.GuideView
-import com.huolala.mockgps.widget.InputLatLngDialog
+import com.huolala.mockgps.widget.GuideView.GuideViewListener
 import com.huolala.mockgps.widget.MapSelectDialog
 import com.huolala.mockgps.widget.NaviPopupWindow
 import kotlin.math.abs
@@ -58,7 +65,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel>(), View.On
     private var locationAlwaysView: View? = null
     private lateinit var poiAdapter: MultiplePoiAdapter
     private val mSearchManagerListener = object : SearchManager.SearchManagerListener {
-        override fun onDrivingRouteResultLines(routeLines: List<DrivingRouteLine>?) {
+        override fun onRouteResultLines(routeLines: List<RouteLines>?) {
             viewModel.loading.value = false
             if (routeLines?.isEmpty() != false) {
                 ToastUtils.showShort("路线规划数据获取失败,请检测网络or数据是否正确!")
@@ -92,7 +99,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel>(), View.On
                     wayList
                 ).apply {
                     listener = object : MapSelectDialog.MapSelectDialogListener {
-                        override fun onSelectLine(routeLine: DrivingRouteLine) {
+                        override fun onSelectLine(routeLine: RouteLines) {
                             goToMockLocation(routeLine, model)
                             mMapSelectDialog = null
                         }
@@ -185,6 +192,91 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel>(), View.On
                     this@MainActivity.onClick(v)
                 }
 
+                override fun onLongClick(v: View?): Boolean {
+                    return when (v) {
+                        //长按弹出多导航配置选项
+                        adapter.dataBinding.includeNaviCard.btnStartNavi -> {
+                            // 初始化 PopupWindow
+                            val popupView = LayoutInflater.from(this@MainActivity)
+                                .inflate(R.layout.popup_start_navi, null)
+                            val popupWindow = PopupWindow(
+                                popupView,
+                                LinearLayout.LayoutParams.WRAP_CONTENT,
+                                LinearLayout.LayoutParams.WRAP_CONTENT,
+                                true
+                            )
+
+                            val width = View.MeasureSpec.makeMeasureSpec(
+                                0,
+                                View.MeasureSpec.UNSPECIFIED
+                            )
+                            val height = View.MeasureSpec.makeMeasureSpec(
+                                0,
+                                View.MeasureSpec.UNSPECIFIED
+                            )
+                            //调用measure方法之后就可以获取宽高
+                            popupView.measure(width, height)
+
+                            val location = IntArray(2)
+                            v.getLocationOnScreen(location)
+                            val xOffset = v.width + SizeUtils.dp2px(5f) // 按钮右侧
+                            val yOffset = -(popupView.measuredHeight / 2) + v.height / 2 // 水平对齐按钮
+
+                            // 显示 PopupWindow
+                            popupWindow.showAtLocation(
+                                v,
+                                Gravity.NO_GRAVITY,
+                                location[0] + xOffset,
+                                location[1] + yOffset
+                            )
+
+                            // 按顺序显示每个按钮的动画
+                            val btnDrive = popupView.findViewById<AppCompatButton>(R.id.btn_drive)
+                            val btnRiding = popupView.findViewById<AppCompatButton>(R.id.btn_riding)
+                            val btnPowerRiding =
+                                popupView.findViewById<AppCompatButton>(R.id.btn_power_riding)
+                            ClickUtils.applySingleDebouncing(
+                                btnDrive
+                            ) {
+                                adapter.dataBinding.navStr = btnDrive.text.toString()
+                                if (popupWindow.isShowing) {
+                                    popupWindow.dismiss()
+                                }
+                            }
+                            ClickUtils.applySingleDebouncing(
+                                btnRiding
+                            ) {
+                                adapter.dataBinding.navStr = btnRiding.text.toString()
+                                if (popupWindow.isShowing) {
+                                    popupWindow.dismiss()
+                                }
+                            }
+                            ClickUtils.applySingleDebouncing(
+                                btnPowerRiding
+                            ) {
+                                adapter.dataBinding.navStr = btnPowerRiding.text.toString()
+                                if (popupWindow.isShowing) {
+                                    popupWindow.dismiss()
+                                }
+                            }
+
+                            // 按钮 1 动画
+                            popupAnim(btnDrive) // 立即显示
+
+                            // 按钮 2 动画
+                            popupAnim(btnRiding, 200) // 延迟 200ms
+
+                            // 按钮 3 动画
+                            popupAnim(btnPowerRiding, 400) // 延迟 400ms
+                            true
+                        }
+
+                        else -> {
+                            false
+                        }
+                    }
+                }
+
             })
         }
         dataBinding.recycler.adapter = adapter
@@ -203,7 +295,13 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel>(), View.On
             dataBinding.ivExpand.post {
                 val rootView = dataBinding.root as ViewGroup
                 val guideView = GuideView(this)
-                guideView.setGuideView(dataBinding.ivExpand)
+                guideView.listener = object : GuideViewListener {
+                    override fun onAffirm() {
+                        MMKVUtils.setGuideVisible(true)
+                    }
+                }
+
+                guideView.setGuideView(dataBinding.ivExpand, arrowMargin = 0f)
 
                 rootView.addView(
                     guideView,
@@ -228,8 +326,18 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel>(), View.On
         })
     }
 
+    private fun popupAnim(button: AppCompatButton, delay: Long = 0) {
+        button.visibility = View.INVISIBLE
+        button.postDelayed({
+            button.visibility = View.VISIBLE
+            val anim =
+                AnimationUtils.loadAnimation(this@MainActivity, R.anim.popup_button_enter)
+            button.startAnimation(anim)
+        }, delay)
+    }
+
     private fun goToMockLocation(
-        routeLine: DrivingRouteLine,
+        routeLine: RouteLines,
         model: MockMessageModel
     ) {
         SearchManager.INSTANCE.selectDriverLine(routeLine)
@@ -415,6 +523,32 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel>(), View.On
                     adapter.dataBinding.includeNaviCard.llNaviCard.visibility = View.VISIBLE
                     dataBinding.title = "模拟导航"
                     dataBinding.isNavi = true
+                    //导航算路策略引导
+                    if (!MMKVUtils.isNaviGuideVisible()) {
+                        adapter.dataBinding.includeNaviCard.btnStartNavi.post {
+                            val rootView = dataBinding.root as ViewGroup
+                            val guideView = GuideView(this)
+                            guideView.listener = object : GuideViewListener {
+                                override fun onAffirm() {
+                                    MMKVUtils.setNaviGuideVisible(true)
+                                }
+
+                            }
+                            guideView.setGuideView(
+                                adapter.dataBinding.includeNaviCard.btnStartNavi,
+                                GuideView.Gravity.RIGHT2TOP,
+                                "长按切换算路策略"
+                            )
+
+                            rootView.addView(
+                                guideView,
+                                FrameLayout.LayoutParams(
+                                    FrameLayout.LayoutParams.MATCH_PARENT,
+                                    FrameLayout.LayoutParams.MATCH_PARENT
+                                )
+                            )
+                        }
+                    }
                 } else {
                     adapter.dataBinding.includeLocationCard.llLocationCard.visibility = View.VISIBLE
                     adapter.dataBinding.includeNaviCard.llNaviCard.visibility = View.GONE
@@ -463,12 +597,36 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel>(), View.On
                         }
                     }
                     viewModel.loading.value = true
-                    SearchManager.INSTANCE.driverSearch(
-                        startNavi.latLng!!,
-                        endNavi.latLng!!,
-                        adapter.dataBinding.includeNaviCard.radioMultiRoute.isChecked,
-                        if (wayList.isNotEmpty()) wayList else null
-                    )
+                    when (adapter.dataBinding.includeNaviCard.btnStartNavi.text) {
+                        "骑行导航" -> {
+                            SearchManager.INSTANCE.bikingSearch(
+                                startNavi.latLng!!,
+                                endNavi.latLng!!,
+                                wayList.ifEmpty { null },
+                                0
+                            )
+                        }
+
+                        "电动车导航" -> {
+                            SearchManager.INSTANCE.bikingSearch(
+                                startNavi.latLng!!,
+                                endNavi.latLng!!,
+                                wayList.ifEmpty { null },
+                                1
+                            )
+                        }
+
+                        else -> {
+                            SearchManager.INSTANCE.driverSearch(
+                                startNavi.latLng!!,
+                                endNavi.latLng!!,
+                                adapter.dataBinding.includeNaviCard.radioMultiRoute.isChecked,
+                                wayList.ifEmpty { null }
+                            )
+                        }
+                    }
+
+
                 }
             }
 

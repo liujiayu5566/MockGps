@@ -67,4 +67,13 @@ object DataBindingAdapter {
         }
         ClickUtils.applySingleDebouncing(view, clickListener)
     }
+
+    @JvmStatic
+    @BindingAdapter("longClickListener", requireAll = false)
+    fun viewClick(view: View, clickListener: View.OnLongClickListener?) {
+        if (clickListener == null) {
+            throw IllegalArgumentException("longClickListener is null")
+        }
+        view.setOnLongClickListener(clickListener)
+    }
 }
