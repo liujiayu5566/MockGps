@@ -254,16 +254,16 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
     }
 
     private fun changeCenterLatLng(latitude: Double, longitude: Double) {
-        if (latitude > 0.0 && longitude > 0.0) {
-            mBaiduMap.animateMapStatus(
-                MapStatusUpdateFactory.newLatLngZoom(
-                    LatLng(
-                        latitude,
-                        longitude
-                    ), 16f
-                )
+//        if (latitude > 0.0 && longitude > 0.0) {
+        mBaiduMap.animateMapStatus(
+            MapStatusUpdateFactory.newLatLngZoom(
+                LatLng(
+                    latitude,
+                    longitude
+                ), 16f
             )
-        }
+        )
+//        }
     }
 
     override fun onResume() {
@@ -295,12 +295,12 @@ class PickMapPoiActivity : BaseActivity<ActivityPickBinding, BaseViewModel>(),
 
             R.id.confirm_location -> {
                 mPoiInfoModel?.let {
-                    if ((it.latLng?.longitude ?: 0.0) <= 0.0 || (it.latLng?.latitude
-                            ?: 0.0) <= 0.0
-                    ) {
-                        ToastUtils.showShort("数据异常，请重新选择！")
-                        return@let
-                    }
+//                    if ((it.latLng?.longitude ?: 0.0) <= 0.0 || (it.latLng?.latitude
+//                            ?: 0.0) <= 0.0
+//                    ) {
+//                        ToastUtils.showShort("数据异常，请重新选择！")
+//                        return@let
+//                    }
                     val intent = Intent()
                     val bundle = Bundle()
                     bundle.putParcelable(

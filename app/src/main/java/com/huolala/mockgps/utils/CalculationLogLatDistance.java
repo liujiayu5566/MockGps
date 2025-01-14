@@ -212,6 +212,6 @@ public class CalculationLogLatDistance {
     }
 
     public static boolean isCheckNaN(LatLng location) {
-        return location.latitude <= 0.0 || location.longitude <= 0.0 || Double.isNaN(location.latitude) || Double.isNaN(location.longitude);
+        return Double.isNaN(location.latitude) || Double.isNaN(location.longitude);
     }
 }
