@@ -4,8 +4,12 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.ColorFilter
 import android.graphics.Paint
+import android.graphics.Path
 import android.graphics.PixelFormat
+import android.graphics.Rect
+import android.graphics.RectF
 import android.graphics.drawable.Drawable
+import android.os.Build
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
@@ -29,16 +33,12 @@ data class Label(
  * 携带标签的TextView
  * @author jiayu.liu
  */
-class ContentLabelTextView : AppCompatTextView {
+class ContentLabelTextView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : AppCompatTextView(context, attrs, defStyleAttr) {
     private var content: String = ""
-
-    constructor(context: Context) : super(context)
-    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
-        context,
-        attrs,
-        defStyleAttr
-    )
 
     init {
         text?.let {
@@ -163,11 +163,15 @@ class ContentLabelTextView : AppCompatTextView {
             style = Paint.Style.STROKE
             strokeWidth = this@TagDrawable.borderWidth
         }
+
         private val paddingHorizontal = SizeUtils.dp2px(4f) // 标签的内边距
         private val paddingVertical = SizeUtils.dp2px(2f) // 标签的内边距
 
         private val textWidth: Float
         private val textHeight: Float
+
+        // 用于低版本兼容的 Path（避免重复创建）
+        private val path = Path()
 
         init {
             textWidth = paint.measureText(text)
@@ -176,37 +180,56 @@ class ContentLabelTextView : AppCompatTextView {
 
         override fun draw(canvas: Canvas) {
             val bounds = this@TagDrawable.bounds
-            val cornerRadius = 2f
+            val cornerRadius = SizeUtils.dp2px(2f).toFloat()
 
             // 绘制背景
             paint.color = bgColor
-            canvas.drawRoundRect(
-                bounds.left.toFloat(),
-                bounds.top.toFloat(),
-                bounds.right.toFloat(),
-                bounds.bottom.toFloat(),
-                cornerRadius,
-                cornerRadius,
-                paint
-            )
+            drawRoundRectCompat(canvas, bounds, cornerRadius, paint)
 
             // 绘制边框
             borderPaint.color = borderColor
-            canvas.drawRoundRect(
-                bounds.left.toFloat(),
-                bounds.top.toFloat(),
-                bounds.right.toFloat(),
-                bounds.bottom.toFloat(),
-                cornerRadius,
-                cornerRadius,
-                borderPaint
-            )
+            drawRoundRectCompat(canvas, bounds, cornerRadius, borderPaint)
 
             // 绘制文字
             paint.color = textColor
             val textX = bounds.left + paddingHorizontal
             val textY = bounds.centerY() - (paint.descent() + paint.ascent()) / 2
             canvas.drawText(text, textX.toFloat(), textY, paint)
+        }
+
+        private fun drawRoundRectCompat(
+            canvas: Canvas,
+            bounds: Rect,
+            cornerRadius: Float,
+            paint: Paint
+        ) {
+            val left = bounds.left.toFloat()
+            val top = bounds.top.toFloat()
+            val right = bounds.right.toFloat()
+            val bottom = bounds.bottom.toFloat()
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                // 高版本直接绘制
+                canvas.drawRoundRect(left, top, right, bottom, cornerRadius, cornerRadius, paint)
+            } else {
+                // 低版本使用 Path 绘制
+                path.reset()
+                path.addRoundRect(
+                    RectF(left, top, right, bottom),
+                    floatArrayOf(
+                        cornerRadius,
+                        cornerRadius,
+                        cornerRadius,
+                        cornerRadius,
+                        cornerRadius,
+                        cornerRadius,
+                        cornerRadius,
+                        cornerRadius
+                    ),
+                    Path.Direction.CW
+                )
+                canvas.drawPath(path, paint)
+            }
         }
 
         override fun getIntrinsicWidth(): Int {
@@ -229,4 +252,5 @@ class ContentLabelTextView : AppCompatTextView {
             return PixelFormat.TRANSLUCENT
         }
     }
+
 }
