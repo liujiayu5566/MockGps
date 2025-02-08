@@ -50,6 +50,7 @@ class ExpandActivity : BaseActivity<ActivityExpandBinding, BaseViewModel>() {
         FileMockActivity::class.java,
         null,
         null,
+        null
     )
     private val mExpandData: ArrayList<ExpandModel> = arrayListOf()
 
