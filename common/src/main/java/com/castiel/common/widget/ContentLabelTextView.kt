@@ -93,7 +93,7 @@ class ContentLabelTextView @JvmOverloads constructor(
                 )
             tagDrawable.setBounds(
                 0,
-                ((viewHeight - textHeight) / 2).toInt(),
+                0,
                 tagDrawable.intrinsicWidth,
                 tagDrawable.intrinsicHeight
             )

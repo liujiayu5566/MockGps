@@ -5,10 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.huolala.mockgps.R
 import com.huolala.mockgps.databinding.LayoutMainCardHeaderBinding
@@ -20,6 +18,7 @@ import kotlinx.android.synthetic.main.item_history.view.tv_info
 import kotlinx.android.synthetic.main.item_history.view.tv_poi_name
 import java.util.ArrayList
 import java.util.Collections
+import java.util.Locale
 
 
 /**
@@ -140,6 +139,7 @@ class MainAdapter(val headerAdapter: MultiplePoiAdapter) :
                 NaviType.LOCATION -> {
                     holder.itemView.tv_poi_name.text = model.locationModel?.name ?: ""
                     holder.itemView.tv_info.text = String.format(
+                        Locale.getDefault(),
                         "经纬度：%f , %f",
                         model.locationModel?.latLng?.longitude ?: 0f,
                         model.locationModel?.latLng?.latitude ?: 0f
@@ -155,12 +155,25 @@ class MainAdapter(val headerAdapter: MultiplePoiAdapter) :
                     }
                     format.append(model.endNavi?.name ?: "")
                     holder.itemView.tv_poi_name.text = format.toString()
-                    holder.itemView.tv_info.text = ""
+                    holder.itemView.tv_info.text = String.format(
+                        Locale.getDefault(),
+                        "经纬度：%f , %f -> %f , %f",
+                        model.startNavi?.latLng?.longitude ?: 0f,
+                        model.startNavi?.latLng?.latitude ?: 0f,
+                        model.endNavi?.latLng?.longitude ?: 0f,
+                        model.endNavi?.latLng?.latitude ?: 0f
+                    )
                 }
             }
             mOnItemClickListener?.let { listener ->
                 holder.itemView.setOnClickListener {
                     listener.onItemClick(it, model)
+                }
+            }
+            mOnItemClickListener?.let { listener ->
+                holder.itemView.setOnLongClickListener {
+                    listener.onItemLongClick(it, model, position - 1)
+                    return@setOnLongClickListener true
                 }
             }
         }
@@ -189,5 +202,6 @@ class MainAdapter(val headerAdapter: MultiplePoiAdapter) :
 
     interface OnItemClickListener : View.OnClickListener, View.OnLongClickListener {
         fun onItemClick(view: View?, model: MockMessageModel)
+        fun onItemLongClick(view: View?, model: MockMessageModel, position: Int)
     }
 }

@@ -22,7 +22,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatButton
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.baidu.mapapi.model.LatLng
-import com.baidu.mapapi.search.route.DrivingRouteLine
 import com.blankj.utilcode.util.ClickUtils
 import com.blankj.utilcode.util.ClipboardUtils
 import com.blankj.utilcode.util.ConvertUtils
@@ -185,6 +184,28 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel>(), View.On
 
                         else -> {
                         }
+                    }
+                }
+
+                override fun onItemLongClick(view: View?, model: MockMessageModel, position: Int) {
+                    AlertDialog.Builder(this@MainActivity).apply {
+                        setTitle("提示")
+                        setMessage("是否删除")
+                        setPositiveButton("确定") { _, _ ->
+                            MMKVUtils.removeDataList(
+                                if (adapter.dataBinding.includeLocationCard.llLocationCard.visibility == View.VISIBLE) MMKVUtils.LOCATION_LIST_KEY
+                                else MMKVUtils.MULTIPLE_NAVI_LIST_KEY, position
+                            ).let {
+                                if (it != null) {
+                                    ToastUtils.showShort("删除成功")
+                                    adapter.submitList(it)
+                                } else {
+                                    ToastUtils.showShort("删除失败")
+                                }
+                            }
+                        }
+                        setNegativeButton("取消", null)
+                        show()
                     }
                 }
 
@@ -667,7 +688,18 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel>(), View.On
 
             adapter.dataBinding.tvCleanCache -> {
                 //清除缓存
-                clearHistoryData()
+                val dialog: AlertDialog = AlertDialog.Builder(this)
+                    .setTitle("清除缓存")
+                    .setMessage("是否清除缓存")
+                    .setPositiveButton(
+                        "确定"
+                    ) { _: DialogInterface?, _: Int ->
+                        clearHistoryData()
+                        ToastUtils.showShort("清除缓存成功")
+                    }
+                    .setNegativeButton("取消", null)
+                    .create()
+                dialog.show()
             }
 
             else -> {

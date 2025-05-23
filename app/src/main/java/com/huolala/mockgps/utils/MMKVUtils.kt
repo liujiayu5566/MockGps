@@ -74,6 +74,18 @@ object MMKVUtils {
         defaultMMKV.remove(key)
     }
 
+    fun removeDataList(key: String, position: Int): CopyOnWriteArrayList<MockMessageModel>? {
+        getDataList(key)?.run {
+            if (size > position) {
+                removeAt(position)
+                defaultMMKV.putString(key, Gson().toJson(this))
+                return this
+            }
+        }
+        return null
+    }
+
+
     private fun checkMockMessageModelIsExist(
         dataList: CopyOnWriteArrayList<MockMessageModel>,
         data: MockMessageModel

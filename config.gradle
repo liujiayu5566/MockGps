@@ -5,8 +5,8 @@ ext {
             applicationId    : 'com.huolala.mockgps',
             minSdkVersion    : 21,
             targetSdkVersion : 31,
-            versionCode      : 257,
-            versionName      : '2.5.7',
+            versionCode      : 258,
+            versionName      : '2.5.8',
             map_key          : 'lmSE5lD0ZXcSAuNs34A2DXQdIzaDI8GR',
     ]
 
